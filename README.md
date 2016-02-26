@@ -1,2 +1,2 @@
-# moby-craft
-A Minecraft client-side mod to visualize docker containers in Minecraft.
+# mobycraft
+A Minecraft client-side mod to manage and visualize docker containers in Minecraft.
