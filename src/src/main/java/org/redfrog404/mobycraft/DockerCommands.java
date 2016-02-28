@@ -1,22 +1,19 @@
 package org.redfrog404.mobycraft;
 
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.common.config.Property;
+
+import org.apache.http.conn.UnsupportedSchemeException;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
@@ -27,19 +24,29 @@ public class DockerCommands implements ICommand {
 	private List aliases;
 
 	Map<String, Integer> argNumbers = new HashMap<String, Integer>();
+	
+	Map<String, String> helpMessages = new HashMap<String, String>();
 
 	ICommandSender sender;
 
-	String dockerPath;
+	Property dockerPath = Moby.config.get(Moby.category, Moby.key,
+			Moby.defaultValue, Moby.comment);
 
 	String[] args;
 
 	public DockerCommands() {
 		this.aliases = new ArrayList();
 		this.aliases.add("docker");
+		
 		argNumbers.put("help", 0);
 		argNumbers.put("ps", 1);
 		argNumbers.put("path", 2);
+		
+		helpMessages.put("help", "Brings up this help page");
+		helpMessages.put("ps",
+				"Lists all of your containers and some important information about them");
+		helpMessages.put("path <path>",
+				"Sets the Docker path to <path>");
 	}
 
 	@Override
@@ -63,8 +70,7 @@ public class DockerCommands implements ICommand {
 		this.sender = sender;
 
 		if (args.length == 0) {
-			sendMessage(EnumChatFormatting.GOLD
-					+ "For help with this command, use /docker help");
+			sendFeedbackMessage("For help with this command, use /docker help");
 			return;
 		}
 
@@ -77,13 +83,15 @@ public class DockerCommands implements ICommand {
 			return;
 		}
 
-		if (dockerPath == null && argNumbers.get(command) != 2) {
+		int commandNumber = argNumbers.get(command);
+
+		if (dockerPath.isDefault() && commandNumber != 2) {
 			sendErrorMessage("Docker path has not been set! Set it using /docker path <path> .");
 			return;
 		}
 
 		try {
-			switch (argNumbers.get(command)) {
+			switch (commandNumber) {
 			case 0:
 				help();
 				break;
@@ -95,6 +103,11 @@ public class DockerCommands implements ICommand {
 				break;
 			}
 		} catch (Exception e) {
+
+			if (e instanceof UnsupportedSchemeException && commandNumber == 2) {
+				sendErrorMessage("Invalid Docker path! Set it using /docker path <path> .");
+				return;
+			}
 			sendErrorMessage(e.toString());
 			e.printStackTrace();
 			return;
@@ -135,6 +148,15 @@ public class DockerCommands implements ICommand {
 		sendMessage(EnumChatFormatting.GREEN + message);
 	}
 
+	private void sendFeedbackMessage(String message) {
+		sendMessage(EnumChatFormatting.GOLD + message);
+	}
+
+	private void sendBarMessage(EnumChatFormatting color) {
+		sendMessage(color + "" + EnumChatFormatting.BOLD
+				+ "=============================================");
+	}
+
 	private void sendHelpMessage(String command, String helpMessage) {
 		sendMessage(EnumChatFormatting.DARK_GREEN + "/docker " + command
 				+ " - " + EnumChatFormatting.GOLD + helpMessage);
@@ -142,28 +164,38 @@ public class DockerCommands implements ICommand {
 
 	private void help() {
 		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
-				+ "================ Docker Help ================");
-		sendHelpMessage("help", "Brings up this help page");
-		sendHelpMessage("ps",
-				"Lists all of your containers and some important information about them");
+				+ "============== Docker Help ==============");
+		
+		for (int help = 0 ; help < helpMessages.size() ; help++) {
+			sendHelpMessage(helpMessages.keySet().toArray()[help].toString(), helpMessages.get(helpMessages.keySet().toArray()[help]));
+		}
 	}
 
 	private void ps() {
+
+		sendMessage(EnumChatFormatting.GOLD + "Loading...");
+
+		DockerClient dockerClient;
+		DockerClientConfig dockerConfig = DockerClientConfig
+				.createDefaultConfigBuilder()
+				.withUri("https://192.168.99.100:2376")
+				.withDockerCertPath(dockerPath.getString()).build();
+		dockerClient = DockerClientBuilder.getInstance(dockerConfig).build();
+
+		List<Container> containers = dockerClient.listContainersCmd().exec();
+
+		if (containers.size() == 0) {
+			sendFeedbackMessage("No containers currently running");
+			return;
+		}
+
+		sendBarMessage(EnumChatFormatting.BLUE);
 		sendMessage(EnumChatFormatting.AQUA + "Name(s)"
 				+ EnumChatFormatting.RESET + ", " + EnumChatFormatting.GOLD
 				+ "Image" + EnumChatFormatting.RESET + ", "
 				+ EnumChatFormatting.GREEN + "Container ID");
-		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
-				+ "=============================================");
-		
-		DockerClientConfig dockerConfig = DockerClientConfig
-				.createDefaultConfigBuilder()
-				.withUri("https://192.168.99.100:2376")
-				.withDockerCertPath(dockerPath).build();
-		DockerClient dockerClient = DockerClientBuilder.getInstance(
-				dockerConfig).build();
-		
-		List<Container> containers = dockerClient.listContainersCmd().exec();
+		sendBarMessage(EnumChatFormatting.BLUE);
+
 		for (Container container : containers) {
 			String message = "";
 			for (String name : container.getNames()) {
@@ -173,20 +205,23 @@ public class DockerCommands implements ICommand {
 					message = message + ", " + name;
 				}
 			}
-			message = message + EnumChatFormatting.RESET + ", " + EnumChatFormatting.GOLD
-					+ container.getImage() + EnumChatFormatting.RESET + ", "
-					+ EnumChatFormatting.GREEN + container.getId().subSequence(0, 12);
+			message = message + EnumChatFormatting.RESET + ", "
+					+ EnumChatFormatting.GOLD + container.getImage()
+					+ EnumChatFormatting.RESET + ", "
+					+ EnumChatFormatting.GREEN
+					+ container.getId().subSequence(0, 12);
 			sendMessage(message);
 		}
 	}
 
 	private void path() {
 		if (args.length < 2) {
-			sendErrorMessage("Path is not specified! Command is used as /docker path <path> .");
+			sendErrorMessage("Docker path is not specified! Command is used as /docker path <path> .");
 			return;
 		}
 
-		dockerPath = args[1];
+		dockerPath.setValue(args[1]);
+		Moby.config.save();
 		sendConfirmMessage("Docker path set to \"" + args[1] + "\"");
 	}
 }
