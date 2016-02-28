@@ -141,7 +141,7 @@ public class DockerCommands implements ICommand {
 	}
 
 	private void help() {
-		sendMessage(EnumChatFormatting.AQUA + "" + EnumChatFormatting.BOLD
+		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
 				+ "================ Docker Help ================");
 		sendHelpMessage("help", "Brings up this help page");
 		sendHelpMessage("ps",
@@ -149,24 +149,34 @@ public class DockerCommands implements ICommand {
 	}
 
 	private void ps() {
-		DockerClientConfig dockerConfig = DockerClientConfig
-				.createDefaultConfigBuilder()
-				.withUri("https://192.168.99.100:2376")
-				.withDockerCertPath(dockerPath).build();
-
 		sendMessage(EnumChatFormatting.AQUA + "Name(s)"
 				+ EnumChatFormatting.RESET + ", " + EnumChatFormatting.GOLD
 				+ "Image" + EnumChatFormatting.RESET + ", "
 				+ EnumChatFormatting.GREEN + "Container ID");
-
+		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
+				+ "=============================================");
+		
+		DockerClientConfig dockerConfig = DockerClientConfig
+				.createDefaultConfigBuilder()
+				.withUri("https://192.168.99.100:2376")
+				.withDockerCertPath(dockerPath).build();
 		DockerClient dockerClient = DockerClientBuilder.getInstance(
 				dockerConfig).build();
+		
 		List<Container> containers = dockerClient.listContainersCmd().exec();
 		for (Container container : containers) {
-			
-//			for (String name : container.getNames()) {
-//				System.out.println(name);
-//			}
+			String message = "";
+			for (String name : container.getNames()) {
+				if (container.getNames()[0] == name) {
+					message = message + EnumChatFormatting.AQUA + name;
+				} else {
+					message = message + ", " + name;
+				}
+			}
+			message = message + EnumChatFormatting.RESET + ", " + EnumChatFormatting.GOLD
+					+ container.getImage() + EnumChatFormatting.RESET + ", "
+					+ EnumChatFormatting.GREEN + container.getId().subSequence(0, 12);
+			sendMessage(message);
 		}
 	}
 
