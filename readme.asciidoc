@@ -12,7 +12,7 @@ The outside of a Minecraft Docker container can be seen in <<outside_container>>
 [[outside_container]]
 .A Minecraft Docker container
 image::images/outside-container.png[height=300]
-
+ +
 The inside is shown in <<inside_container>>.
 
 [[inside_container]]
