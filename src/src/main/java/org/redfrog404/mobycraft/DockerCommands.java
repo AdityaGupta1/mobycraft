@@ -105,7 +105,7 @@ public class DockerCommands implements ICommand {
 				path();
 				break;
 			case 3:
-				container();
+				Moby.builder.container(sender.getEntityWorld(), sender.getPosition(), Blocks.iron_block);
 				break;
 			} 
 		} catch (Exception e) {
@@ -229,12 +229,5 @@ public class DockerCommands implements ICommand {
 		dockerPath.setValue(args[1]);
 		Moby.config.save();
 		sendConfirmMessage("Docker path set to \"" + args[1] + "\"");
-	}
-	
-	private void container(){
-		
-		Moby.builder.container(sender.getEntityWorld(), sender.getPosition(), Blocks.iron_block);
-		sender.getEntityWorld().setBlockState(sender.getPosition().add(2, 3, 0), Moby.logo_block.getDefaultState());
-		
 	}
 }

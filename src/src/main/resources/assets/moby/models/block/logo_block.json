@@ -1,12 +1,12 @@
 {
     "parent": "block/cube", 
     "textures": { 
-        "down": "moby:blocks/logo_block",
-        "up": "moby:blocks/logo_block",
+        "down": "blocks/iron_block",
+        "up": "blocks/iron_block",
         "north": "moby:blocks/logo_block",
         "south": "moby:blocks/logo_block",
         "west": "moby:blocks/logo_block",
         "east": "moby:blocks/logo_block",
-        "particle": "moby:blocks/logo_block"
+        "particle": "blocks/iron_block"
     }
 }
