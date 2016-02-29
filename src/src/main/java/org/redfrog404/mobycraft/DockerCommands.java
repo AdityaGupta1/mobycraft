@@ -26,7 +26,7 @@ public class DockerCommands implements ICommand {
 	private List aliases;
 
 	Map<String, Integer> argNumbers = new HashMap<String, Integer>();
-	
+
 	Map<String, String> helpMessages = new HashMap<String, String>();
 
 	ICommandSender sender;
@@ -36,20 +36,23 @@ public class DockerCommands implements ICommand {
 
 	String[] args;
 
+	List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
+
 	public DockerCommands() {
 		this.aliases = new ArrayList();
 		this.aliases.add("docker");
-		
+
 		argNumbers.put("help", 0);
 		argNumbers.put("ps", 1);
 		argNumbers.put("path", 2);
-		argNumbers.put("container", 3);
-		
+		//TODO Remove after adding automatic building when player joins game
+		argNumbers.put("build_containers", 3);
+
 		helpMessages.put("help", "Brings up this help page");
-		helpMessages.put("ps",
-				"Lists all of your containers and some important information about them");
-		helpMessages.put("path <path>",
-				"Sets the Docker path to <path>");
+		helpMessages
+				.put("ps",
+						"Lists all of your containers and some important information about them");
+		helpMessages.put("path <path>", "Sets the Docker path to <path>");
 	}
 
 	@Override
@@ -105,9 +108,9 @@ public class DockerCommands implements ICommand {
 				path();
 				break;
 			case 3:
-				Moby.builder.container(sender.getEntityWorld(), sender.getPosition(), Blocks.iron_block);
+				refreshAndBuildContainers(sender.getPosition());
 				break;
-			} 
+			}
 		} catch (Exception e) {
 
 			if (e instanceof UnsupportedSchemeException && commandNumber == 2) {
@@ -171,15 +174,16 @@ public class DockerCommands implements ICommand {
 	private void help() {
 		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
 				+ "============== Docker Help ==============");
-		
-		for (int help = 0 ; help < helpMessages.size() ; help++) {
-			sendHelpMessage(helpMessages.keySet().toArray()[help].toString(), helpMessages.get(helpMessages.keySet().toArray()[help]));
+
+		for (int help = 0; help < helpMessages.size(); help++) {
+			sendHelpMessage(helpMessages.keySet().toArray()[help].toString(),
+					helpMessages.get(helpMessages.keySet().toArray()[help]));
 		}
 	}
 
 	private void ps() {
-		
-		sendMessage(EnumChatFormatting.GOLD + "Loading...");
+
+		sendFeedbackMessage("Loading...");
 
 		DockerClient dockerClient;
 		DockerClientConfig dockerConfig = DockerClientConfig
@@ -215,7 +219,7 @@ public class DockerCommands implements ICommand {
 					+ EnumChatFormatting.GOLD + container.getImage()
 					+ EnumChatFormatting.RESET + ", "
 					+ EnumChatFormatting.GREEN
-					+ container.getId().subSequence(0, 12);
+					+ container.getId().substring(0, 12);
 			sendMessage(message);
 		}
 	}
@@ -229,5 +233,54 @@ public class DockerCommands implements ICommand {
 		dockerPath.setValue(args[1]);
 		Moby.config.save();
 		sendConfirmMessage("Docker path set to \"" + args[1] + "\"");
+	}
+
+	public void refreshContainers(BlockPos pos) {
+		DockerClient dockerClient;
+		DockerClientConfig dockerConfig = DockerClientConfig
+				.createDefaultConfigBuilder()
+				.withUri("https://192.168.99.100:2376")
+				.withDockerCertPath(dockerPath.getString()).build();
+		dockerClient = DockerClientBuilder.getInstance(dockerConfig).build();
+
+		List<Container> containers = dockerClient.listContainersCmd().exec();
+		for (Container container : containers) {
+			boxContainers.add(new BoxContainer(pos, container.getId()));
+			pos = pos.add(6, 0, 0);
+		}
+	}
+
+	public void buildContainers() {
+		DockerClient dockerClient;
+		DockerClientConfig dockerConfig = DockerClientConfig
+				.createDefaultConfigBuilder()
+				.withUri("https://192.168.99.100:2376")
+				.withDockerCertPath(dockerPath.getString()).build();
+		dockerClient = DockerClientBuilder.getInstance(dockerConfig).build();
+		
+		for (BoxContainer boxContainer : boxContainers) {
+			String containerName = "";
+			String containerImage = "";
+			
+			List<Container> containers = dockerClient.listContainersCmd().exec();
+			for (Container container : containers) {
+				if (container.getId().equals(boxContainer.getID())){
+					containerName = container.getNames()[0];
+					containerImage = container.getImage();
+				}
+			}
+			
+			if (!containerName.equals("")) {
+				Moby.builder.container(sender.getEntityWorld(), boxContainer.getPosition(), Blocks.iron_block, containerName, containerImage);
+			}
+		}
+	}
+	
+	public void refreshAndBuildContainers(BlockPos pos){
+		sendFeedbackMessage("Getting containers...");
+		refreshContainers(pos);
+		sendFeedbackMessage("Building containers...");
+		buildContainers();
+		sendFeedbackMessage("Done!");
 	}
 }

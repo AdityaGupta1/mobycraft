@@ -68,7 +68,8 @@ public class Builder {
 		fill(world, start.add(x1, y1, z1), end.add(x2, y2, z2), Blocks.air);
 	}
 
-	public void container(World world, BlockPos start, Block material) {
+	public void container(World world, BlockPos start, Block material,
+			String containerName, String containerImage) {
 		start = start.add(-2, 0, 1);
 		room(world, start, start.add(4, 4, 4), Blocks.iron_block);
 
@@ -95,9 +96,8 @@ public class Builder {
 				2, 3, 3)));
 		sign.signText[1] = new ChatComponentText(EnumChatFormatting.GREEN + ""
 				+ EnumChatFormatting.BOLD + "Start" + EnumChatFormatting.BLACK
-				+ "" + EnumChatFormatting.BOLD + " / "
-				+ EnumChatFormatting.RED + "" + EnumChatFormatting.BOLD
-				+ "Stop");
+				+ "" + EnumChatFormatting.BOLD + " / " + EnumChatFormatting.RED
+				+ "" + EnumChatFormatting.BOLD + "Stop");
 		sign.signText[2] = new ChatComponentText(EnumChatFormatting.BLACK + ""
 				+ EnumChatFormatting.BOLD + "Container");
 		((TileEntitySign) world.getTileEntity(start.add(3, 2, 3))).signText[1] = new ChatComponentText(
@@ -106,6 +106,35 @@ public class Builder {
 		((TileEntitySign) world.getTileEntity(start.add(1, 2, 3))).signText[1] = new ChatComponentText(
 				EnumChatFormatting.RED + "" + EnumChatFormatting.BOLD
 						+ "Stop = Down");
+
+		world.setBlockState(start.add(4, 1, -1), wallSign);
+		sign = ((TileEntitySign) world.getTileEntity(start.add(4, 1, -1)));
+		sign.signText[0] = new ChatComponentText(EnumChatFormatting.BOLD
+				+ "Name:");
+		if (containerName.length() < 14) {
+			sign.signText[1] = new ChatComponentText(containerName);
+		} else if (containerName.length() < 27) {
+			sign.signText[1] = new ChatComponentText(containerName.substring(0, 13));
+			sign.signText[2] = new ChatComponentText(containerName.substring(13, containerName.length()));
+		} else {
+			sign.signText[1] = new ChatComponentText(containerName.substring(0, 13));
+			sign.signText[1] = new ChatComponentText(containerName.substring(13, 26));
+			sign.signText[2] = new ChatComponentText(containerName.substring(26, containerName.length()));
+		}
+		
+		world.setBlockState(start.add(3, 1, -1), wallSign);
+		sign = ((TileEntitySign) world.getTileEntity(start.add(3, 1, -1)));
+		sign.signText[0] = new ChatComponentText(EnumChatFormatting.BOLD + "Image:");
+		if (containerImage.length() < 14) {
+			sign.signText[1] = new ChatComponentText(containerImage);
+		} else if (containerImage.length() < 27) {
+			sign.signText[1] = new ChatComponentText(containerImage.substring(0, 13));
+			sign.signText[2] = new ChatComponentText(containerImage.substring(13, containerImage.length()));
+		} else {
+			sign.signText[1] = new ChatComponentText(containerImage.substring(0, 13));
+			sign.signText[1] = new ChatComponentText(containerImage.substring(13, 26));
+			sign.signText[2] = new ChatComponentText(containerImage.substring(26, containerImage.length()));
+		}
 
 	}
 

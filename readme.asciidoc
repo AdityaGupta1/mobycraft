@@ -14,3 +14,9 @@ image::images/outside-container.png[]
 [[inside_container]]
 .Inside a Minecraft Docker container
 image::images/inside-container.png[]
+
+Plans for the future:
+
+. Get the start / stop lever to work
+. Organize containers into 10x10 panels
+  . Organize containers with the same image in the same 10x10 panel
