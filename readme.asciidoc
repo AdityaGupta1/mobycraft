@@ -11,6 +11,8 @@ This project aims to:
 .A Minecraft Docker container
 image::images/outside-container.png[height=300]
 
+
+
 [[inside_container]]
 .Inside a Minecraft Docker container
 image::images/inside-container.png[height=300]
