@@ -10,11 +10,11 @@ This project aims to:
 [[outside_container]]
 .A Minecraft Docker container
 image::images/outside-container.png[]
-
+<br/>
 [[inside_container]]
 .Inside a Minecraft Docker container
 image::images/inside-container.png[]
-
+<br/>
 Plans for the future:
 
 . Get the start / stop lever to work
