@@ -8,9 +8,11 @@ import java.util.Map;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.Vec3i;
 import net.minecraftforge.common.config.Property;
 
 import org.apache.http.conn.UnsupportedSchemeException;
@@ -29,8 +31,8 @@ public class DockerCommands implements ICommand {
 
 	ICommandSender sender;
 
-	Property dockerPath = Moby.config.get(Moby.category, Moby.key,
-			Moby.defaultValue, Moby.comment);
+	Property dockerPath = Moby.config.get("files", "docker-cert-path",
+			"File path", "The location of your Docker stuff");
 
 	String[] args;
 
@@ -41,6 +43,7 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("help", 0);
 		argNumbers.put("ps", 1);
 		argNumbers.put("path", 2);
+		argNumbers.put("container", 3);
 		
 		helpMessages.put("help", "Brings up this help page");
 		helpMessages.put("ps",
@@ -101,7 +104,10 @@ public class DockerCommands implements ICommand {
 			case 2:
 				path();
 				break;
-			}
+			case 3:
+				container();
+				break;
+			} 
 		} catch (Exception e) {
 
 			if (e instanceof UnsupportedSchemeException && commandNumber == 2) {
@@ -172,7 +178,7 @@ public class DockerCommands implements ICommand {
 	}
 
 	private void ps() {
-
+		
 		sendMessage(EnumChatFormatting.GOLD + "Loading...");
 
 		DockerClient dockerClient;
@@ -223,5 +229,12 @@ public class DockerCommands implements ICommand {
 		dockerPath.setValue(args[1]);
 		Moby.config.save();
 		sendConfirmMessage("Docker path set to \"" + args[1] + "\"");
+	}
+	
+	private void container(){
+		
+		Moby.builder.container(sender.getEntityWorld(), sender.getPosition(), Blocks.iron_block);
+		sender.getEntityWorld().setBlockState(sender.getPosition().add(2, 3, 0), Moby.logo_block.getDefaultState());
+		
 	}
 }
