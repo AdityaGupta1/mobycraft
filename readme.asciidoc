@@ -1,11 +1,11 @@
 = mobycraft
-A Minecraft client-side mod to manage and visualize docker containers in Minecraft.
+A Minecraft client-side mod to manage and visualize Docker containers in Minecraft.
 
 This project aims to:
 
-. Make a visual representation of docker containers in Minecraft
+. Make a visual representation of Docker containers in Minecraft
 . Allow the user to manage those containers in Minecraft
-. Integrate docker commands into the game
+. Integrate Docker commands into the game
 
 [[outside_container]]
 .A Minecraft Docker container
@@ -14,9 +14,3 @@ image::images/outside-container.png[height=300]
 [[inside_container]]
 .Inside a Minecraft Docker container
 image::images/inside-container.png[height=300]
-
-Plans for the future:
-
-. Get the start / stop lever to work
-. Organize containers into 10x10 panels
-  . Organize containers with the same image in the same 10x10 panel
