@@ -1,5 +1,6 @@
 package org.redfrog404.mobycraft;
 
+import scala.actors.threadpool.Arrays;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -7,41 +8,42 @@ import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.Vec3i;
 import net.minecraft.world.World;
 
-public class Builder {
+public class StructureBuilder {
 
 	public void fill(World world, BlockPos start, BlockPos end, Block material) {
-		int x1 = start.getX();
-		int x2 = end.getX();
-		int y1 = start.getY();
-		int y2 = end.getY();
-		int z1 = start.getZ();
-		int z2 = end.getZ();
+		int startX = start.getX();
+		int endX = end.getX();
+		int startY = start.getY();
+		int endY = end.getY();
+		int startZ = start.getZ();
+		int endZ = end.getZ();
 
-		int[] ints = new int[2];
+		int[] intSwitchArray = new int[2];
 
-		if (x2 < x1) {
-			ints = switchNumbers(x1, x2);
-			x1 = ints[0];
-			x2 = ints[1];
+		if (endX < startX) {
+			intSwitchArray = switchNumbers(startX, endX);
+			startX = intSwitchArray[0];
+			endX = intSwitchArray[1];
 		}
 
-		if (y2 < y1) {
-			ints = switchNumbers(y1, y2);
-			y1 = ints[0];
-			y2 = ints[1];
+		if (endY < startY) {
+			intSwitchArray = switchNumbers(startY, endY);
+			startY = intSwitchArray[0];
+			endY = intSwitchArray[1];
 		}
 
-		if (z2 < z1) {
-			ints = switchNumbers(z1, z2);
-			z1 = ints[0];
-			z2 = ints[1];
+		if (endZ < startZ) {
+			intSwitchArray = switchNumbers(startZ, endZ);
+			startZ = intSwitchArray[0];
+			endZ = intSwitchArray[1];
 		}
 
-		for (int x = x1; x < x2 + 1; x++) {
-			for (int y = y1; y < y2 + 1; y++) {
-				for (int z = z1; z < z2 + 1; z++) {
+		for (int x = startX; x < endX + 1; x++) {
+			for (int y = startY; y < endY + 1; y++) {
+				for (int z = startZ; z < endZ + 1; z++) {
 					world.setBlockState(new BlockPos(x, y, z),
 							material.getDefaultState());
 				}
@@ -52,20 +54,21 @@ public class Builder {
 	public void room(World world, BlockPos start, BlockPos end, Block material) {
 		fill(world, start, end, material);
 
-		int x1 = -(start.getX() - end.getX())
+		int airStartX = -(start.getX() - end.getX())
 				/ Math.abs(start.getX() - end.getX());
-		int x2 = -(end.getX() - start.getX())
+		int airEndX = -(end.getX() - start.getX())
 				/ Math.abs(end.getX() - start.getX());
-		int y1 = -(start.getY() - end.getY())
+		int airStartY = -(start.getY() - end.getY())
 				/ Math.abs(start.getY() - end.getY());
-		int y2 = -(end.getY() - start.getY())
+		int airEndY = -(end.getY() - start.getY())
 				/ Math.abs(end.getY() - start.getY());
-		int z1 = -(start.getZ() - end.getZ())
+		int airStartZ = -(start.getZ() - end.getZ())
 				/ Math.abs(start.getZ() - end.getZ());
-		int z2 = -(end.getZ() - start.getZ())
+		int airEndZ = -(end.getZ() - start.getZ())
 				/ Math.abs(end.getZ() - start.getZ());
 
-		fill(world, start.add(x1, y1, z1), end.add(x2, y2, z2), Blocks.air);
+		fill(world, start.add(airStartX, airStartY, airStartZ),
+				end.add(airEndX, airEndY, airEndZ), Blocks.air);
 	}
 
 	public void container(World world, BlockPos start, Block material,
@@ -74,18 +77,16 @@ public class Builder {
 		room(world, start, start.add(4, 4, 4), Blocks.iron_block);
 
 		world.setBlockState(start.add(2, 3, 0),
-				Moby.logo_block.getDefaultState());
+				Moby.docker_block.getDefaultState());
 		fill(world, start.add(2, 2, 0), start.add(2, 1, 0), Blocks.air);
 
 		IBlockState glowstone = Blocks.glowstone.getDefaultState();
-		world.setBlockState(start.add(3, 0, 1), glowstone);
-		world.setBlockState(start.add(1, 0, 1), glowstone);
-		world.setBlockState(start.add(3, 0, 3), glowstone);
-		world.setBlockState(start.add(1, 0, 3), glowstone);
-		world.setBlockState(start.add(3, 4, 1), glowstone);
-		world.setBlockState(start.add(1, 4, 1), glowstone);
-		world.setBlockState(start.add(3, 4, 3), glowstone);
-		world.setBlockState(start.add(1, 4, 3), glowstone);
+		Vec3i[] addVectors = { new Vec3i(3, 0, 1), new Vec3i(1, 0, 1),
+				new Vec3i(3, 0, 3), new Vec3i(1, 0, 3), new Vec3i(3, 4, 1),
+				new Vec3i(1, 4, 1), new Vec3i(3, 4, 3), new Vec3i(1, 4, 3) };
+		for (Vec3i vector : addVectors) {
+			world.setBlockState(start.add(vector), glowstone);
+		}
 
 		world.setBlockState(start.add(2, 2, 3), Blocks.lever.getDefaultState());
 		IBlockState wallSign = Blocks.wall_sign.getDefaultState();
@@ -111,40 +112,36 @@ public class Builder {
 		sign = ((TileEntitySign) world.getTileEntity(start.add(4, 1, -1)));
 		sign.signText[0] = new ChatComponentText(EnumChatFormatting.BOLD
 				+ "Name:");
-		if (containerName.length() < 14) {
-			sign.signText[1] = new ChatComponentText(containerName);
-		} else if (containerName.length() < 27) {
-			sign.signText[1] = new ChatComponentText(containerName.substring(0, 13));
-			sign.signText[2] = new ChatComponentText(containerName.substring(13, containerName.length()));
-		} else {
-			sign.signText[1] = new ChatComponentText(containerName.substring(0, 13));
-			sign.signText[1] = new ChatComponentText(containerName.substring(13, 26));
-			sign.signText[2] = new ChatComponentText(containerName.substring(26, containerName.length()));
-		}
-		
+		wrapSignText(containerName, sign);
+
 		world.setBlockState(start.add(3, 1, -1), wallSign);
 		sign = ((TileEntitySign) world.getTileEntity(start.add(3, 1, -1)));
-		sign.signText[0] = new ChatComponentText(EnumChatFormatting.BOLD + "Image:");
-		if (containerImage.length() < 14) {
-			sign.signText[1] = new ChatComponentText(containerImage);
-		} else if (containerImage.length() < 27) {
-			sign.signText[1] = new ChatComponentText(containerImage.substring(0, 13));
-			sign.signText[2] = new ChatComponentText(containerImage.substring(13, containerImage.length()));
-		} else {
-			sign.signText[1] = new ChatComponentText(containerImage.substring(0, 13));
-			sign.signText[1] = new ChatComponentText(containerImage.substring(13, 26));
-			sign.signText[2] = new ChatComponentText(containerImage.substring(26, containerImage.length()));
-		}
+		sign.signText[0] = new ChatComponentText(EnumChatFormatting.BOLD
+				+ "Image:");
+		wrapSignText(containerImage, sign);
 
 	}
 
+	private void wrapSignText(String containerProperty, TileEntitySign sign) {
+		if (containerProperty.length() < 14) {
+			sign.signText[1] = new ChatComponentText(containerProperty);
+		} else if (containerProperty.length() < 27) {
+			sign.signText[1] = new ChatComponentText(containerProperty.substring(
+					0, 13));
+			sign.signText[2] = new ChatComponentText(containerProperty.substring(
+					13, containerProperty.length()));
+		} else {
+			sign.signText[1] = new ChatComponentText(containerProperty.substring(
+					0, 13));
+			sign.signText[1] = new ChatComponentText(containerProperty.substring(
+					13, 26));
+			sign.signText[2] = new ChatComponentText(containerProperty.substring(
+					26, containerProperty.length()));
+		}
+	}
+
 	public int[] switchNumbers(int num1, int num2) {
-		int temp = num2;
-		num2 = num1;
-		num1 = temp;
-		int[] ints = new int[2];
-		ints[0] = num1;
-		ints[1] = num2;
+		int[] ints = { num2, num1 };
 		return ints;
 	}
 

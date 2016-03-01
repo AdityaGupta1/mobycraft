@@ -32,7 +32,7 @@ public class DockerCommands implements ICommand {
 	ICommandSender sender;
 
 	Property dockerPath = Moby.config.get("files", "docker-cert-path",
-			"File path", "The location of your Docker stuff");
+			"File path", "The directory path of your Docker certificate");
 
 	String[] args;
 
@@ -45,7 +45,7 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("help", 0);
 		argNumbers.put("ps", 1);
 		argNumbers.put("path", 2);
-		//TODO Remove after adding automatic building when player joins game
+		// TODO Remove after adding automatic building when player joins game
 		argNumbers.put("build_containers", 3);
 
 		helpMessages.put("help", "Brings up this help page");
@@ -112,7 +112,6 @@ public class DockerCommands implements ICommand {
 				break;
 			}
 		} catch (Exception e) {
-
 			if (e instanceof UnsupportedSchemeException && commandNumber == 2) {
 				sendErrorMessage("Invalid Docker path! Set it using /docker path <path> .");
 				return;
@@ -175,9 +174,13 @@ public class DockerCommands implements ICommand {
 		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
 				+ "============== Docker Help ==============");
 
-		for (int help = 0; help < helpMessages.size(); help++) {
-			sendHelpMessage(helpMessages.keySet().toArray()[help].toString(),
-					helpMessages.get(helpMessages.keySet().toArray()[help]));
+		// for (int help = 0; help < helpMessages.size(); help++) {
+		// sendHelpMessage(helpMessages.keySet().toArray()[help].toString(),
+		// helpMessages.get(helpMessages.keySet().toArray()[help]));
+		// }
+
+		for (String key : helpMessages.keySet()) {
+			sendHelpMessage(key, helpMessages.get(key));
 		}
 	}
 
@@ -185,12 +188,7 @@ public class DockerCommands implements ICommand {
 
 		sendFeedbackMessage("Loading...");
 
-		DockerClient dockerClient;
-		DockerClientConfig dockerConfig = DockerClientConfig
-				.createDefaultConfigBuilder()
-				.withUri("https://192.168.99.100:2376")
-				.withDockerCertPath(dockerPath.getString()).build();
-		dockerClient = DockerClientBuilder.getInstance(dockerConfig).build();
+		DockerClient dockerClient = getDockerClient();
 
 		List<Container> containers = dockerClient.listContainersCmd().exec();
 
@@ -209,19 +207,29 @@ public class DockerCommands implements ICommand {
 		for (Container container : containers) {
 			String message = "";
 			for (String name : container.getNames()) {
-				if (container.getNames()[0] == name) {
-					message = message + EnumChatFormatting.AQUA + name;
+				if (container.getNames()[0].equals(name)) {
+					message += EnumChatFormatting.AQUA + name;
 				} else {
-					message = message + ", " + name;
+					message += ", " + name;
 				}
 			}
-			message = message + EnumChatFormatting.RESET + ", "
+			message += EnumChatFormatting.RESET + ", "
 					+ EnumChatFormatting.GOLD + container.getImage()
 					+ EnumChatFormatting.RESET + ", "
 					+ EnumChatFormatting.GREEN
 					+ container.getId().substring(0, 12);
 			sendMessage(message);
 		}
+	}
+
+	private DockerClient getDockerClient() {
+		DockerClient dockerClient;
+		DockerClientConfig dockerConfig = DockerClientConfig
+				.createDefaultConfigBuilder()
+				.withUri("https://192.168.99.100:2376")
+				.withDockerCertPath(dockerPath.getString()).build();
+		dockerClient = DockerClientBuilder.getInstance(dockerConfig).build();
+		return dockerClient;
 	}
 
 	private void path() {
@@ -236,12 +244,7 @@ public class DockerCommands implements ICommand {
 	}
 
 	public void refreshContainers(BlockPos pos) {
-		DockerClient dockerClient;
-		DockerClientConfig dockerConfig = DockerClientConfig
-				.createDefaultConfigBuilder()
-				.withUri("https://192.168.99.100:2376")
-				.withDockerCertPath(dockerPath.getString()).build();
-		dockerClient = DockerClientBuilder.getInstance(dockerConfig).build();
+		DockerClient dockerClient = getDockerClient();
 
 		List<Container> containers = dockerClient.listContainersCmd().exec();
 		for (Container container : containers) {
@@ -251,32 +254,30 @@ public class DockerCommands implements ICommand {
 	}
 
 	public void buildContainers() {
-		DockerClient dockerClient;
-		DockerClientConfig dockerConfig = DockerClientConfig
-				.createDefaultConfigBuilder()
-				.withUri("https://192.168.99.100:2376")
-				.withDockerCertPath(dockerPath.getString()).build();
-		dockerClient = DockerClientBuilder.getInstance(dockerConfig).build();
-		
+		DockerClient dockerClient = getDockerClient();
+
 		for (BoxContainer boxContainer : boxContainers) {
 			String containerName = "";
 			String containerImage = "";
-			
-			List<Container> containers = dockerClient.listContainersCmd().exec();
+
+			List<Container> containers = dockerClient.listContainersCmd()
+					.exec();
 			for (Container container : containers) {
-				if (container.getId().equals(boxContainer.getID())){
+				if (container.getId().equals(boxContainer.getID())) {
 					containerName = container.getNames()[0];
 					containerImage = container.getImage();
 				}
 			}
-			
+
 			if (!containerName.equals("")) {
-				Moby.builder.container(sender.getEntityWorld(), boxContainer.getPosition(), Blocks.iron_block, containerName, containerImage);
+				Moby.builder.container(sender.getEntityWorld(),
+						boxContainer.getPosition(), Blocks.iron_block,
+						containerName, containerImage);
 			}
 		}
 	}
-	
-	public void refreshAndBuildContainers(BlockPos pos){
+
+	public void refreshAndBuildContainers(BlockPos pos) {
 		sendFeedbackMessage("Getting containers...");
 		refreshContainers(pos);
 		sendFeedbackMessage("Building containers...");

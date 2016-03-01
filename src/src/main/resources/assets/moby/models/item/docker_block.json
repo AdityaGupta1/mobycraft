@@ -1,5 +1,5 @@
 {
-    "parent": "moby:block/logo_block", 
+    "parent": "moby:block/docker_block", 
     "display": { 
         "thirdperson": {
             "rotation": [ 10, -45, 170 ], 

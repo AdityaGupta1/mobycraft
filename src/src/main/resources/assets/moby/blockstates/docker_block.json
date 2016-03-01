@@ -1,0 +1,5 @@
+{
+    "variants": { 
+        "normal": { "model": "moby:docker_block" } 
+    }
+}

@@ -1,5 +1,8 @@
 = mobycraft
-A Minecraft client-side mod to manage and visualize Docker containers in Minecraft.
+
+This project is Minecraft client-side mod to manage and visualize Docker containers in Minecraft.
+
+It is based off of Minecraft Forge, and is made for the latest version of Minecraft 1.8. Complete instructions as to how to install this mod are coming soon.
 
 This project aims to:
 
@@ -18,3 +21,9 @@ The inside is shown in <<inside_container>>.
 [[inside_container]]
 .Inside a Minecraft Docker container
 image::images/inside-container.png[height=300]
+
+The output from running `/docker ps` in Minecraft is shown in <<docker_ps>>.
+
+[[docker_ps]]
+.Output from `/docker ps`
+image::images/docker-ps.png[height=300]
