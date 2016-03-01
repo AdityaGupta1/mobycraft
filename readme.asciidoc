@@ -1,8 +1,6 @@
 = mobycraft
 
-This project is Minecraft client-side mod to manage and visualize Docker containers in Minecraft.
-
-It is based off of Minecraft Forge, and is made for the latest version of Minecraft 1.8. Complete instructions as to how to install this mod are coming soon.
+This project is a Minecraft client-side mod to manage and visualize Docker containers in Minecraft. It is based off of Minecraft Forge, and is made for the latest version of Minecraft 1.8. Complete instructions as to how to install this mod are coming soon.
 
 This project aims to:
 
