@@ -6,15 +6,22 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemModelMesher;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+
+import org.redfrog404.mobycraft.entity.EntityDockerWhale;
+import org.redfrog404.mobycraft.entity.RenderDockerWhale;
 
 @Mod(modid = Moby.MODID, version = Moby.VERSION)
 public final class Moby {
@@ -41,6 +48,12 @@ public final class Moby {
 		docker_block = new GenericBlock("docker_block", Material.iron, 5.0F,
 				10.0F, "pickaxe", 1, Block.soundTypeMetal);
 		registerBlock(docker_block, "docker_block");
+		
+		RenderManager render = Minecraft.getMinecraft().getRenderManager();
+
+		registerModEntity(EntityDockerWhale.class, new RenderDockerWhale(),
+				"docker_whale", EntityRegistry.findGlobalUniqueEntityId(),
+				0x24B8EB, 0x008BB8);
 	}
 
 	@EventHandler
@@ -58,5 +71,16 @@ public final class Moby {
 		GameRegistry.registerBlock(block, name);
 		mesher.register(Item.getItemFromBlock(block), 0,
 				new ModelResourceLocation("moby:" + name, "inventory"));
+	}
+	
+	public void registerModEntity(Class parEntityClass, Render render,
+			String parEntityName, int entityId, int foregroundColor,
+			int backgroundColor) {
+		EntityRegistry.registerGlobalEntityID(parEntityClass, parEntityName,
+				entityId, foregroundColor, backgroundColor);
+		EntityRegistry.registerModEntity(parEntityClass, parEntityName,
+				entityId, this, 80, 1, false);
+		RenderingRegistry
+				.registerEntityRenderingHandler(parEntityClass, render);
 	}
 }

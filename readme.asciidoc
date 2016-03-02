@@ -25,3 +25,9 @@ The output from running `/docker ps` in Minecraft is shown in <<docker_ps>>.
 [[docker_ps]]
 .Output from `/docker ps`
 image::images/docker-ps.png[]
+
+The project's mascot, Moby (the Docker whale) can be seen in <<docker_whale>>. The Moby in the picture is a new mob that the mod adds.
+
+[[docker_whale]]
+.Moby the mascot!
+image::images/docker-whale.png[]
