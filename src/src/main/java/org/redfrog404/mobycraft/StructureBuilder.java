@@ -1,6 +1,8 @@
 package org.redfrog404.mobycraft;
 
-import scala.actors.threadpool.Arrays;
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -10,6 +12,8 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.Vec3i;
 import net.minecraft.world.World;
+
+import com.github.dockerjava.api.model.Container;
 
 public class StructureBuilder {
 
@@ -126,23 +130,55 @@ public class StructureBuilder {
 		if (containerProperty.length() < 14) {
 			sign.signText[1] = new ChatComponentText(containerProperty);
 		} else if (containerProperty.length() < 27) {
-			sign.signText[1] = new ChatComponentText(containerProperty.substring(
-					0, 13));
-			sign.signText[2] = new ChatComponentText(containerProperty.substring(
-					13, containerProperty.length()));
+			sign.signText[1] = new ChatComponentText(
+					containerProperty.substring(0, 13));
+			sign.signText[2] = new ChatComponentText(
+					containerProperty.substring(13, containerProperty.length()));
 		} else {
-			sign.signText[1] = new ChatComponentText(containerProperty.substring(
-					0, 13));
-			sign.signText[1] = new ChatComponentText(containerProperty.substring(
-					13, 26));
-			sign.signText[2] = new ChatComponentText(containerProperty.substring(
-					26, containerProperty.length()));
+			sign.signText[1] = new ChatComponentText(
+					containerProperty.substring(0, 13));
+			sign.signText[1] = new ChatComponentText(
+					containerProperty.substring(13, 26));
+			sign.signText[2] = new ChatComponentText(
+					containerProperty.substring(26, containerProperty.length()));
 		}
 	}
 
 	public int[] switchNumbers(int num1, int num2) {
 		int[] ints = { num2, num1 };
 		return ints;
+	}
+
+	public List<BoxContainer> containerColumn(List<Container> containers,
+			int index, BlockPos pos) {
+
+		List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
+
+		int endIndex = 10;
+
+		if (containers.size() - (index * 10) < 10) {
+			endIndex = containers.size() - index * 10;
+		}
+
+		for (int i = index * 10; i < (index * 10) + endIndex; i++) {
+			boxContainers.add(new BoxContainer(pos, containers.get(i).getId()));
+			pos = pos.add(0, 6, 0);
+		}
+
+		return boxContainers;
+	}
+
+	public List<BoxContainer> containerPanel(List<Container> containers,
+			BlockPos pos) {
+		List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
+
+		int lastIndex = (containers.size() - (containers.size() % 10)) / 10;
+		for (int i = 0; i <= lastIndex; i++) {
+			boxContainers.addAll(containerColumn(containers, i, pos));
+			pos = pos.add(6, 0, 0);
+		}
+
+		return boxContainers;
 	}
 
 }

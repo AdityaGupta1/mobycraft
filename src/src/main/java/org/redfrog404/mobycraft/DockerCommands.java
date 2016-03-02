@@ -244,13 +244,20 @@ public class DockerCommands implements ICommand {
 	}
 
 	public void refreshContainers(BlockPos pos) {
-		DockerClient dockerClient = getDockerClient();
+//		DockerClient dockerClient = getDockerClient();
+//
+//		List<Container> containers = dockerClient.listContainersCmd().exec();
+//		for (Container container : containers) {
+//			boxContainers.add(new BoxContainer(pos, container.getId()));
+//			pos = pos.add(6, 0, 0);
+//		}
+		
+		boxContainers = Moby.builder.containerPanel(getContainers(), pos);
+	}
 
-		List<Container> containers = dockerClient.listContainersCmd().exec();
-		for (Container container : containers) {
-			boxContainers.add(new BoxContainer(pos, container.getId()));
-			pos = pos.add(6, 0, 0);
-		}
+	public List<Container> getContainers() {
+		DockerClient dockerClient = getDockerClient();
+		return dockerClient.listContainersCmd().exec();
 	}
 
 	public void buildContainers() {
@@ -266,6 +273,7 @@ public class DockerCommands implements ICommand {
 				if (container.getId().equals(boxContainer.getID())) {
 					containerName = container.getNames()[0];
 					containerImage = container.getImage();
+					break;
 				}
 			}
 

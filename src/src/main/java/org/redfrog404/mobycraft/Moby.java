@@ -27,7 +27,7 @@ public final class Moby {
 
 	ItemModelMesher mesher;
 
-	public static StructureBuilder builder = new StructureBuilder();
+	public static final StructureBuilder builder = new StructureBuilder();
 
 	@EventHandler
 	public void registerDockerCommands(FMLServerStartingEvent event) {
