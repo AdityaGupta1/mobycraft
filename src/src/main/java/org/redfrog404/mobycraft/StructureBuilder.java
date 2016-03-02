@@ -161,7 +161,9 @@ public class StructureBuilder {
 		}
 
 		for (int i = index * 10; i < (index * 10) + endIndex; i++) {
-			boxContainers.add(new BoxContainer(pos, containers.get(i).getId()));
+			Container container = containers.get(i);
+			boxContainers.add(new BoxContainer(pos, container.getId(),
+					container.getNames()[0], container.getImage()));
 			pos = pos.add(0, 6, 0);
 		}
 

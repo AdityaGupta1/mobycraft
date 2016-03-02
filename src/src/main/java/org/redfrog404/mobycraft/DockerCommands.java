@@ -173,12 +173,6 @@ public class DockerCommands implements ICommand {
 	private void help() {
 		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
 				+ "============== Docker Help ==============");
-
-		// for (int help = 0; help < helpMessages.size(); help++) {
-		// sendHelpMessage(helpMessages.keySet().toArray()[help].toString(),
-		// helpMessages.get(helpMessages.keySet().toArray()[help]));
-		// }
-
 		for (String key : helpMessages.keySet()) {
 			sendHelpMessage(key, helpMessages.get(key));
 		}
@@ -244,14 +238,6 @@ public class DockerCommands implements ICommand {
 	}
 
 	public void refreshContainers(BlockPos pos) {
-//		DockerClient dockerClient = getDockerClient();
-//
-//		List<Container> containers = dockerClient.listContainersCmd().exec();
-//		for (Container container : containers) {
-//			boxContainers.add(new BoxContainer(pos, container.getId()));
-//			pos = pos.add(6, 0, 0);
-//		}
-		
 		boxContainers = Moby.builder.containerPanel(getContainers(), pos);
 	}
 
@@ -264,24 +250,9 @@ public class DockerCommands implements ICommand {
 		DockerClient dockerClient = getDockerClient();
 
 		for (BoxContainer boxContainer : boxContainers) {
-			String containerName = "";
-			String containerImage = "";
-
-			List<Container> containers = dockerClient.listContainersCmd()
-					.exec();
-			for (Container container : containers) {
-				if (container.getId().equals(boxContainer.getID())) {
-					containerName = container.getNames()[0];
-					containerImage = container.getImage();
-					break;
-				}
-			}
-
-			if (!containerName.equals("")) {
-				Moby.builder.container(sender.getEntityWorld(),
-						boxContainer.getPosition(), Blocks.iron_block,
-						containerName, containerImage);
-			}
+			Moby.builder.container(sender.getEntityWorld(),
+					boxContainer.getPosition(), Blocks.iron_block,
+					boxContainer.getName(), boxContainer.getImage());
 		}
 	}
 

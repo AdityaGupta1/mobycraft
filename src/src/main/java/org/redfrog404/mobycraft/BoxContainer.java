@@ -6,10 +6,14 @@ public class BoxContainer {
 	
 	private BlockPos position;
 	private String ID;
+	private String name;
+	private String image;
 	
-	public BoxContainer(BlockPos position, String ID) {
+	public BoxContainer(BlockPos position, String ID, String name, String image) {
 		this.position = position;
 		this.ID = ID;
+		this.name = name;
+		this.image = image;
 	}
 	
 	public BlockPos getPosition(){
@@ -28,8 +32,12 @@ public class BoxContainer {
 		position = newPos;
 	}
 	
-	public void setID(String newID) {
-		ID = newID;
+	public String getName(){
+		return name;
+	}
+	
+	public String getImage(){
+		return image;
 	}
 
 }
