@@ -6,6 +6,7 @@ import java.util.List;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.tileentity.TileEntityCommandBlock;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
@@ -76,7 +77,7 @@ public class StructureBuilder {
 	}
 
 	public void container(World world, BlockPos start, Block material,
-			String containerName, String containerImage) {
+			String containerName, String containerImage, String containerShortID) {
 		start = start.add(-2, 0, 1);
 		room(world, start, start.add(4, 4, 4), Blocks.iron_block);
 
@@ -84,19 +85,10 @@ public class StructureBuilder {
 				Moby.docker_block.getDefaultState());
 		fill(world, start.add(2, 2, 0), start.add(2, 1, 0), Blocks.air);
 
-		IBlockState glowstone = Blocks.glowstone.getDefaultState();
-		Vec3i[] addVectors = { new Vec3i(3, 0, 1), new Vec3i(1, 0, 1),
-				new Vec3i(3, 0, 3), new Vec3i(1, 0, 3), new Vec3i(3, 4, 1),
-				new Vec3i(1, 4, 1), new Vec3i(3, 4, 3), new Vec3i(1, 4, 3) };
-		for (Vec3i vector : addVectors) {
-			world.setBlockState(start.add(vector), glowstone);
-		}
-
-		world.setBlockState(start.add(2, 2, 3), Blocks.lever.getDefaultState());
+		world.setBlockState(start.add(2, 2, 3),
+				Blocks.stone_button.getDefaultState());
 		IBlockState wallSign = Blocks.wall_sign.getDefaultState();
-		world.setBlockState(start.add(1, 2, 3), wallSign);
 		world.setBlockState(start.add(2, 3, 3), wallSign);
-		world.setBlockState(start.add(3, 2, 3), wallSign);
 		TileEntitySign sign = ((TileEntitySign) world.getTileEntity(start.add(
 				2, 3, 3)));
 		sign.signText[1] = new ChatComponentText(EnumChatFormatting.GREEN + ""
@@ -105,12 +97,6 @@ public class StructureBuilder {
 				+ "" + EnumChatFormatting.BOLD + "Stop");
 		sign.signText[2] = new ChatComponentText(EnumChatFormatting.BLACK + ""
 				+ EnumChatFormatting.BOLD + "Container");
-		((TileEntitySign) world.getTileEntity(start.add(3, 2, 3))).signText[1] = new ChatComponentText(
-				EnumChatFormatting.GREEN + "" + EnumChatFormatting.BOLD
-						+ "Start = Up");
-		((TileEntitySign) world.getTileEntity(start.add(1, 2, 3))).signText[1] = new ChatComponentText(
-				EnumChatFormatting.RED + "" + EnumChatFormatting.BOLD
-						+ "Stop = Down");
 
 		world.setBlockState(start.add(4, 1, -1), wallSign);
 		sign = ((TileEntitySign) world.getTileEntity(start.add(4, 1, -1)));
@@ -124,6 +110,23 @@ public class StructureBuilder {
 				+ "Image:");
 		wrapSignText(containerImage, sign);
 
+		room(world, start.add(0, 0, 6), start.add(4, 4, 4), Blocks.iron_block);
+		world.setBlockState(start.add(2, 2, 5),
+				Blocks.command_block.getDefaultState());
+		TileEntityCommandBlock commandBlock = (TileEntityCommandBlock) world
+				.getTileEntity(start.add(2, 2, 5));
+		commandBlock.getCommandBlockLogic().setCommand(
+				"/docker switch_state " + containerShortID);
+
+		IBlockState glowstone = Blocks.glowstone.getDefaultState();
+		Vec3i[] addVectors = { new Vec3i(3, 0, 1), new Vec3i(1, 0, 1),
+				new Vec3i(3, 0, 3), new Vec3i(1, 0, 3), new Vec3i(3, 0, 5),
+				new Vec3i(1, 0, 5), new Vec3i(3, 4, 1), new Vec3i(1, 4, 1),
+				new Vec3i(3, 4, 3), new Vec3i(1, 4, 3), new Vec3i(3, 4, 5),
+				new Vec3i(1, 4, 5) };
+		for (Vec3i vector : addVectors) {
+			world.setBlockState(start.add(vector), glowstone);
+		}
 	}
 
 	private void wrapSignText(String containerProperty, TileEntitySign sign) {
@@ -150,7 +153,7 @@ public class StructureBuilder {
 	}
 
 	public List<BoxContainer> containerColumn(List<Container> containers,
-			int index, BlockPos pos) {
+			int index, BlockPos pos, World world) {
 
 		List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
 
@@ -163,7 +166,7 @@ public class StructureBuilder {
 		for (int i = index * 10; i < (index * 10) + endIndex; i++) {
 			Container container = containers.get(i);
 			boxContainers.add(new BoxContainer(pos, container.getId(),
-					container.getNames()[0], container.getImage()));
+					container.getNames()[0], container.getImage(), world));
 			pos = pos.add(0, 6, 0);
 		}
 
@@ -171,16 +174,57 @@ public class StructureBuilder {
 	}
 
 	public List<BoxContainer> containerPanel(List<Container> containers,
-			BlockPos pos) {
+			BlockPos pos, World world) {
 		List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
 
 		int lastIndex = (containers.size() - (containers.size() % 10)) / 10;
 		for (int i = 0; i <= lastIndex; i++) {
-			boxContainers.addAll(containerColumn(containers, i, pos));
+			boxContainers.addAll(containerColumn(containers, i, pos, world));
 			pos = pos.add(6, 0, 0);
 		}
 
 		return boxContainers;
 	}
 
+	public void replace(World world, BlockPos start, BlockPos end,
+			Block blockToReplace, Block blockToReplaceWith) {
+		int startX = start.getX();
+		int endX = end.getX();
+		int startY = start.getY();
+		int endY = end.getY();
+		int startZ = start.getZ();
+		int endZ = end.getZ();
+
+		int[] intSwitchArray = new int[2];
+
+		if (endX < startX) {
+			intSwitchArray = switchNumbers(startX, endX);
+			startX = intSwitchArray[0];
+			endX = intSwitchArray[1];
+		}
+
+		if (endY < startY) {
+			intSwitchArray = switchNumbers(startY, endY);
+			startY = intSwitchArray[0];
+			endY = intSwitchArray[1];
+		}
+
+		if (endZ < startZ) {
+			intSwitchArray = switchNumbers(startZ, endZ);
+			startZ = intSwitchArray[0];
+			endZ = intSwitchArray[1];
+		}
+
+		for (int x = startX; x < endX + 1; x++) {
+			for (int y = startY; y < endY + 1; y++) {
+				for (int z = startZ; z < endZ + 1; z++) {
+					if (world.getBlockState(new BlockPos(x, y, z)) == blockToReplace
+							.getDefaultState()) {
+						world.setBlockState(new BlockPos(x, y, z),
+								blockToReplaceWith.getDefaultState());
+					}
+				}
+			}
+		}
+	}
 }

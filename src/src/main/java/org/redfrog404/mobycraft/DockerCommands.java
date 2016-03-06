@@ -5,14 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.block.Block;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.Vec3i;
 import net.minecraftforge.common.config.Property;
 
 import org.apache.http.conn.UnsupportedSchemeException;
@@ -35,8 +34,10 @@ public class DockerCommands implements ICommand {
 			"File path", "The directory path of your Docker certificate");
 
 	String[] args;
+	String arg1;
 
-	List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
+	static List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
+	static Map<String, BoxContainer> containerIDMap = new HashMap<String, BoxContainer>();
 
 	public DockerCommands() {
 		this.aliases = new ArrayList();
@@ -45,8 +46,9 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("help", 0);
 		argNumbers.put("ps", 1);
 		argNumbers.put("path", 2);
+		argNumbers.put("switch_state", 3);
 		// TODO Remove after adding automatic building when player joins game
-		argNumbers.put("build_containers", 3);
+		argNumbers.put("build_containers", 4);
 
 		helpMessages.put("help", "Brings up this help page");
 		helpMessages
@@ -82,6 +84,9 @@ public class DockerCommands implements ICommand {
 
 		String command = args[0].toLowerCase();
 		this.args = args;
+		if (args.length > 1) {
+			arg1 = args[1];
+		}
 
 		if (!argNumbers.containsKey(command)) {
 			sendErrorMessage("\"" + command
@@ -108,6 +113,9 @@ public class DockerCommands implements ICommand {
 				path();
 				break;
 			case 3:
+				switchState();
+				break;
+			case 4:
 				refreshAndBuildContainers(sender.getPosition());
 				break;
 			}
@@ -232,13 +240,18 @@ public class DockerCommands implements ICommand {
 			return;
 		}
 
-		dockerPath.setValue(args[1]);
+		dockerPath.setValue(arg1);
 		Moby.config.save();
-		sendConfirmMessage("Docker path set to \"" + args[1] + "\"");
+		sendConfirmMessage("Docker path set to \"" + arg1 + "\"");
 	}
 
 	public void refreshContainers(BlockPos pos) {
-		boxContainers = Moby.builder.containerPanel(getContainers(), pos);
+		boxContainers = Moby.builder.containerPanel(getContainers(), pos,
+				sender.getEntityWorld());
+		containerIDMap.clear();
+		for (BoxContainer container : boxContainers) {
+			containerIDMap.put(container.getShortID(), container);
+		}
 	}
 
 	public List<Container> getContainers() {
@@ -252,7 +265,7 @@ public class DockerCommands implements ICommand {
 		for (BoxContainer boxContainer : boxContainers) {
 			Moby.builder.container(sender.getEntityWorld(),
 					boxContainer.getPosition(), Blocks.iron_block,
-					boxContainer.getName(), boxContainer.getImage());
+					boxContainer.getName(), boxContainer.getImage(), boxContainer.getShortID());
 		}
 	}
 
@@ -262,5 +275,43 @@ public class DockerCommands implements ICommand {
 		sendFeedbackMessage("Building containers...");
 		buildContainers();
 		sendFeedbackMessage("Done!");
+	}
+
+	public BoxContainer getContainerWithID(String id) {
+		if (!containerIDMap.containsKey(id)) {
+			return null;
+		}
+		return containerIDMap.get(id);
+	}
+
+	private void switchState() {
+		if (getContainerWithID(arg1) == null) {
+			return;
+		}
+
+		BoxContainer container = getContainerWithID(arg1);
+
+		container.setState(!container.getState());
+
+		Block containerBlock;
+		Block prevContainerBlock;
+
+		if (container.getState()) {
+			containerBlock = Blocks.iron_block;
+			prevContainerBlock = Blocks.redstone_block;
+			getDockerClient().startContainerCmd(container.getID()).exec();
+		} else {
+			containerBlock = Blocks.redstone_block;
+			prevContainerBlock = Blocks.iron_block;
+			getDockerClient().stopContainerCmd(container.getID()).exec();
+		}
+
+		Moby.builder.replace(container.getWorld(),
+				container.getPosition().add(2, 0, 1), container.getPosition()
+						.add(-2, 0, 7), prevContainerBlock, containerBlock);
+		
+		Moby.builder.replace(container.getWorld(),
+				container.getPosition().add(2, 4, 1), container.getPosition()
+						.add(-2, 4, 7), prevContainerBlock, containerBlock);
 	}
 }

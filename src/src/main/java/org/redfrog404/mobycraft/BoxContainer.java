@@ -1,6 +1,11 @@
 package org.redfrog404.mobycraft;
 
+import java.util.List;
+
 import net.minecraft.util.BlockPos;
+import net.minecraft.world.World;
+
+import com.github.dockerjava.api.model.Container;
 
 public class BoxContainer {
 	
@@ -8,12 +13,15 @@ public class BoxContainer {
 	private String ID;
 	private String name;
 	private String image;
+	private boolean state = true;
+	private World world;
 	
-	public BoxContainer(BlockPos position, String ID, String name, String image) {
+	public BoxContainer(BlockPos position, String ID, String name, String image, World world) {
 		this.position = position;
 		this.ID = ID;
 		this.name = name;
 		this.image = image;
+		this.world = world;
 	}
 	
 	public BlockPos getPosition(){
@@ -38,6 +46,28 @@ public class BoxContainer {
 	
 	public String getImage(){
 		return image;
+	}
+	
+	public boolean getState(){
+		return state;
+	}
+	
+	public void setState(boolean newState){
+		state = newState;
+	}
+	
+	public World getWorld() {
+		return world;
+	}
+	
+	public Container getContainer(List<Container> containers) {
+		for (Container container : containers) {
+			if (container.getId().equals(ID)) {
+				return container;
+			}
+		}
+		
+		return null;
 	}
 
 }
