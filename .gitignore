@@ -11,10 +11,8 @@ src/Paulscode IBXM Library License.txt
 src/Paulscode SoundSystem CodecIBXM License.txt
 src/README.txt
 src/bin/
-src/build.gradle
 src/build/
 src/eclipse/
-src/forge-1.8.9-11.15.1.1762-changelog.txt
 src/gradle/
 src/gradlew
 src/gradlew.bat
