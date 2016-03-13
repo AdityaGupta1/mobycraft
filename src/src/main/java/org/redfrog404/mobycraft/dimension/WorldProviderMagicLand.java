@@ -4,6 +4,7 @@ import net.minecraft.world.WorldProvider;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.WorldChunkManagerHell;
 import net.minecraft.world.chunk.IChunkProvider;
+import net.minecraft.world.gen.ChunkProviderHell;
 
 public class WorldProviderMagicLand extends WorldProvider {
 	
@@ -13,7 +14,7 @@ public class WorldProviderMagicLand extends WorldProvider {
 	}
 	
 	public IChunkProvider createChunkGeneration() {
-		return null;
+		return new ChunkProviderHell(this.worldObj, this.worldObj.getWorldInfo().isMapFeaturesEnabled(), this.worldObj.getSeed());
 	}
 
 	@Override

@@ -15,6 +15,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.BlockPos;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -96,9 +97,9 @@ public final class Moby {
 				.registerEntityRenderingHandler(parEntityClass, render);
 	}
 
-	@SubscribeEvent
-	public void teleportToMagicLand(LivingJumpEvent event) {
-		if (!(event.entity instanceof EntityPlayerMP)) {
+//	@SubscribeEvent
+	public void teleportToMagicLand(EntityJoinWorldEvent event) {
+		if (!(event.entity instanceof EntityPlayerMP) || event.entity.dimension == DimensionRegistry.magicLandID) {
 			return;
 		}
 
@@ -112,9 +113,5 @@ public final class Moby {
 						new TeleporterMagicLand(
 								player.mcServer
 										.worldServerForDimension(DimensionRegistry.magicLandID)));
-
-		player.setLocationAndAngles(0, 70, 0, 0, 0);
-		player.worldObj.setBlockState(new BlockPos(0, 70, 0),
-				Blocks.diamond_block.getDefaultState());
 	}
 }

@@ -14,9 +14,11 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.config.Property;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.apache.http.conn.UnsupportedSchemeException;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
@@ -49,12 +51,17 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("switch_state", 3);
 		// TODO Remove after adding automatic building when player joins game
 		argNumbers.put("build_containers", 4);
+		argNumbers.put("create", 5);
+		argNumbers.put("kill_all", 6);
 
 		helpMessages.put("help", "Brings up this help page");
 		helpMessages
 				.put("ps",
 						"Lists all of your containers and some important information about them");
 		helpMessages.put("path <path>", "Sets the Docker path to <path>");
+		helpMessages.put("create <image> (name | amount)",
+				"Creates a container with image <image> and name (name) or (amount) number of containers");
+		helpMessages.put("kill_all", "Kills all currently running containers");
 	}
 
 	@Override
@@ -117,6 +124,12 @@ public class DockerCommands implements ICommand {
 				break;
 			case 4:
 				refreshAndBuildContainers(sender.getPosition());
+				break;
+			case 5:
+				createContainer();
+				break;
+			case 6:
+				killAll();
 				break;
 			}
 		} catch (Exception e) {
@@ -181,6 +194,10 @@ public class DockerCommands implements ICommand {
 	private void help() {
 		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
 				+ "============== Docker Help ==============");
+		sendMessage(EnumChatFormatting.AQUA
+				+ "-- <arg> is required, (arg) is optional");
+		sendMessage(EnumChatFormatting.AQUA
+				+ "-- \"|\" means \"or\"; for example, \"<name | amount>\" means you can either put the name or the amount");
 		for (String key : helpMessages.keySet()) {
 			sendHelpMessage(key, helpMessages.get(key));
 		}
@@ -195,7 +212,7 @@ public class DockerCommands implements ICommand {
 		List<Container> containers = dockerClient.listContainersCmd().exec();
 
 		if (containers.size() == 0) {
-			sendFeedbackMessage("No containers currently running");
+			sendFeedbackMessage("No containers currently running.");
 			return;
 		}
 
@@ -265,7 +282,8 @@ public class DockerCommands implements ICommand {
 		for (BoxContainer boxContainer : boxContainers) {
 			Moby.builder.container(sender.getEntityWorld(),
 					boxContainer.getPosition(), Blocks.iron_block,
-					boxContainer.getName(), boxContainer.getImage(), boxContainer.getShortID());
+					boxContainer.getName(), boxContainer.getImage(),
+					boxContainer.getShortID());
 		}
 	}
 
@@ -309,9 +327,68 @@ public class DockerCommands implements ICommand {
 		Moby.builder.replace(container.getWorld(),
 				container.getPosition().add(2, 0, 1), container.getPosition()
 						.add(-2, 0, 7), prevContainerBlock, containerBlock);
-		
+
 		Moby.builder.replace(container.getWorld(),
 				container.getPosition().add(2, 4, 1), container.getPosition()
 						.add(-2, 4, 7), prevContainerBlock, containerBlock);
+	}
+
+	private void createContainer() {
+		if (args.length < 3) {
+			// No name, no number
+			CreateContainerResponse response = getDockerClient()
+					.createContainerCmd(arg1).exec();
+			getDockerClient().startContainerCmd(response.getId()).exec();
+			String name = "";
+			for (Container container : getContainers()) {
+				if (container.getId().equals(response.getId())) {
+					name = container.getNames()[0];
+				}
+			}
+			sendConfirmMessage("Created container with image \"" + arg1
+					+ "\" and name \"" + name + "\"");
+		} else if (!NumberUtils.isNumber(args[2])) {
+			// Name
+			CreateContainerResponse response = getDockerClient()
+					.createContainerCmd(arg1).withName(args[2]).exec();
+			getDockerClient().startContainerCmd(response.getId()).exec();
+			sendConfirmMessage("Created container with image \"" + arg1
+					+ "\" and name \"" + args[2] + "\"");
+		} else {
+			// Number
+			ArrayList<String> names = new ArrayList<String>();
+			for (int i = 0; i < Integer.parseInt(args[2]); i++) {
+				CreateContainerResponse response = getDockerClient()
+						.createContainerCmd(arg1).exec();
+				getDockerClient().startContainerCmd(response.getId()).exec();
+				String name = "";
+				for (Container container : getContainers()) {
+					if (container.getId().equals(response.getId())) {
+						name = container.getNames()[0];
+						names.add(name);
+					}
+				}
+			}
+
+			String namesMessage = "";
+
+			for (int i = 0; i < names.size(); i++) {
+				if (i == names.size() - 1) {
+					namesMessage.concat(" and \"" + names.get(i) + "\"");
+				} else {
+					namesMessage.concat("\"" + names.get(i) + "\", ");
+				}
+			}
+
+			sendConfirmMessage("Created containers with image \"" + arg1
+					+ "\" and names " + names);
+		}
+	}
+
+	private void killAll() {
+		for (Container container : getContainers()) {
+			getDockerClient().killContainerCmd(container.getId()).exec();
+		}
+		sendConfirmMessage("Killed all containers.");
 	}
 }
