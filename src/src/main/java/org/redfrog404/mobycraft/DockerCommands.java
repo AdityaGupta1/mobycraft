@@ -1,6 +1,7 @@
 package org.redfrog404.mobycraft;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,15 +54,18 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("build_containers", 4);
 		argNumbers.put("create", 5);
 		argNumbers.put("kill_all", 6);
+		argNumbers.put("kill", 7);
 
 		helpMessages.put("help", "Brings up this help page");
 		helpMessages
 				.put("ps",
 						"Lists all of your containers and some important information about them");
 		helpMessages.put("path <path>", "Sets the Docker path to <path>");
-		helpMessages.put("create <image> (name | amount)",
-				"Creates a container with image <image> and name (name) or (amount) number of containers");
+		helpMessages
+				.put("create <image> (name | amount)",
+						"Creates a container with image <image> and name (name) or (amount) number of containers");
 		helpMessages.put("kill_all", "Kills all currently running containers");
+		helpMessages.put("kill <name>", "Kills container <name>");
 	}
 
 	@Override
@@ -131,6 +135,9 @@ public class DockerCommands implements ICommand {
 			case 6:
 				killAll();
 				break;
+			case 7:
+				kill();
+				break;
 			}
 		} catch (Exception e) {
 			if (e instanceof UnsupportedSchemeException && commandNumber == 2) {
@@ -198,7 +205,7 @@ public class DockerCommands implements ICommand {
 				+ "-- <arg> is required, (arg) is optional");
 		sendMessage(EnumChatFormatting.AQUA
 				+ "-- \"|\" means \"or\"; for example, \"<name | amount>\" means you can either put the name or the amount");
-		for (String key : helpMessages.keySet()) {
+		for (String key : asSortedList(helpMessages.keySet())) {
 			sendHelpMessage(key, helpMessages.get(key));
 		}
 	}
@@ -295,6 +302,15 @@ public class DockerCommands implements ICommand {
 		sendFeedbackMessage("Done!");
 	}
 
+	public Container getContainerWithName(String name) {
+		for (Container container : getContainers()) {
+			if (container.getNames()[0].equals(name)) {
+				return container;
+			}
+		}
+		return null;
+	}
+
 	public BoxContainer getContainerWithID(String id) {
 		if (!containerIDMap.containsKey(id)) {
 			return null;
@@ -386,9 +402,29 @@ public class DockerCommands implements ICommand {
 	}
 
 	private void killAll() {
+		sendFeedbackMessage("Working on it...");
 		for (Container container : getContainers()) {
 			getDockerClient().killContainerCmd(container.getId()).exec();
 		}
 		sendConfirmMessage("Killed all containers.");
 	}
+
+	private void kill() {
+		try {
+			getDockerClient().killContainerCmd(
+					getContainerWithName("/" + arg1).getId()).exec();
+		} catch (NullPointerException exception) {
+			sendErrorMessage("No container exists with the name \"/" + arg1
+					+ "\"");
+		}
+		sendConfirmMessage("Killed container with name \"/" + arg1 + "\"");
+	}
+
+	public static <T extends Comparable<? super T>> List<T> asSortedList(
+			Collection<T> c) {
+		List<T> list = new ArrayList<T>(c);
+		java.util.Collections.sort(list);
+		return list;
+	}
+
 }
