@@ -21,6 +21,7 @@ import org.apache.http.conn.UnsupportedSchemeException;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.Filters;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 
@@ -55,6 +56,7 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("create", 5);
 		argNumbers.put("kill_all", 6);
 		argNumbers.put("kill", 7);
+		argNumbers.put("restart", 8);
 
 		helpMessages.put("help", "Brings up this help page");
 		helpMessages
@@ -66,6 +68,7 @@ public class DockerCommands implements ICommand {
 						"Creates a container with image <image> and name (name) or (amount) number of containers");
 		helpMessages.put("kill_all", "Kills all currently running containers");
 		helpMessages.put("kill <name>", "Kills container <name>");
+		helpMessages.put("restart <name>", "Restarts container <name>");
 	}
 
 	@Override
@@ -124,7 +127,7 @@ public class DockerCommands implements ICommand {
 				path();
 				break;
 			case 3:
-				switchState();
+				switchState(arg1, true);
 				break;
 			case 4:
 				refreshAndBuildContainers(sender.getPosition());
@@ -137,6 +140,9 @@ public class DockerCommands implements ICommand {
 				break;
 			case 7:
 				kill();
+				break;
+			case 8:
+				restart();
 				break;
 			}
 		} catch (Exception e) {
@@ -270,17 +276,36 @@ public class DockerCommands implements ICommand {
 	}
 
 	public void refreshContainers(BlockPos pos) {
-		boxContainers = Moby.builder.containerPanel(getContainers(), pos,
+		List<Container> containers = getContainers();
+		containers.addAll(getStoppedContainers());
+		boxContainers = Moby.builder.containerPanel(containers, pos,
 				sender.getEntityWorld());
+		List<String> stoppedContainerIDs = new ArrayList<String>();
+		for (Container container : getStoppedContainers()) {
+			stoppedContainerIDs.add(container.getId().substring(0, 12));
+		}
 		containerIDMap.clear();
-		for (BoxContainer container : boxContainers) {
-			containerIDMap.put(container.getShortID(), container);
+		for (BoxContainer boxContainer : boxContainers) {
+			containerIDMap.put(boxContainer.getShortID(), boxContainer);
+			if (stoppedContainerIDs.contains(boxContainer.getShortID())) {
+				boxContainer.setState(!boxContainer.getState());
+			}
 		}
 	}
 
 	public List<Container> getContainers() {
-		DockerClient dockerClient = getDockerClient();
-		return dockerClient.listContainersCmd().exec();
+		return getDockerClient().listContainersCmd().exec();
+	}
+	
+	public List<Container> getStoppedContainers() {
+		List<Container> containers = new ArrayList<Container>();
+		for (Container container : getDockerClient().listContainersCmd().withShowAll(true).exec()) {
+			if (container.getStatus().toLowerCase().contains("exited")) {
+				containers.add(container);
+			}
+		}
+		
+		return containers;
 	}
 
 	public void buildContainers() {
@@ -291,6 +316,9 @@ public class DockerCommands implements ICommand {
 					boxContainer.getPosition(), Blocks.iron_block,
 					boxContainer.getName(), boxContainer.getImage(),
 					boxContainer.getShortID());
+			if (!boxContainer.getState()) {
+				switchState(boxContainer.getShortID(), false);
+			}
 		}
 	}
 
@@ -318,14 +346,16 @@ public class DockerCommands implements ICommand {
 		return containerIDMap.get(id);
 	}
 
-	private void switchState() {
-		if (getContainerWithID(arg1) == null) {
+	private void switchState(String containerID, boolean switchActualState) {
+		if (getContainerWithID(containerID) == null) {
 			return;
 		}
 
-		BoxContainer container = getContainerWithID(arg1);
+		BoxContainer container = getContainerWithID(containerID);
 
-		container.setState(!container.getState());
+		if (switchActualState) {
+			container.setState(!container.getState());
+		}
 
 		Block containerBlock;
 		Block prevContainerBlock;
@@ -333,11 +363,15 @@ public class DockerCommands implements ICommand {
 		if (container.getState()) {
 			containerBlock = Blocks.iron_block;
 			prevContainerBlock = Blocks.redstone_block;
-			getDockerClient().startContainerCmd(container.getID()).exec();
+			if (switchActualState) {
+				getDockerClient().startContainerCmd(container.getID()).exec();
+			}
 		} else {
 			containerBlock = Blocks.redstone_block;
 			prevContainerBlock = Blocks.iron_block;
-			getDockerClient().stopContainerCmd(container.getID()).exec();
+			if (switchActualState) {
+				getDockerClient().stopContainerCmd(container.getID()).exec();
+			}
 		}
 
 		Moby.builder.replace(container.getWorld(),
@@ -362,14 +396,14 @@ public class DockerCommands implements ICommand {
 				}
 			}
 			sendConfirmMessage("Created container with image \"" + arg1
-					+ "\" and name \"" + name + "\"");
+					+ "\" and name \"/" + name + "\"");
 		} else if (!NumberUtils.isNumber(args[2])) {
 			// Name
 			CreateContainerResponse response = getDockerClient()
 					.createContainerCmd(arg1).withName(args[2]).exec();
 			getDockerClient().startContainerCmd(response.getId()).exec();
 			sendConfirmMessage("Created container with image \"" + arg1
-					+ "\" and name \"" + args[2] + "\"");
+					+ "\" and name \"/" + args[2] + "\"");
 		} else {
 			// Number
 			ArrayList<String> names = new ArrayList<String>();
@@ -390,9 +424,9 @@ public class DockerCommands implements ICommand {
 
 			for (int i = 0; i < names.size(); i++) {
 				if (i == names.size() - 1) {
-					namesMessage.concat(" and \"" + names.get(i) + "\"");
+					namesMessage.concat(" and \"/" + names.get(i) + "\"");
 				} else {
-					namesMessage.concat("\"" + names.get(i) + "\", ");
+					namesMessage.concat("\"/" + names.get(i) + "\", ");
 				}
 			}
 
@@ -410,14 +444,19 @@ public class DockerCommands implements ICommand {
 	}
 
 	private void kill() {
+		if (checkIfArgIsNull(2)) {
+			sendErrorMessage("Container name not specified! Command is used as /docker kill <name> .");
+			return;
+		}
+
 		try {
 			getDockerClient().killContainerCmd(
 					getContainerWithName("/" + arg1).getId()).exec();
+			sendConfirmMessage("Killed container with name \"/" + arg1 + "\"");
 		} catch (NullPointerException exception) {
 			sendErrorMessage("No container exists with the name \"/" + arg1
 					+ "\"");
 		}
-		sendConfirmMessage("Killed container with name \"/" + arg1 + "\"");
 	}
 
 	public static <T extends Comparable<? super T>> List<T> asSortedList(
@@ -425,6 +464,29 @@ public class DockerCommands implements ICommand {
 		List<T> list = new ArrayList<T>(c);
 		java.util.Collections.sort(list);
 		return list;
+	}
+
+	private void restart() {
+		if (checkIfArgIsNull(2)) {
+			sendErrorMessage("Container name not specified! Command is used as /docker restart <name> .");
+			return;
+		}
+
+		try {
+			getDockerClient().restartContainerCmd(
+					getContainerWithName("/" + arg1).getId()).exec();
+			sendConfirmMessage("Restart container with name \"/" + arg1 + "\"");
+		} catch (NullPointerException exception) {
+			sendErrorMessage("No container exists with the name \"/" + arg1
+					+ "\"");
+		}
+	}
+
+	private boolean checkIfArgIsNull(int argNumber) {
+		if (args[argNumber - 1].equals(null)) {
+			return true;
+		}
+		return false;
 	}
 
 }
