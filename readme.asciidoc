@@ -8,13 +8,27 @@ This project aims to:
 . Allow the user to manage those containers in Minecraft
 . Integrate Docker commands into the game
 
-Features of the project:
+== Features of the project
 
-. Command to list containers in chat (/docker ps)
-. Commands to create, kill, and restart containers (/docker create, kill, kill_all, restart)
-. Command to build containers (/docker build_containers)
-. Physical containers that can be started and stopped at the literal press of a button (see <<outside_container>> and <<inside_container>>)
+. New commands that bring Docker commands into Minecraft (see <<commands_list>>)
+. Containers made of Minecraft blocks that can be started and stopped at the literal press of a button (see <<outside_container>> and <<inside_container>>)
 . Moby the 3D Minecraft whale mascot!
+
+[[commands_list]]
+.Docker commands in Minecraft
+[width="100%",frame="topbot",options="header"]
+|======================================================================================================================================================================================================
+|Docker Command          |Minecraft Command                          |Purpose
+|`docker create`         |`/docker create <image> (name \| amount)`  |Creates a container with image <image> and optional name (name) or amount of containers (amount)
+|`docker --help`         |`/docker help`                             |Lists all of the Minecraft Docker commands and what they do
+|`docker kill`           |`/docker kill <name>`                      |Kills the container with name <name>
+|                        |`/docker kill_all`                         |Kills all currently running containers
+|                        |`/docker path <path>`                      |Tells Minecraft what the path to your Docker machine is (only needs to be used when the mod is installed for the first time)
+|`docker ps`             |`/docker ps`                               |Lists all of the currently running containers
+|`docker restart`        |`/docker restart <name>`                   |Restarts container with name <name>
+|======================================================================================================================================================================================================
+
+== Screenshots
 
 The outside of a Minecraft Docker container can be seen in <<outside_container>>.
 
