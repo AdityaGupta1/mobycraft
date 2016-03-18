@@ -8,6 +8,14 @@ This project aims to:
 . Allow the user to manage those containers in Minecraft
 . Integrate Docker commands into the game
 
+Features of the project:
+
+. Command to list containers in chat (/docker ps)
+. Commands to create, kill, and restart containers (/docker create, kill, kill_all, restart)
+. Command to build containers (/docker build_containers)
+. Physical containers that can be started and stopped at the literal press of a button (see <<outside_container>> and <<inside_container>>)
+. Moby the 3D Minecraft whale mascot!
+
 The outside of a Minecraft Docker container can be seen in <<outside_container>>.
 
 [[outside_container]]
@@ -29,5 +37,5 @@ image::images/docker-ps.png[]
 The project's mascot, Moby (the Docker whale) can be seen in <<docker_whale>>. The Moby in the picture is a new mob that the mod adds.
 
 [[docker_whale]]
-.Moby the 3D Minecraft mascot!
+.Moby the 3D Minecraft whale mascot!
 image::images/docker-whale.png[]
