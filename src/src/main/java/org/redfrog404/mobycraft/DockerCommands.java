@@ -53,10 +53,12 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("switch_state", 3);
 		// TODO Remove after adding automatic building when player joins game
 		argNumbers.put("build_containers", 4);
-		argNumbers.put("create", 5);
+		argNumbers.put("run", 5);
 		argNumbers.put("kill_all", 6);
 		argNumbers.put("kill", 7);
 		argNumbers.put("restart", 8);
+		argNumbers.put("rm", 9);
+		argNumbers.put("rm_all", 10);
 
 		helpMessages.put("help", "Brings up this help page");
 		helpMessages
@@ -64,11 +66,13 @@ public class DockerCommands implements ICommand {
 						"Lists all of your containers and some important information about them");
 		helpMessages.put("path <path>", "Sets the Docker path to <path>");
 		helpMessages
-				.put("create <image> (name | amount)",
-						"Creates a container with image <image> and name (name) or (amount) number of containers");
-		helpMessages.put("kill_all", "Kills all currently running containers");
+				.put("run <image> (name | amount)",
+						"Creates and runs a container with image <image> and name (name) or (amount) number of containers");
 		helpMessages.put("kill <name>", "Kills container <name>");
+		helpMessages.put("kill_all", "Kills all currently running containers");
 		helpMessages.put("restart <name>", "Restarts container <name>");
+		helpMessages.put("rm <name>", "Removes container <name>");
+		helpMessages.put("rm_all", "Removes all containers");
 	}
 
 	@Override
@@ -133,7 +137,7 @@ public class DockerCommands implements ICommand {
 				refreshAndBuildContainers(sender.getPosition());
 				break;
 			case 5:
-				createContainer();
+				runContainer();
 				break;
 			case 6:
 				killAll();
@@ -143,6 +147,12 @@ public class DockerCommands implements ICommand {
 				break;
 			case 8:
 				restart();
+				break;
+			case 9:
+				remove();
+				break;
+			case 10:
+				removeAll();
 				break;
 			}
 		} catch (Exception e) {
@@ -175,7 +185,7 @@ public class DockerCommands implements ICommand {
 	@Override
 	public List<String> addTabCompletionOptions(ICommandSender sender,
 			String[] args, BlockPos pos) {
-		return null;
+		return new ArrayList<String>(argNumbers.keySet());
 	}
 
 	private void sendMessage(String message) {
@@ -276,8 +286,7 @@ public class DockerCommands implements ICommand {
 	}
 
 	public void refreshContainers(BlockPos pos) {
-		List<Container> containers = getContainers();
-		containers.addAll(getStoppedContainers());
+		List<Container> containers = getAllContainers();
 		boxContainers = Moby.builder.containerPanel(containers, pos,
 				sender.getEntityWorld());
 		List<String> stoppedContainerIDs = new ArrayList<String>();
@@ -296,15 +305,16 @@ public class DockerCommands implements ICommand {
 	public List<Container> getContainers() {
 		return getDockerClient().listContainersCmd().exec();
 	}
-	
+
 	public List<Container> getStoppedContainers() {
 		List<Container> containers = new ArrayList<Container>();
-		for (Container container : getDockerClient().listContainersCmd().withShowAll(true).exec()) {
+		for (Container container : getDockerClient().listContainersCmd()
+				.withShowAll(true).exec()) {
 			if (container.getStatus().toLowerCase().contains("exited")) {
 				containers.add(container);
 			}
 		}
-		
+
 		return containers;
 	}
 
@@ -325,6 +335,10 @@ public class DockerCommands implements ICommand {
 	public void refreshAndBuildContainers(BlockPos pos) {
 		sendFeedbackMessage("Getting containers...");
 		refreshContainers(pos);
+		if (boxContainers.size() < 1) {
+			sendFeedbackMessage("No containers currently running.");
+			return;
+		}
 		sendFeedbackMessage("Building containers...");
 		buildContainers();
 		sendFeedbackMessage("Done!");
@@ -337,6 +351,22 @@ public class DockerCommands implements ICommand {
 			}
 		}
 		return null;
+	}
+	
+	public Container getContainerFromAllContainersWithName(String name) {
+		List<Container> containers = getAllContainers();
+		for (Container container : containers) {
+			if (container.getNames()[0].equals(name)) {
+				return container;
+			}
+		}
+		return null;
+	}
+
+	public List<Container> getAllContainers() {
+		List<Container> containers = getContainers();
+		containers.addAll(getStoppedContainers());
+		return containers;
 	}
 
 	public BoxContainer getContainerWithID(String id) {
@@ -383,7 +413,7 @@ public class DockerCommands implements ICommand {
 						.add(-2, 4, 7), prevContainerBlock, containerBlock);
 	}
 
-	private void createContainer() {
+	private void runContainer() {
 		if (args.length < 3) {
 			// No name, no number
 			CreateContainerResponse response = getDockerClient()
@@ -437,6 +467,10 @@ public class DockerCommands implements ICommand {
 
 	private void killAll() {
 		sendFeedbackMessage("Working on it...");
+		if (getContainers().size() < 1) {
+			sendFeedbackMessage("No containers currently running.");
+			return;
+		}
 		for (Container container : getContainers()) {
 			getDockerClient().killContainerCmd(container.getId()).exec();
 		}
@@ -487,6 +521,34 @@ public class DockerCommands implements ICommand {
 			return true;
 		}
 		return false;
+	}
+
+	private void removeAll() {
+		sendFeedbackMessage("Working on it...");
+		if (getAllContainers().size() < 1) {
+			sendFeedbackMessage("No containers currently existing.");
+			return;
+		}
+		for (Container container : getAllContainers()) {	
+			getDockerClient().removeContainerCmd(container.getId()).withForce().exec();
+		}
+		sendConfirmMessage("Removed all containers.");
+	}
+
+	private void remove() {
+		if (checkIfArgIsNull(2)) {
+			sendErrorMessage("Container name not specified! Command is used as /docker remove <name> .");
+			return;
+		}
+
+		try {
+			getDockerClient().removeContainerCmd(
+					getContainerFromAllContainersWithName("/" + arg1).getId()).withForce().exec();
+			sendConfirmMessage("Removed container with name \"/" + arg1 + "\"");
+		} catch (NullPointerException exception) {
+			sendErrorMessage("No container exists with the name \"/" + arg1
+					+ "\"");
+		}
 	}
 
 }
