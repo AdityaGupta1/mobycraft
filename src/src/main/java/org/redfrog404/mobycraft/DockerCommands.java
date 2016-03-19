@@ -59,6 +59,8 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("restart", 8);
 		argNumbers.put("rm", 9);
 		argNumbers.put("rm_all", 10);
+		argNumbers.put("stop", 11);
+		argNumbers.put("start", 12);
 
 		helpMessages.put("help", "Brings up this help page");
 		helpMessages
@@ -71,8 +73,10 @@ public class DockerCommands implements ICommand {
 		helpMessages.put("kill <name>", "Kills container <name>");
 		helpMessages.put("kill_all", "Kills all currently running containers");
 		helpMessages.put("restart <name>", "Restarts container <name>");
-		helpMessages.put("rm <name>", "Removes container <name>");
+		helpMessages.put("rm [options] <name>", "Removes container <name>");
 		helpMessages.put("rm_all", "Removes all containers");
+		helpMessages.put("stop <name>", "Stops container <name>");
+		helpMessages.put("start <name>", "Starts container <name>");
 	}
 
 	@Override
@@ -153,6 +157,12 @@ public class DockerCommands implements ICommand {
 				break;
 			case 10:
 				removeAll();
+				break;
+			case 11:
+				stopContainer();
+				break;
+			case 12:
+				startContainer();
 				break;
 			}
 		} catch (Exception e) {
@@ -352,7 +362,7 @@ public class DockerCommands implements ICommand {
 		}
 		return null;
 	}
-	
+
 	public Container getContainerFromAllContainersWithName(String name) {
 		List<Container> containers = getAllContainers();
 		for (Container container : containers) {
@@ -426,7 +436,7 @@ public class DockerCommands implements ICommand {
 				}
 			}
 			sendConfirmMessage("Created container with image \"" + arg1
-					+ "\" and name \"/" + name + "\"");
+					+ "\" and name \"" + name + "\"");
 		} else if (!NumberUtils.isNumber(args[2])) {
 			// Name
 			CreateContainerResponse response = getDockerClient()
@@ -454,9 +464,9 @@ public class DockerCommands implements ICommand {
 
 			for (int i = 0; i < names.size(); i++) {
 				if (i == names.size() - 1) {
-					namesMessage.concat(" and \"/" + names.get(i) + "\"");
+					namesMessage.concat(" and \"" + names.get(i) + "\"");
 				} else {
-					namesMessage.concat("\"/" + names.get(i) + "\", ");
+					namesMessage.concat("\"" + names.get(i) + "\", ");
 				}
 			}
 
@@ -529,8 +539,9 @@ public class DockerCommands implements ICommand {
 			sendFeedbackMessage("No containers currently existing.");
 			return;
 		}
-		for (Container container : getAllContainers()) {	
-			getDockerClient().removeContainerCmd(container.getId()).withForce().exec();
+		for (Container container : getAllContainers()) {
+			getDockerClient().removeContainerCmd(container.getId()).withForce()
+					.exec();
 		}
 		sendConfirmMessage("Removed all containers.");
 	}
@@ -542,9 +553,44 @@ public class DockerCommands implements ICommand {
 		}
 
 		try {
-			getDockerClient().removeContainerCmd(
-					getContainerFromAllContainersWithName("/" + arg1).getId()).withForce().exec();
+			getDockerClient()
+					.removeContainerCmd(
+							getContainerFromAllContainersWithName("/" + arg1)
+									.getId()).withForce().exec();
 			sendConfirmMessage("Removed container with name \"/" + arg1 + "\"");
+		} catch (NullPointerException exception) {
+			sendErrorMessage("No container exists with the name \"/" + arg1
+					+ "\"");
+		}
+	}
+
+	private void stopContainer() {
+		if (checkIfArgIsNull(2)) {
+			sendErrorMessage("Container name not specified! Command is used as /docker stop <name> .");
+			return;
+		}
+
+		try {
+			getDockerClient().stopContainerCmd(
+					getContainerWithName("/" + arg1).getId()).exec();
+			sendConfirmMessage("Stopped container with name \"/" + arg1 + "\"");
+		} catch (NullPointerException exception) {
+			sendErrorMessage("No container exists with the name \"/" + arg1
+					+ "\"");
+		}
+	}
+
+	private void startContainer() {
+		if (checkIfArgIsNull(2)) {
+			sendErrorMessage("Container name not specified! Command is used as /docker start <name> .");
+			return;
+		}
+
+		try {
+			getDockerClient().startContainerCmd(
+					getContainerFromAllContainersWithName("/" + arg1).getId())
+					.exec();
+			sendConfirmMessage("Started container with name \"/" + arg1 + "\"");
 		} catch (NullPointerException exception) {
 			sendErrorMessage("No container exists with the name \"/" + arg1
 					+ "\"");

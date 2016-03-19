@@ -24,6 +24,8 @@ This project aims to:
 |`docker ps`                    |`/docker ps`                               |Lists all of the currently running containers
 |`docker kill`                  |`/docker kill <name>`                      |Kills the container with name `<name>`
 |`docker kill $(docker ps -aq)` |`/docker kill_all`                         |Kills all currently running containers
+|`docker stop`                  |`/docker stop <name>`                      |Stops the container with name `<name>`
+|`docker start`                 |`/docker start <name>`                     |Starts the container with name `<name>`
 |`docker rm`                    |`/docker remove <name>`                    |Kills the container with name `<name>`
 |`docker rm $(docker ps -aq)`   |`/docker remove_all`                       |Kills all currently running containers
 |                               |`/docker path <path>`                      |Tells Minecraft what the path to your Docker machine is (only needs to be used when the mod is installed for the first time)
