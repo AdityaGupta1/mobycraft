@@ -21,15 +21,16 @@ This project aims to:
 |Docker Command                 |Minecraft Command                          |Purpose
 |`docker --help`                |`/docker help`                             |Lists all of the Minecraft Docker commands and what they do
 |`docker run`                   |`/docker run <image> (name \| amount)`     |Creates a container with image `<image>` and optional name `(name)` or amount of containers `(amount)`
-|`docker ps`                    |`/docker ps`                               |Lists all of the currently running containers
+|`docker ps`                    |`/docker ps`                               |Lists all of the currently running containers and some useful information about them
 |`docker kill`                  |`/docker kill <name>`                      |Kills the container with name `<name>`
 |`docker kill $(docker ps -aq)` |`/docker kill_all`                         |Kills all currently running containers
-|`docker stop`                  |`/docker stop <name>`                      |Stops the container with name `<name>`
 |`docker start`                 |`/docker start <name>`                     |Starts the container with name `<name>`
+|`docker stop`                  |`/docker stop <name>`                      |Stops the container with name `<name>`
 |`docker rm`                    |`/docker remove <name>`                    |Kills the container with name `<name>`
 |`docker rm $(docker ps -aq)`   |`/docker remove_all`                       |Kills all currently running containers
 |                               |`/docker path <path>`                      |Tells Minecraft what the path to your Docker machine is (only needs to be used when the mod is installed for the first time)
 |`docker restart`               |`/docker restart <name>`                   |Restarts container with name `<name>`
+|`docker images`                |`/docker images`                           |Lists all of the currently installed images and some useful information about them
 |======================================================================================================================================================================================================
 
 == Screenshots
@@ -57,3 +58,9 @@ The project's mascot, Moby (the Docker whale) can be seen in <<docker_whale>>. T
 [[docker_whale]]
 .Moby the 3D Minecraft whale mascot!
 image::images/docker-whale.png[]
+
+A whole bunch of Docker whales swimming around in the ocean:
+
+[[lots_of_whales]]
+.Lots of Docker whales
+image::images/lots-of-docker-whales.png[]

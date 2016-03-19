@@ -1,5 +1,7 @@
 package org.redfrog404.mobycraft;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,7 +23,7 @@ import org.apache.http.conn.UnsupportedSchemeException;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.Filters;
+import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 
@@ -42,6 +44,7 @@ public class DockerCommands implements ICommand {
 
 	static List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
 	static Map<String, BoxContainer> containerIDMap = new HashMap<String, BoxContainer>();
+	static Map<Integer, String> suffixNumbers = new HashMap<Integer, String>();
 
 	public DockerCommands() {
 		this.aliases = new ArrayList();
@@ -61,6 +64,7 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("rm_all", 10);
 		argNumbers.put("stop", 11);
 		argNumbers.put("start", 12);
+		argNumbers.put("images", 13);
 
 		helpMessages.put("help", "Brings up this help page");
 		helpMessages
@@ -77,6 +81,13 @@ public class DockerCommands implements ICommand {
 		helpMessages.put("rm_all", "Removes all containers");
 		helpMessages.put("stop <name>", "Stops container <name>");
 		helpMessages.put("start <name>", "Starts container <name>");
+		helpMessages.put("images",
+				"Lists all of your currently installed images");
+		
+		suffixNumbers.put(0, "B");
+		suffixNumbers.put(1, "KB");
+		suffixNumbers.put(2, "MB");
+		suffixNumbers.put(3, "GB");
 	}
 
 	@Override
@@ -163,6 +174,9 @@ public class DockerCommands implements ICommand {
 				break;
 			case 12:
 				startContainer();
+				break;
+			case 13:
+				images();
 				break;
 			}
 		} catch (Exception e) {
@@ -595,6 +609,67 @@ public class DockerCommands implements ICommand {
 			sendErrorMessage("No container exists with the name \"/" + arg1
 					+ "\"");
 		}
+	}
+
+	private void images() {
+		sendFeedbackMessage("Loading...");
+
+		DockerClient dockerClient = getDockerClient();
+
+		List<Image> images = dockerClient.listImagesCmd().exec();
+
+		if (images.size() == 0) {
+			sendFeedbackMessage("No images currently installed.");
+			return;
+		}
+
+		sendBarMessage(EnumChatFormatting.BLUE);
+		sendMessage(EnumChatFormatting.AQUA + "Repository"
+				+ EnumChatFormatting.RESET + ", " + EnumChatFormatting.GOLD
+				+ "Tag" + EnumChatFormatting.RESET + ", "
+				+ EnumChatFormatting.GREEN + "Size");
+		sendBarMessage(EnumChatFormatting.BLUE);
+		
+		String tag = "";
+
+		for (Image image : images) {
+			String message = "";
+			for (String name : image.getRepoTags()) {
+				if (image.getRepoTags()[0].equals(name)) {
+					message += EnumChatFormatting.AQUA + name.split(":")[0];
+				} else {
+					message += ", " + name.split(":")[0];
+				}
+				tag = name.split(":")[1];
+			}
+			message += EnumChatFormatting.RESET + ", "
+					+ EnumChatFormatting.GOLD + tag
+					+ EnumChatFormatting.RESET + ", "
+					+ EnumChatFormatting.GREEN
+					+ convertBytesAndMultiply(image.getSize());
+			sendMessage(message);
+		}
+	}
+	
+	public String convertBytesAndMultiply(double bytes) {
+		int suffixNumber = 0;
+		
+		while (bytes / 1024 > 1) {
+			bytes /= 1024;
+			suffixNumber++;
+		}
+		
+		if (suffixNumber != 0) {
+			bytes *= 1.04851005D;
+		}
+		
+		NumberFormat formatter = new DecimalFormat("#0.0");
+		String byteString = formatter.format(bytes) + " " + suffixNumbers.get(suffixNumber);
+		if (byteString.contains(".0")) {
+			byteString = byteString.replace(".0", "");
+		}
+		
+		return byteString;
 	}
 
 }
