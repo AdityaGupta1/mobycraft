@@ -26,7 +26,7 @@ public class EntityDockerWhale extends EntityAnimal
     {
         super(worldIn);
         this.setSize(1.8F, 1.3F);
-        ((PathNavigateGround)this.getNavigator()).setAvoidsWater(true);
+        ((PathNavigateGround)this.getNavigator()).setAvoidsWater(false);
         this.tasks.addTask(0, new EntityAISwimming(this));
         this.tasks.addTask(1, new EntityAIPanic(this, 2.0D));
         this.tasks.addTask(2, new EntityAIMate(this, 1.0D));
@@ -113,14 +113,6 @@ public class EntityDockerWhale extends EntityAnimal
         }
     }
 
-    /**
-     * Called when a player interacts with a mob. e.g. gets milk from a cow, gets into the saddle on a pig.
-     */
-    public boolean interact(EntityPlayer player)
-    {
-        return super.interact(player);
-    }
-
     public EntityDockerWhale createChild(EntityAgeable ageable)
     {
         return new EntityDockerWhale(this.worldObj);
@@ -129,5 +121,10 @@ public class EntityDockerWhale extends EntityAnimal
     public float getEyeHeight()
     {
         return this.height;
+    }
+    
+    public boolean canBreatheUnderwater()
+    {
+        return true;
     }
 }

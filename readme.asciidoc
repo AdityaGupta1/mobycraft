@@ -18,19 +18,21 @@ This project aims to:
 .Docker commands in Minecraft
 [width="100%",frame="topbot",options="header"]
 |======================================================================================================================================================================================================
-|Docker Command                 |Minecraft Command                          |Purpose
-|`docker --help`                |`/docker help`                             |Lists all of the Minecraft Docker commands and what they do
-|`docker run`                   |`/docker run <image> (name \| amount)`     |Creates a container with image `<image>` and optional name `(name)` or amount of containers `(amount)`
-|`docker ps`                    |`/docker ps`                               |Lists all of the currently running containers and some useful information about them
-|`docker kill`                  |`/docker kill <name>`                      |Kills the container with name `<name>`
-|`docker kill $(docker ps -aq)` |`/docker kill_all`                         |Kills all currently running containers
-|`docker start`                 |`/docker start <name>`                     |Starts the container with name `<name>`
-|`docker stop`                  |`/docker stop <name>`                      |Stops the container with name `<name>`
-|`docker rm`                    |`/docker remove <name>`                    |Kills the container with name `<name>`
-|`docker rm $(docker ps -aq)`   |`/docker remove_all`                       |Kills all currently running containers
-|                               |`/docker path <path>`                      |Tells Minecraft what the path to your Docker machine is (only needs to be used when the mod is installed for the first time)
-|`docker restart`               |`/docker restart <name>`                   |Restarts container with name `<name>`
-|`docker images`                |`/docker images`                           |Lists all of the currently installed images and some useful information about them
+|Docker Command                      |Minecraft Command                          |Purpose
+|`docker --help`                     |`/docker help`                             |Lists all of the Minecraft Docker commands and what they do
+|`docker run`                        |`/docker run <image> (name \| amount)`     |Creates a container with image `<image>` and optional name `(name)` or amount of containers `(amount)`
+|`docker ps`                         |`/docker ps`                               |Lists all of the currently running containers and some useful information about them
+|`docker kill`                       |`/docker kill <name>`                      |Kills the container with name `<name>`
+|`docker kill $(docker ps -aq)`      |`/docker kill_all`                         |Kills all currently running containers
+|`docker start`                      |`/docker start <name>`                     |Starts the container with name `<name>`
+|`docker stop`                       |`/docker stop <name>`                      |Stops the container with name `<name>`
+|`docker rm`                         |`/docker rm <name>`                        |Removes the container with name `<name>`
+|`docker rm $(docker ps -aq)`        |`/docker rm_all`                           |Removes all currently existing containers
+|                                    |`/docker path <path>`                      |Tells Minecraft what the path to your Docker machine is (only needs to be used when the mod is installed for the first time)
+|`docker restart`                    |`/docker restart <name>`                   |Restarts container with name `<name>`
+|`docker images`                     |`/docker images`                           |Lists all of the currently installed images and some useful information about them
+|`docker rmi`                        |`/docker rmi <name>`                       |Removes the image with name `<name>`
+|`docker rmi $(docker images -aq)`   |`/docker rmi_all`                          |Removes all currently installed images
 |======================================================================================================================================================================================================
 
 == Screenshots

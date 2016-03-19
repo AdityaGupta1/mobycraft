@@ -65,6 +65,8 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("stop", 11);
 		argNumbers.put("start", 12);
 		argNumbers.put("images", 13);
+		argNumbers.put("rmi", 14);
+		argNumbers.put("rmi_all", 15);
 
 		helpMessages.put("help", "Brings up this help page");
 		helpMessages
@@ -77,13 +79,15 @@ public class DockerCommands implements ICommand {
 		helpMessages.put("kill <name>", "Kills container <name>");
 		helpMessages.put("kill_all", "Kills all currently running containers");
 		helpMessages.put("restart <name>", "Restarts container <name>");
-		helpMessages.put("rm [options] <name>", "Removes container <name>");
+		helpMessages.put("rm <name>", "Removes container <name>");
 		helpMessages.put("rm_all", "Removes all containers");
 		helpMessages.put("stop <name>", "Stops container <name>");
 		helpMessages.put("start <name>", "Starts container <name>");
 		helpMessages.put("images",
 				"Lists all of your currently installed images");
-		
+		helpMessages.put("rmi <name>", "Removes image <name>");
+		helpMessages.put("rmi_all", "Removes all images");
+
 		suffixNumbers.put(0, "B");
 		suffixNumbers.put(1, "KB");
 		suffixNumbers.put(2, "MB");
@@ -177,6 +181,12 @@ public class DockerCommands implements ICommand {
 				break;
 			case 13:
 				images();
+				break;
+			case 14:
+				removeImage();
+				break;
+			case 15:
+				removeAllImages();
 				break;
 			}
 		} catch (Exception e) {
@@ -562,7 +572,7 @@ public class DockerCommands implements ICommand {
 
 	private void remove() {
 		if (checkIfArgIsNull(2)) {
-			sendErrorMessage("Container name not specified! Command is used as /docker remove <name> .");
+			sendErrorMessage("Container name not specified! Command is used as /docker rm <name> .");
 			return;
 		}
 
@@ -629,7 +639,7 @@ public class DockerCommands implements ICommand {
 				+ "Tag" + EnumChatFormatting.RESET + ", "
 				+ EnumChatFormatting.GREEN + "Size");
 		sendBarMessage(EnumChatFormatting.BLUE);
-		
+
 		String tag = "";
 
 		for (Image image : images) {
@@ -643,33 +653,74 @@ public class DockerCommands implements ICommand {
 				tag = name.split(":")[1];
 			}
 			message += EnumChatFormatting.RESET + ", "
-					+ EnumChatFormatting.GOLD + tag
-					+ EnumChatFormatting.RESET + ", "
-					+ EnumChatFormatting.GREEN
+					+ EnumChatFormatting.GOLD + tag + EnumChatFormatting.RESET
+					+ ", " + EnumChatFormatting.GREEN
 					+ convertBytesAndMultiply(image.getSize());
 			sendMessage(message);
 		}
 	}
-	
+
 	public String convertBytesAndMultiply(double bytes) {
 		int suffixNumber = 0;
-		
+
 		while (bytes / 1024 > 1) {
 			bytes /= 1024;
 			suffixNumber++;
 		}
-		
+
 		if (suffixNumber != 0) {
 			bytes *= 1.04851005D;
 		}
-		
+
 		NumberFormat formatter = new DecimalFormat("#0.0");
-		String byteString = formatter.format(bytes) + " " + suffixNumbers.get(suffixNumber);
+		String byteString = formatter.format(bytes) + " "
+				+ suffixNumbers.get(suffixNumber);
 		if (byteString.contains(".0")) {
 			byteString = byteString.replace(".0", "");
 		}
-		
+
 		return byteString;
+	}
+
+	private void removeAllImages() {
+		sendFeedbackMessage("Working on it...");
+		if (getAllContainers().size() < 1) {
+			sendFeedbackMessage("No images currently currently.");
+			return;
+		}
+		for (Image image : getImages()) {
+			getDockerClient().removeImageCmd(image.getId()).exec();
+		}
+		sendConfirmMessage("Removed all images.");
+	}
+
+	private void removeImage() {
+		if (checkIfArgIsNull(2)) {
+			sendErrorMessage("Container name not specified! Command is used as /docker rmi <name> .");
+			return;
+		}
+
+		try {
+			getDockerClient()
+					.removeImageCmd(getImageWithName(arg1).getId())
+					.withForce().exec();
+			sendConfirmMessage("Removed image with name \"" + arg1 + "\"");
+		} catch (NullPointerException exception) {
+			sendErrorMessage("No image exists with the name \"" + arg1 + "\"");
+		}
+	}
+
+	public List<Image> getImages() {
+		return getDockerClient().listImagesCmd().exec();
+	}
+
+	public Image getImageWithName(String name) {
+		for (Image image : getImages()) {
+			if (image.getRepoTags()[0].equals(name + ":latest")) {
+				return image;
+			}
+		}
+		return null;
 	}
 
 }
