@@ -9,26 +9,23 @@ import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
-import net.minecraft.util.BlockPos;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
 import org.redfrog404.mobycraft.dimension.DimensionRegistry;
-import org.redfrog404.mobycraft.dimension.TeleporterMagicLand;
 import org.redfrog404.mobycraft.entity.EntityDockerWhale;
 import org.redfrog404.mobycraft.entity.RenderDockerWhale;
 
@@ -64,8 +61,6 @@ public final class Moby {
 				"docker_whale", EntityRegistry.findGlobalUniqueEntityId(),
 				0x24B8EB, 0x008BB8);
 
-		MinecraftForge.EVENT_BUS.register(this);
-
 		DimensionRegistry.mainRegistry();
 	}
 
@@ -76,7 +71,11 @@ public final class Moby {
 		config = new Configuration(configFile);
 		config.load();
 		config.getString("docker-cert-path", "files", "File path",
-				"The directory path of your Docker certificate");
+				"The directory path of your Docker certificate (set using /docker path <path>)");
+		config.getString("start-pos", "container-building", "0, 0, 0",
+				"The position - x, y, z - to start building contianers at (set using /docker start_pos");
+		config.getString("poll-rate", "container-building", "2",
+				"The rate in seconds at which the containers will update (set using /docker poll_rate <rate in seconds>)");
 		config.save();
 	}
 
@@ -95,23 +94,5 @@ public final class Moby {
 				entityId, this, 80, 1, false);
 		RenderingRegistry
 				.registerEntityRenderingHandler(parEntityClass, render);
-	}
-
-//	@SubscribeEvent
-	public void teleportToMagicLand(EntityJoinWorldEvent event) {
-		if (!(event.entity instanceof EntityPlayerMP) || event.entity.dimension == DimensionRegistry.magicLandID) {
-			return;
-		}
-
-		EntityPlayerMP player = (EntityPlayerMP) event.entity;
-
-		player.mcServer
-				.getConfigurationManager()
-				.transferPlayerToDimension(
-						player,
-						DimensionRegistry.magicLandID,
-						new TeleporterMagicLand(
-								player.mcServer
-										.worldServerForDimension(DimensionRegistry.magicLandID)));
 	}
 }

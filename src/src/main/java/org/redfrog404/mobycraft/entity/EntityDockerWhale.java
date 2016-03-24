@@ -126,5 +126,5 @@ public class EntityDockerWhale extends EntityAnimal
     public boolean canBreatheUnderwater()
     {
         return true;
-    }
+    }	
 }

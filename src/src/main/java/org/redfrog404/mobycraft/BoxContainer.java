@@ -69,5 +69,15 @@ public class BoxContainer {
 		
 		return null;
 	}
+	
+	@Override
+	public String toString() {
+		return "[\"" + this.getName() + "\", \"" + this.getID() + "\"]";
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return obj.toString().equals(this.toString());
+    }
 
 }

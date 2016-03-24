@@ -227,4 +227,9 @@ public class StructureBuilder {
 			}
 		}
 	}
+
+	public void airContainer(World world, BlockPos start) {
+		start = start.add(-2, 0, 1);
+		room(world, start, start.add(4, 4, 7), Blocks.air);
+	}
 }

@@ -11,11 +11,15 @@ import java.util.Map;
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.config.Property;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.http.conn.UnsupportedSchemeException;
@@ -36,8 +40,19 @@ public class DockerCommands implements ICommand {
 
 	ICommandSender sender;
 
-	Property dockerPath = Moby.config.get("files", "docker-cert-path",
-			"File path", "The directory path of your Docker certificate");
+	Property dockerPath = Moby.config
+			.get("files", "docker-cert-path", "File path",
+					"The directory path of your Docker certificate (set using /docker path <path>)");
+	Property startPos = Moby.config
+			.get("container-building",
+					"start-pos",
+					"0, 0, 0",
+					"The position - x, y, z - to start building contianers at (set using /docker start_pos");
+	Property pollRate = Moby.config
+			.get("container-building",
+					"poll-rate",
+					"2",
+					"The rate in seconds at which the containers will update (set using /docker poll_rate <rate in seconds>)");
 
 	String[] args;
 	String arg1;
@@ -67,6 +82,9 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("images", 13);
 		argNumbers.put("rmi", 14);
 		argNumbers.put("rmi_all", 15);
+		// TODO Remove after adding automatic container updating
+		argNumbers.put("update_containers", 16);
+		argNumbers.put("set_start_pos", 17);
 
 		helpMessages.put("help", "Brings up this help page");
 		helpMessages
@@ -87,6 +105,9 @@ public class DockerCommands implements ICommand {
 				"Lists all of your currently installed images");
 		helpMessages.put("rmi <name>", "Removes image <name>");
 		helpMessages.put("rmi_all", "Removes all images");
+		helpMessages
+				.put("set_start_pos",
+						"Sets the start position of container building to the sender's current position");
 
 		suffixNumbers.put(0, "B");
 		suffixNumbers.put(1, "KB");
@@ -138,6 +159,8 @@ public class DockerCommands implements ICommand {
 			return;
 		}
 
+		BlockPos position = sender.getPosition();
+
 		try {
 			switch (commandNumber) {
 			case 0:
@@ -153,7 +176,7 @@ public class DockerCommands implements ICommand {
 				switchState(arg1, true);
 				break;
 			case 4:
-				refreshAndBuildContainers(sender.getPosition());
+				refreshAndBuildContainers();
 				break;
 			case 5:
 				runContainer();
@@ -187,6 +210,16 @@ public class DockerCommands implements ICommand {
 				break;
 			case 15:
 				removeAllImages();
+				break;
+			case 16:
+				updateContainers();
+				break;
+			case 17:
+				startPos.setValue(position.getX() + ", " + position.getY()
+						+ ", " + position.getZ());
+				Moby.config.save();
+				sendConfirmMessage("Set start position for building containers to ("
+						+ startPos.getString() + ").");
 				break;
 			}
 		} catch (Exception e) {
@@ -319,10 +352,10 @@ public class DockerCommands implements ICommand {
 		sendConfirmMessage("Docker path set to \"" + arg1 + "\"");
 	}
 
-	public void refreshContainers(BlockPos pos) {
+	public void refreshContainers() {
 		List<Container> containers = getAllContainers();
-		boxContainers = Moby.builder.containerPanel(containers, pos,
-				sender.getEntityWorld());
+		boxContainers = Moby.builder.containerPanel(containers,
+				getStartPosition(), sender.getEntityWorld());
 		List<String> stoppedContainerIDs = new ArrayList<String>();
 		for (Container container : getStoppedContainers()) {
 			stoppedContainerIDs.add(container.getId().substring(0, 12));
@@ -366,9 +399,21 @@ public class DockerCommands implements ICommand {
 		}
 	}
 
-	public void refreshAndBuildContainers(BlockPos pos) {
+	public void buildContainersFromList(List<BoxContainer> containers) {
+		for (BoxContainer boxContainer : containers) {
+			Moby.builder.container(sender.getEntityWorld(),
+					boxContainer.getPosition(), Blocks.iron_block,
+					boxContainer.getName(), boxContainer.getImage(),
+					boxContainer.getShortID());
+			if (!boxContainer.getState()) {
+				switchState(boxContainer.getShortID(), false);
+			}
+		}
+	}
+
+	public void refreshAndBuildContainers() {
 		sendFeedbackMessage("Getting containers...");
-		refreshContainers(pos);
+		refreshContainers();
 		if (boxContainers.size() < 1) {
 			sendFeedbackMessage("No containers currently running.");
 			return;
@@ -448,6 +493,11 @@ public class DockerCommands implements ICommand {
 	}
 
 	private void runContainer() {
+		if (getImageWithName(arg1).equals(null)) {
+			sendErrorMessage("The requested image is not pulled yet! Please pull the image and run this command again. NOTE: This is a bug and will be fixed.");
+			// getDockerClient().pullImageCmd(arg1).exec(null);
+		}
+
 		if (args.length < 3) {
 			// No name, no number
 			CreateContainerResponse response = getDockerClient()
@@ -701,8 +751,7 @@ public class DockerCommands implements ICommand {
 		}
 
 		try {
-			getDockerClient()
-					.removeImageCmd(getImageWithName(arg1).getId())
+			getDockerClient().removeImageCmd(getImageWithName(arg1).getId())
 					.withForce().exec();
 			sendConfirmMessage("Removed image with name \"" + arg1 + "\"");
 		} catch (NullPointerException exception) {
@@ -716,11 +765,55 @@ public class DockerCommands implements ICommand {
 
 	public Image getImageWithName(String name) {
 		for (Image image : getImages()) {
-			if (image.getRepoTags()[0].equals(name + ":latest")) {
+			if (image.getRepoTags()[0].split(":")[0].equals(name)) {
 				return image;
 			}
 		}
 		return null;
 	}
 
+	public void updateContainers() {
+		sendConfirmMessage("Succesfully updated containers.");
+		List<Container> containers = getAllContainers();
+		List<BoxContainer> newContainers = Moby.builder.containerPanel(
+				containers, getStartPosition(), sender.getEntityWorld());
+		if (boxContainers.equals(newContainers)) {
+			return;
+		}
+
+		int start = 0;
+
+		System.out.println(boxContainers);
+		System.out.println(newContainers);
+
+		findDifferences: for (; start < boxContainers.size(); start++) {
+			if (!boxContainers.get(start).equals(newContainers.get(start))) {
+				break findDifferences;
+			}
+		}
+
+		start -= start % 10;
+
+		List<BoxContainer> containersToReplace = new ArrayList<BoxContainer>();
+		containersToReplace = boxContainers
+				.subList(start, boxContainers.size());
+
+		for (int i = 0; i < containersToReplace.size(); i++) {
+			Moby.builder.airContainer(sender.getEntityWorld(),
+					containersToReplace.get(i).getPosition());
+		}
+
+		List<BoxContainer> newContainersToBuild = new ArrayList<BoxContainer>();
+		newContainersToBuild = Moby.builder.containerPanel(getContainers(),
+				getStartPosition(), sender.getEntityWorld()).subList(start,
+				newContainers.size());
+		buildContainersFromList(newContainersToBuild);
+	}
+
+	public BlockPos getStartPosition() {
+		String[] posStrings = startPos.getString().split(", ");
+		return new BlockPos(Integer.parseInt(posStrings[0]),
+				Integer.parseInt(posStrings[1]),
+				Integer.parseInt(posStrings[2]));
+	}
 }
