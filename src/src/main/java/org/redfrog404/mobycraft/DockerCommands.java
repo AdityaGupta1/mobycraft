@@ -9,16 +9,15 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
 import org.apache.commons.lang.math.NumberUtils;
@@ -32,34 +31,27 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 
 public class DockerCommands implements ICommand {
-	private List aliases;
+	private static List aliases;
 
-	Map<String, Integer> argNumbers = new HashMap<String, Integer>();
+	static Map<String, Integer> argNumbers = new HashMap<String, Integer>();
 
-	Map<String, String> helpMessages = new HashMap<String, String>();
+	static Map<String, String> helpMessages = new HashMap<String, String>();
 
-	ICommandSender sender;
+	static ICommandSender sender;
 
-	Property dockerPath = Moby.config
-			.get("files", "docker-cert-path", "File path",
-					"The directory path of your Docker certificate (set using /docker path <path>)");
-	Property startPos = Moby.config
-			.get("container-building",
-					"start-pos",
-					"0, 0, 0",
-					"The position - x, y, z - to start building contianers at (set using /docker start_pos");
-	Property pollRate = Moby.config
-			.get("container-building",
-					"poll-rate",
-					"2",
-					"The rate in seconds at which the containers will update (set using /docker poll_rate <rate in seconds>)");
+	static Property dockerPath;
+	static Property startPos;
+	static Property pollRate;
 
-	String[] args;
-	String arg1;
+	static String[] args;
+	static String arg1;
 
 	static List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
 	static Map<String, BoxContainer> containerIDMap = new HashMap<String, BoxContainer>();
 	static Map<Integer, String> suffixNumbers = new HashMap<Integer, String>();
+
+	private static int count = 0;
+	private static int maxCount;
 
 	public DockerCommands() {
 		this.aliases = new ArrayList();
@@ -113,6 +105,24 @@ public class DockerCommands implements ICommand {
 		suffixNumbers.put(1, "KB");
 		suffixNumbers.put(2, "MB");
 		suffixNumbers.put(3, "GB");
+	}
+
+	public static void updateProperties() {
+		dockerPath = Moby.config
+				.get("files", "docker-cert-path", "File path",
+						"The directory path of your Docker certificate (set using /docker path <path>)");
+		startPos = Moby.config
+				.get("container-building",
+						"start-pos",
+						"0, 0, 0",
+						"The position - x, y, z - to start building contianers at (set using /docker start_pos");
+		pollRate = Moby.config
+				.get("container-building",
+						"poll-rate",
+						"2",
+						"The rate in seconds at which the containers will update (set using /docker poll_rate <rate in seconds>)");
+		maxCount = (int) Math
+				.floor((Float.parseFloat(pollRate.getString()) * 50));
 	}
 
 	@Override
@@ -212,7 +222,7 @@ public class DockerCommands implements ICommand {
 				removeAllImages();
 				break;
 			case 16:
-				updateContainers();
+				updateContainers(true);
 				break;
 			case 17:
 				startPos.setValue(position.getX() + ", " + position.getY()
@@ -422,6 +432,14 @@ public class DockerCommands implements ICommand {
 		buildContainers();
 		sendFeedbackMessage("Done!");
 	}
+	
+	public void refreshAndBuildContainersWithoutMessages() {
+		refreshContainers();
+		if (boxContainers.size() < 1) {
+			return;
+		}
+		buildContainers();
+	}
 
 	public Container getContainerWithName(String name) {
 		for (Container container : getContainers()) {
@@ -495,7 +513,7 @@ public class DockerCommands implements ICommand {
 	private void runContainer() {
 		if (getImageWithName(arg1).equals(null)) {
 			sendErrorMessage("The requested image is not pulled yet! Please pull the image and run this command again. NOTE: This is a bug and will be fixed.");
-			// getDockerClient().pullImageCmd(arg1).exec(null);
+			getDockerClient().pullImageCmd(arg1).exec(null);
 		}
 
 		if (args.length < 3) {
@@ -772,8 +790,7 @@ public class DockerCommands implements ICommand {
 		return null;
 	}
 
-	public void updateContainers() {
-		sendConfirmMessage("Succesfully updated containers.");
+	public void updateContainers(boolean sendMessage) {
 		List<Container> containers = getAllContainers();
 		List<BoxContainer> newContainers = Moby.builder.containerPanel(
 				containers, getStartPosition(), sender.getEntityWorld());
@@ -783,22 +800,31 @@ public class DockerCommands implements ICommand {
 
 		int start = 0;
 
-		System.out.println(boxContainers);
-		System.out.println(newContainers);
+		System.out.println("boxContainers:" + boxContainers);
+		System.out.println("newContainers:" + newContainers);
 
 		findDifferences: for (; start < boxContainers.size(); start++) {
+			if (start == newContainers.size()) {
+				start--;
+				break findDifferences;
+			}
 			if (!boxContainers.get(start).equals(newContainers.get(start))) {
 				break findDifferences;
 			}
 		}
 
 		start -= start % 10;
+		
+		//TODO
+		System.out.println(start);
 
 		List<BoxContainer> containersToReplace = new ArrayList<BoxContainer>();
 		containersToReplace = boxContainers
 				.subList(start, boxContainers.size());
 
 		for (int i = 0; i < containersToReplace.size(); i++) {
+			//TODO
+			System.out.println("Removed " + containersToReplace.get(i).getName());
 			Moby.builder.airContainer(sender.getEntityWorld(),
 					containersToReplace.get(i).getPosition());
 		}
@@ -808,6 +834,12 @@ public class DockerCommands implements ICommand {
 				getStartPosition(), sender.getEntityWorld()).subList(start,
 				newContainers.size());
 		buildContainersFromList(newContainersToBuild);
+		
+		boxContainers = newContainers;
+		
+		if (sendMessage) {
+			sendConfirmMessage("Succesfully updated containers.");
+		}
 	}
 
 	public BlockPos getStartPosition() {
@@ -815,5 +847,23 @@ public class DockerCommands implements ICommand {
 		return new BlockPos(Integer.parseInt(posStrings[0]),
 				Integer.parseInt(posStrings[1]),
 				Integer.parseInt(posStrings[2]));
+	}
+
+	@SubscribeEvent
+	public void onTick(PlayerTickEvent event) {
+		if (!event.player.worldObj.isRemote) {
+			return;
+		}
+		
+		count++;
+		if (count >= maxCount) {
+			sender = event.player;
+			if (boxContainers.equals(null)) {
+				refreshAndBuildContainersWithoutMessages();
+			} else {
+				updateContainers(false);
+			}
+			count = 0;
+		}
 	}
 }

@@ -42,9 +42,11 @@ public final class Moby {
 
 	public static final StructureBuilder builder = new StructureBuilder();
 
+	DockerCommands commands = new DockerCommands();
+
 	@EventHandler
 	public void registerDockerCommands(FMLServerStartingEvent event) {
-		event.registerServerCommand(new DockerCommands());
+		event.registerServerCommand(commands);
 	}
 
 	@EventHandler
@@ -62,6 +64,8 @@ public final class Moby {
 				0x24B8EB, 0x008BB8);
 
 		DimensionRegistry.mainRegistry();
+
+		FMLCommonHandler.instance().bus().register(commands);
 	}
 
 	@EventHandler
@@ -72,11 +76,18 @@ public final class Moby {
 		config.load();
 		config.getString("docker-cert-path", "files", "File path",
 				"The directory path of your Docker certificate (set using /docker path <path>)");
-		config.getString("start-pos", "container-building", "0, 0, 0",
+		config.getString(
+				"start-pos",
+				"container-building",
+				"0, 0, 0",
 				"The position - x, y, z - to start building contianers at (set using /docker start_pos");
-		config.getString("poll-rate", "container-building", "2",
+		config.getString(
+				"poll-rate",
+				"container-building",
+				"2",
 				"The rate in seconds at which the containers will update (set using /docker poll_rate <rate in seconds>)");
 		config.save();
+		commands.updateProperties();
 	}
 
 	private void registerBlock(Block block, String name) {
