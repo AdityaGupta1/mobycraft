@@ -61,8 +61,6 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("ps", 1);
 		argNumbers.put("path", 2);
 		argNumbers.put("switch_state", 3);
-		// TODO Remove after adding automatic building when player joins game
-		argNumbers.put("build_containers", 4);
 		argNumbers.put("run", 5);
 		argNumbers.put("kill_all", 6);
 		argNumbers.put("kill", 7);
@@ -74,8 +72,6 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("images", 13);
 		argNumbers.put("rmi", 14);
 		argNumbers.put("rmi_all", 15);
-		// TODO Remove after adding automatic container updating
-		argNumbers.put("update_containers", 16);
 		argNumbers.put("set_start_pos", 17);
 
 		helpMessages.put("help", "Brings up this help page");
@@ -185,9 +181,6 @@ public class DockerCommands implements ICommand {
 			case 3:
 				switchState(arg1, true);
 				break;
-			case 4:
-				refreshAndBuildContainers();
-				break;
 			case 5:
 				runContainer();
 				break;
@@ -220,9 +213,6 @@ public class DockerCommands implements ICommand {
 				break;
 			case 15:
 				removeAllImages();
-				break;
-			case 16:
-				updateContainers(true);
 				break;
 			case 17:
 				startPos.setValue(position.getX() + ", " + position.getY()
@@ -790,7 +780,7 @@ public class DockerCommands implements ICommand {
 		return null;
 	}
 
-	public void updateContainers(boolean sendMessage) {
+	public void updateContainers() {
 		List<Container> containers = getAllContainers();
 		List<BoxContainer> newContainers = Moby.builder.containerPanel(
 				containers, getStartPosition(), sender.getEntityWorld());
@@ -814,17 +804,12 @@ public class DockerCommands implements ICommand {
 		}
 
 		start -= start % 10;
-		
-		//TODO
-		System.out.println(start);
 
 		List<BoxContainer> containersToReplace = new ArrayList<BoxContainer>();
 		containersToReplace = boxContainers
 				.subList(start, boxContainers.size());
 
 		for (int i = 0; i < containersToReplace.size(); i++) {
-			//TODO
-			System.out.println("Removed " + containersToReplace.get(i).getName());
 			Moby.builder.airContainer(sender.getEntityWorld(),
 					containersToReplace.get(i).getPosition());
 		}
@@ -836,10 +821,6 @@ public class DockerCommands implements ICommand {
 		buildContainersFromList(newContainersToBuild);
 		
 		boxContainers = newContainers;
-		
-		if (sendMessage) {
-			sendConfirmMessage("Succesfully updated containers.");
-		}
 	}
 
 	public BlockPos getStartPosition() {
@@ -861,7 +842,7 @@ public class DockerCommands implements ICommand {
 			if (boxContainers.equals(null)) {
 				refreshAndBuildContainersWithoutMessages();
 			} else {
-				updateContainers(false);
+				updateContainers();
 			}
 			count = 0;
 		}
