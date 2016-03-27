@@ -40,7 +40,7 @@ public final class Moby {
 
 	ItemModelMesher mesher;
 
-	public static final StructureBuilder builder = new StructureBuilder();
+//	public static final StructureBuilder builder = new StructureBuilder();
 
 	DockerCommands commands = new DockerCommands();
 

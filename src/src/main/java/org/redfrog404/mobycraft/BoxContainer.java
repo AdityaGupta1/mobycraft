@@ -72,7 +72,7 @@ public class BoxContainer {
 	
 	@Override
 	public String toString() {
-		return "[\"" + this.getName() + "\", \"" + this.getID() + "\"]";
+		return "[\"" + this.getName() + "\", \"" + this.getID() + "\"" + "\", \"" + this.getState() + "\"]";
 	}
 	
 	@Override

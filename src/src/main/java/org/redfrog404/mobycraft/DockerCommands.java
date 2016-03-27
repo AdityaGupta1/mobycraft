@@ -9,13 +9,18 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.init.Blocks;
+import net.minecraft.tileentity.TileEntityCommandBlock;
+import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.Vec3i;
+import net.minecraft.world.World;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
@@ -46,9 +51,14 @@ public class DockerCommands implements ICommand {
 	static String[] args;
 	static String arg1;
 
+	// Contains current box containers
 	static List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
+	// Containers container's IDs
 	static Map<String, BoxContainer> containerIDMap = new HashMap<String, BoxContainer>();
+	// Used for byte conversions
 	static Map<Integer, String> suffixNumbers = new HashMap<Integer, String>();
+
+	StructureBuilder builder = new StructureBuilder();
 
 	private static int count = 0;
 	private static int maxCount;
@@ -61,6 +71,7 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("ps", 1);
 		argNumbers.put("path", 2);
 		argNumbers.put("switch_state", 3);
+		argNumbers.put("rm_stopped", 4);
 		argNumbers.put("run", 5);
 		argNumbers.put("kill_all", 6);
 		argNumbers.put("kill", 7);
@@ -72,9 +83,9 @@ public class DockerCommands implements ICommand {
 		argNumbers.put("images", 13);
 		argNumbers.put("rmi", 14);
 		argNumbers.put("rmi_all", 15);
-		argNumbers.put("set_start_pos", 17);
+		argNumbers.put("set_start_pos", 16);
 
-		helpMessages.put("help", "Brings up this help page");
+		helpMessages.put("help <page>", "Brings up page number <page> of this help list");
 		helpMessages
 				.put("ps",
 						"Lists all of your containers and some important information about them");
@@ -96,6 +107,8 @@ public class DockerCommands implements ICommand {
 		helpMessages
 				.put("set_start_pos",
 						"Sets the start position of container building to the sender's current position");
+		helpMessages.put("rm_stopped",
+				"Removes all currently stopped containers");
 
 		suffixNumbers.put(0, "B");
 		suffixNumbers.put(1, "KB");
@@ -179,7 +192,10 @@ public class DockerCommands implements ICommand {
 				path();
 				break;
 			case 3:
-				switchState(arg1, true);
+				switchState(arg1);
+				break;
+			case 4:
+				removeStoppedContainers();
 				break;
 			case 5:
 				runContainer();
@@ -214,7 +230,7 @@ public class DockerCommands implements ICommand {
 			case 15:
 				removeAllImages();
 				break;
-			case 17:
+			case 16:
 				startPos.setValue(position.getX() + ", " + position.getY()
 						+ ", " + position.getZ());
 				Moby.config.save();
@@ -232,6 +248,19 @@ public class DockerCommands implements ICommand {
 			return;
 		}
 
+	}
+
+	private void removeStoppedContainers() {
+		sendFeedbackMessage("Working on it...");
+		if (getStoppedContainers().size() < 1) {
+			sendFeedbackMessage("No containers currently stopped.");
+			return;
+		}
+		for (Container container : getStoppedContainers()) {
+			getDockerClient().removeContainerCmd(container.getId()).withForce()
+					.exec();
+		}
+		sendConfirmMessage("Removed all stopped containers.");
 	}
 
 	@Override
@@ -282,13 +311,34 @@ public class DockerCommands implements ICommand {
 	}
 
 	private void help() {
+		int size = helpMessages.size();
+		
+		int page = 1;
+		int maxPages = ((size - size % 10) / 10) + 1;
+		
+		if (!checkIfArgIsNull(2)) {
+			page = Integer.parseInt(args[1]);
+		}
+		
+		if (page > maxPages) {
+			page = maxPages;
+		}
+		
 		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
 				+ "============== Docker Help ==============");
+		sendMessage(EnumChatFormatting.DARK_AQUA + "" + EnumChatFormatting.BOLD
+				+ "== Page " + page + "/" + maxPages);
 		sendMessage(EnumChatFormatting.AQUA
 				+ "-- <arg> is required, (arg) is optional");
 		sendMessage(EnumChatFormatting.AQUA
-				+ "-- \"|\" means \"or\"; for example, \"<name | amount>\" means you can either put the name or the amount");
-		for (String key : asSortedList(helpMessages.keySet())) {
+				+ "-- \"|\" means \"or\"; e.g. \"<name | amount>\" means you can either put the name or the amount");
+		
+		int toIndex = page * 10;
+		if (toIndex > size) {
+			toIndex = size;
+		}
+		
+		for (String key : asSortedList(helpMessages.keySet()).subList((page - 1) * 10, toIndex)) {
 			sendHelpMessage(key, helpMessages.get(key));
 		}
 	}
@@ -354,18 +404,24 @@ public class DockerCommands implements ICommand {
 
 	public void refreshContainers() {
 		List<Container> containers = getAllContainers();
-		boxContainers = Moby.builder.containerPanel(containers,
-				getStartPosition(), sender.getEntityWorld());
-		List<String> stoppedContainerIDs = new ArrayList<String>();
+		boxContainers = builder.containerPanel(containers, getStartPosition(),
+				sender.getEntityWorld());
+		List<String> stoppedContainerNames = new ArrayList<String>();
 		for (Container container : getStoppedContainers()) {
-			stoppedContainerIDs.add(container.getId().substring(0, 12));
+			stoppedContainerNames.add(container.getNames()[0]);
 		}
-		containerIDMap.clear();
 		for (BoxContainer boxContainer : boxContainers) {
-			containerIDMap.put(boxContainer.getShortID(), boxContainer);
-			if (stoppedContainerIDs.contains(boxContainer.getShortID())) {
+			if (stoppedContainerNames.contains(boxContainer.getName())) {
 				boxContainer.setState(!boxContainer.getState());
 			}
+		}
+		refreshContainerIDMap();
+	}
+
+	public void refreshContainerIDMap() {
+		containerIDMap.clear();
+		for (BoxContainer boxContainer : boxContainers) {
+			containerIDMap.put(boxContainer.getID(), boxContainer);	
 		}
 	}
 
@@ -386,44 +442,22 @@ public class DockerCommands implements ICommand {
 	}
 
 	public void buildContainers() {
-		DockerClient dockerClient = getDockerClient();
-
-		for (BoxContainer boxContainer : boxContainers) {
-			Moby.builder.container(sender.getEntityWorld(),
-					boxContainer.getPosition(), Blocks.iron_block,
-					boxContainer.getName(), boxContainer.getImage(),
-					boxContainer.getShortID());
-			if (!boxContainer.getState()) {
-				switchState(boxContainer.getShortID(), false);
-			}
-		}
+		buildContainersFromList(boxContainers);
 	}
 
 	public void buildContainersFromList(List<BoxContainer> containers) {
 		for (BoxContainer boxContainer : containers) {
-			Moby.builder.container(sender.getEntityWorld(),
+			builder.container(sender.getEntityWorld(),
 					boxContainer.getPosition(), Blocks.iron_block,
 					boxContainer.getName(), boxContainer.getImage(),
-					boxContainer.getShortID());
+					boxContainer.getID());
 			if (!boxContainer.getState()) {
-				switchState(boxContainer.getShortID(), false);
+				setContainerAppearance(boxContainer.getID(), false);
 			}
 		}
 	}
 
 	public void refreshAndBuildContainers() {
-		sendFeedbackMessage("Getting containers...");
-		refreshContainers();
-		if (boxContainers.size() < 1) {
-			sendFeedbackMessage("No containers currently running.");
-			return;
-		}
-		sendFeedbackMessage("Building containers...");
-		buildContainers();
-		sendFeedbackMessage("Done!");
-	}
-	
-	public void refreshAndBuildContainersWithoutMessages() {
 		refreshContainers();
 		if (boxContainers.size() < 1) {
 			return;
@@ -456,48 +490,53 @@ public class DockerCommands implements ICommand {
 		return containers;
 	}
 
-	public BoxContainer getContainerWithID(String id) {
+	/*
+	 * Gets the BoxContainer from the containerIDMap with id <id>
+	 */
+	public BoxContainer getBoxContainerWithID(String id) {
 		if (!containerIDMap.containsKey(id)) {
 			return null;
 		}
 		return containerIDMap.get(id);
 	}
 
-	private void switchState(String containerID, boolean switchActualState) {
-		if (getContainerWithID(containerID) == null) {
+	private void switchState(String containerID) {
+		// If there is no container with the ID, return
+		if (getBoxContainerWithID(containerID) == null) {
 			return;
 		}
 
-		BoxContainer container = getContainerWithID(containerID);
+		// New BoxContainer variable called boxContainer to store the container
+		BoxContainer boxContainer = getBoxContainerWithID(containerID);
 
-		if (switchActualState) {
-			container.setState(!container.getState());
-		}
+		boxContainer.setState(!boxContainer.getState());
 
 		Block containerBlock;
 		Block prevContainerBlock;
 
-		if (container.getState()) {
+		// If the container is now on (previously off):
+		if (boxContainer.getState()) {
 			containerBlock = Blocks.iron_block;
 			prevContainerBlock = Blocks.redstone_block;
-			if (switchActualState) {
-				getDockerClient().startContainerCmd(container.getID()).exec();
-			}
-		} else {
-			containerBlock = Blocks.redstone_block;
+			getDockerClient().startContainerCmd(boxContainer.getID()).exec();
+
+		}
+		// Otherwise, if the container is now off (previously on):
+		else {
+			containerBlock = Blocks.redstone_block;	
 			prevContainerBlock = Blocks.iron_block;
-			if (switchActualState) {
-				getDockerClient().stopContainerCmd(container.getID()).exec();
-			}
+
+			getDockerClient().stopContainerCmd(boxContainer.getID()).exec();
+
 		}
 
-		Moby.builder.replace(container.getWorld(),
-				container.getPosition().add(2, 0, 1), container.getPosition()
-						.add(-2, 0, 7), prevContainerBlock, containerBlock);
+		builder.replace(boxContainer.getWorld(), boxContainer.getPosition()
+				.add(2, 0, 1), boxContainer.getPosition().add(-2, 0, 7),
+				prevContainerBlock, containerBlock);
 
-		Moby.builder.replace(container.getWorld(),
-				container.getPosition().add(2, 4, 1), container.getPosition()
-						.add(-2, 4, 7), prevContainerBlock, containerBlock);
+		builder.replace(boxContainer.getWorld(), boxContainer.getPosition()
+				.add(2, 4, 1), boxContainer.getPosition().add(-2, 4, 7),
+				prevContainerBlock, containerBlock);
 	}
 
 	private void runContainer() {
@@ -609,7 +648,11 @@ public class DockerCommands implements ICommand {
 	}
 
 	private boolean checkIfArgIsNull(int argNumber) {
-		if (args[argNumber - 1].equals(null)) {
+		try {
+			if (args[argNumber - 1].equals(null)) {
+				return true;
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
 			return true;
 		}
 		return false;
@@ -678,7 +721,7 @@ public class DockerCommands implements ICommand {
 					+ "\"");
 		}
 	}
-
+	
 	private void images() {
 		sendFeedbackMessage("Loading...");
 
@@ -782,16 +825,15 @@ public class DockerCommands implements ICommand {
 
 	public void updateContainers() {
 		List<Container> containers = getAllContainers();
-		List<BoxContainer> newContainers = Moby.builder.containerPanel(
-				containers, getStartPosition(), sender.getEntityWorld());
+		List<BoxContainer> newContainers = builder.containerPanel(containers,
+				getStartPosition(), sender.getEntityWorld());
 		if (boxContainers.equals(newContainers)) {
 			return;
 		}
+		
+		refreshContainerIDMap();
 
 		int start = 0;
-
-		System.out.println("boxContainers:" + boxContainers);
-		System.out.println("newContainers:" + newContainers);
 
 		findDifferences: for (; start < boxContainers.size(); start++) {
 			if (start == newContainers.size()) {
@@ -810,16 +852,23 @@ public class DockerCommands implements ICommand {
 				.subList(start, boxContainers.size());
 
 		for (int i = 0; i < containersToReplace.size(); i++) {
-			Moby.builder.airContainer(sender.getEntityWorld(),
-					containersToReplace.get(i).getPosition());
+			builder.airContainer(sender.getEntityWorld(), containersToReplace
+					.get(i).getPosition());
 		}
 
 		List<BoxContainer> newContainersToBuild = new ArrayList<BoxContainer>();
-		newContainersToBuild = Moby.builder.containerPanel(getContainers(),
-				getStartPosition(), sender.getEntityWorld()).subList(start,
-				newContainers.size());
+		newContainersToBuild = builder.containerPanel(getAllContainers(),
+				getStartPosition(), sender.getEntityWorld());
+		newContainersToBuild = newContainersToBuild.subList(start,
+				newContainersToBuild.size());
 		buildContainersFromList(newContainersToBuild);
 		
+		for (BoxContainer container : newContainersToBuild) {
+			if (!container.getState()) {
+				setContainerAppearance(container.getID(), false);
+			}
+		}
+
 		boxContainers = newContainers;
 	}
 
@@ -830,21 +879,305 @@ public class DockerCommands implements ICommand {
 				Integer.parseInt(posStrings[2]));
 	}
 
+	public boolean isContainerStopped(String containerName) {
+		if (getContainerWithName(containerName).equals(null)) {
+			return false;
+		}
+
+		Container container = getContainerWithName(containerName);
+
+		if (container.getStatus().toLowerCase().contains("exited")) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/*
+	 * Used to update containers at the rate specified by the poll rate in the
+	 * config file
+	 */
 	@SubscribeEvent
 	public void onTick(PlayerTickEvent event) {
-		if (!event.player.worldObj.isRemote) {
+		if (event.player.getEntityWorld().isRemote) {
 			return;
 		}
-		
 		count++;
 		if (count >= maxCount) {
 			sender = event.player;
 			if (boxContainers.equals(null)) {
-				refreshAndBuildContainersWithoutMessages();
+				refreshAndBuildContainers();
 			} else {
 				updateContainers();
 			}
 			count = 0;
+		}
+	}
+
+	private void setContainerAppearance(String containerID, boolean state) {
+		
+		System.out.println(containerIDMap);
+		System.out.println(getBoxContainerWithID(containerID));
+
+		if (getBoxContainerWithID(containerID) == null) {
+			return;
+		}
+
+		BoxContainer boxContainer = getBoxContainerWithID(containerID);
+
+		Block containerBlock;
+		Block prevContainerBlock;
+
+		if (state) {
+			containerBlock = Blocks.iron_block;
+			prevContainerBlock = Blocks.redstone_block;
+
+		} else {
+			containerBlock = Blocks.redstone_block;
+			prevContainerBlock = Blocks.iron_block;
+		}
+
+		builder.replace(boxContainer.getWorld(), boxContainer.getPosition()
+				.add(2, 0, 1), boxContainer.getPosition().add(-2, 0, 7),
+				prevContainerBlock, containerBlock);
+
+		builder.replace(boxContainer.getWorld(), boxContainer.getPosition()
+				.add(2, 4, 1), boxContainer.getPosition().add(-2, 4, 7),
+				prevContainerBlock, containerBlock);
+	}
+
+	/* 
+	 * ==================================================================================================================================================================================================================
+	 * StructureBuilder
+	 * ==================================================================================================================================================================================================================
+	 */
+
+	public class StructureBuilder {
+
+		public void fill(World world, BlockPos start, BlockPos end,
+				Block material) {
+			int startX = start.getX();
+			int endX = end.getX();
+			int startY = start.getY();
+			int endY = end.getY();
+			int startZ = start.getZ();
+			int endZ = end.getZ();
+
+			int[] intSwitchArray = new int[2];
+
+			if (endX < startX) {
+				intSwitchArray = switchNumbers(startX, endX);
+				startX = intSwitchArray[0];
+				endX = intSwitchArray[1];
+			}
+
+			if (endY < startY) {
+				intSwitchArray = switchNumbers(startY, endY);
+				startY = intSwitchArray[0];
+				endY = intSwitchArray[1];
+			}
+
+			if (endZ < startZ) {
+				intSwitchArray = switchNumbers(startZ, endZ);
+				startZ = intSwitchArray[0];
+				endZ = intSwitchArray[1];
+			}
+
+			for (int x = startX; x < endX + 1; x++) {
+				for (int y = startY; y < endY + 1; y++) {
+					for (int z = startZ; z < endZ + 1; z++) {
+						world.setBlockState(new BlockPos(x, y, z),
+								material.getDefaultState());
+					}
+				}
+			}
+		}
+
+		public void room(World world, BlockPos start, BlockPos end,
+				Block material) {
+			fill(world, start, end, material);
+
+			int airStartX = -(start.getX() - end.getX())
+					/ Math.abs(start.getX() - end.getX());
+			int airEndX = -(end.getX() - start.getX())
+					/ Math.abs(end.getX() - start.getX());
+			int airStartY = -(start.getY() - end.getY())
+					/ Math.abs(start.getY() - end.getY());
+			int airEndY = -(end.getY() - start.getY())
+					/ Math.abs(end.getY() - start.getY());
+			int airStartZ = -(start.getZ() - end.getZ())
+					/ Math.abs(start.getZ() - end.getZ());
+			int airEndZ = -(end.getZ() - start.getZ())
+					/ Math.abs(end.getZ() - start.getZ());
+
+			fill(world, start.add(airStartX, airStartY, airStartZ),
+					end.add(airEndX, airEndY, airEndZ), Blocks.air);
+		}
+
+		public void container(World world, BlockPos start, Block material,
+				String containerName, String containerImage,
+				String containerID) {
+
+			start = start.add(-2, 0, 1);
+			room(world, start, start.add(4, 4, 4), Blocks.iron_block);
+
+			world.setBlockState(start.add(2, 3, 0),
+					Moby.docker_block.getDefaultState());
+			fill(world, start.add(2, 2, 0), start.add(2, 1, 0), Blocks.air);
+
+			world.setBlockState(start.add(2, 2, 3),
+					Blocks.stone_button.getDefaultState());
+			IBlockState wallSign = Blocks.wall_sign.getDefaultState();
+			world.setBlockState(start.add(2, 3, 3), wallSign);
+			TileEntitySign sign = ((TileEntitySign) world.getTileEntity(start
+					.add(2, 3, 3)));
+			sign.signText[1] = new ChatComponentText(EnumChatFormatting.GREEN
+					+ "" + EnumChatFormatting.BOLD + "Start"
+					+ EnumChatFormatting.BLACK + "" + EnumChatFormatting.BOLD
+					+ " / " + EnumChatFormatting.RED + ""
+					+ EnumChatFormatting.BOLD + "Stop");
+			sign.signText[2] = new ChatComponentText(EnumChatFormatting.BLACK
+					+ "" + EnumChatFormatting.BOLD + "Container");
+
+			world.setBlockState(start.add(4, 1, -1), wallSign);
+			sign = ((TileEntitySign) world.getTileEntity(start.add(4, 1, -1)));
+			sign.signText[0] = new ChatComponentText(EnumChatFormatting.BOLD
+					+ "Name:");
+			wrapSignText(containerName, sign);
+
+			world.setBlockState(start.add(3, 1, -1), wallSign);
+			sign = ((TileEntitySign) world.getTileEntity(start.add(3, 1, -1)));
+			sign.signText[0] = new ChatComponentText(EnumChatFormatting.BOLD
+					+ "Image:");
+			wrapSignText(containerImage, sign);
+
+			room(world, start.add(0, 0, 6), start.add(4, 4, 4),
+					Blocks.iron_block);
+			world.setBlockState(start.add(2, 2, 5),
+					Blocks.command_block.getDefaultState());
+			TileEntityCommandBlock commandBlock = (TileEntityCommandBlock) world
+					.getTileEntity(start.add(2, 2, 5));
+			commandBlock.getCommandBlockLogic().setCommand(
+					"/docker switch_state " + containerID);
+
+			IBlockState glowstone = Blocks.glowstone.getDefaultState();
+			Vec3i[] addVectors = { new Vec3i(3, 0, 1), new Vec3i(1, 0, 1),
+					new Vec3i(3, 0, 3), new Vec3i(1, 0, 3), new Vec3i(3, 0, 5),
+					new Vec3i(1, 0, 5), new Vec3i(3, 4, 1), new Vec3i(1, 4, 1),
+					new Vec3i(3, 4, 3), new Vec3i(1, 4, 3), new Vec3i(3, 4, 5),
+					new Vec3i(1, 4, 5) };
+			for (Vec3i vector : addVectors) {
+				world.setBlockState(start.add(vector), glowstone);
+			}
+		}
+
+		private void wrapSignText(String containerProperty, TileEntitySign sign) {
+			if (containerProperty.length() < 14) {
+				sign.signText[1] = new ChatComponentText(containerProperty);
+			} else if (containerProperty.length() < 27) {
+				sign.signText[1] = new ChatComponentText(
+						containerProperty.substring(0, 13));
+				sign.signText[2] = new ChatComponentText(
+						containerProperty.substring(13,
+								containerProperty.length()));
+			} else {
+				sign.signText[1] = new ChatComponentText(
+						containerProperty.substring(0, 13));
+				sign.signText[1] = new ChatComponentText(
+						containerProperty.substring(13, 26));
+				sign.signText[2] = new ChatComponentText(
+						containerProperty.substring(26,
+								containerProperty.length()));
+			}
+		}
+
+		public int[] switchNumbers(int num1, int num2) {
+			int[] ints = { num2, num1 };
+			return ints;
+		}
+
+		public List<BoxContainer> containerColumn(List<Container> containers,
+				int index, BlockPos pos, World world) {
+
+			List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
+
+			int endIndex = 10;
+
+			if (containers.size() - (index * 10) < 10) {
+				endIndex = containers.size() - index * 10;
+			}
+
+			for (int i = index * 10; i < (index * 10) + endIndex; i++) {
+				Container container = containers.get(i);
+				boxContainers.add(new BoxContainer(pos,
+						container.getId(), container.getNames()[0],
+						container.getImage(), world));
+				pos = pos.add(0, 6, 0);
+			}
+
+			return boxContainers;
+		}
+
+		public List<BoxContainer> containerPanel(List<Container> containers,
+				BlockPos pos, World world) {
+			List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
+
+			int lastIndex = (containers.size() - (containers.size() % 10)) / 10;
+			for (int i = 0; i <= lastIndex; i++) {
+				boxContainers
+						.addAll(containerColumn(containers, i, pos, world));
+				pos = pos.add(6, 0, 0);
+			}
+
+			return boxContainers;
+		}
+
+		public void replace(World world, BlockPos start, BlockPos end,
+				Block blockToReplace, Block blockToReplaceWith) {
+			int startX = start.getX();
+			int endX = end.getX();
+			int startY = start.getY();
+			int endY = end.getY();
+			int startZ = start.getZ();
+			int endZ = end.getZ();
+
+			int[] intSwitchArray = new int[2];
+
+			if (endX < startX) {
+				intSwitchArray = switchNumbers(startX, endX);
+				startX = intSwitchArray[0];
+				endX = intSwitchArray[1];
+			}
+
+			if (endY < startY) {
+				intSwitchArray = switchNumbers(startY, endY);
+				startY = intSwitchArray[0];
+				endY = intSwitchArray[1];
+			}
+
+			if (endZ < startZ) {
+				intSwitchArray = switchNumbers(startZ, endZ);
+				startZ = intSwitchArray[0];
+				endZ = intSwitchArray[1];
+			}
+
+			for (int x = startX; x < endX + 1; x++) {
+				for (int y = startY; y < endY + 1; y++) {
+					for (int z = startZ; z < endZ + 1; z++) {
+						if (world.getBlockState(new BlockPos(x, y, z)) == blockToReplace
+								.getDefaultState()) {
+							world.setBlockState(new BlockPos(x, y, z),
+									blockToReplaceWith.getDefaultState());
+
+						}
+					}
+				}
+			}
+		}
+
+		public void airContainer(World world, BlockPos start) {
+			start = start.add(-2, 0, 0);
+			fill(world, start, start.add(4, 4, 7), Blocks.air);
 		}
 	}
 }
