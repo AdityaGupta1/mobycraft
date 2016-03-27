@@ -1,4 +1,4 @@
-package org.redfrog404.mobycraft;
+package org.redfrog404.mobycraft.generic;
 
 import java.util.List;
 
