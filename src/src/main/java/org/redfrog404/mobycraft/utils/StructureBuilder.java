@@ -1,7 +1,9 @@
-package org.redfrog404.mobycraft.generic;
+package org.redfrog404.mobycraft.utils;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.redfrog404.mobycraft.main.Mobycraft;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -86,15 +88,15 @@ public class StructureBuilder {
 			room(world, start, start.add(4, 4, 4), Blocks.iron_block);
 
 			world.setBlockState(start.add(2, 3, 0),
-					Moby.docker_block.getDefaultState());
+					Mobycraft.docker_block.getDefaultState());
 			fill(world, start.add(2, 2, 0), start.add(2, 1, 0), Blocks.air);
 
-			world.setBlockState(start.add(2, 2, 3),
+			world.setBlockState(start.add(3, 2, 3),
 					Blocks.stone_button.getDefaultState());
 			IBlockState wallSign = Blocks.wall_sign.getDefaultState();
-			world.setBlockState(start.add(2, 3, 3), wallSign);
+			world.setBlockState(start.add(3, 3, 3), wallSign);
 			TileEntitySign sign = ((TileEntitySign) world.getTileEntity(start
-					.add(2, 3, 3)));
+					.add(3, 3, 3)));
 			sign.signText[1] = new ChatComponentText(EnumChatFormatting.GREEN
 					+ "" + EnumChatFormatting.BOLD + "Start"
 					+ EnumChatFormatting.BLACK + "" + EnumChatFormatting.BOLD
@@ -117,10 +119,10 @@ public class StructureBuilder {
 
 			room(world, start.add(0, 0, 6), start.add(4, 4, 4),
 					Blocks.iron_block);
-			world.setBlockState(start.add(2, 2, 5),
+			world.setBlockState(start.add(3, 2, 5),
 					Blocks.command_block.getDefaultState());
 			TileEntityCommandBlock commandBlock = (TileEntityCommandBlock) world
-					.getTileEntity(start.add(2, 2, 5));
+					.getTileEntity(start.add(3, 2, 5));
 			commandBlock.getCommandBlockLogic().setCommand(
 					"/docker switch_state " + containerID);
 

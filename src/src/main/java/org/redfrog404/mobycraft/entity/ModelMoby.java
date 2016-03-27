@@ -5,7 +5,7 @@ import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.Entity;
 
-public class ModelDockerWhale extends ModelBase
+public class ModelMoby extends ModelBase
 {
   //fields
     ModelRenderer BodyBottom;
@@ -22,7 +22,7 @@ public class ModelDockerWhale extends ModelBase
     ModelRenderer Box6;
     ModelRenderer Box7;
   
-  public ModelDockerWhale()
+  public ModelMoby()
   {
     textureWidth = 128;
     textureHeight = 128;

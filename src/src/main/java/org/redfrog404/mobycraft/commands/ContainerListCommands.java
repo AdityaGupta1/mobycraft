@@ -11,25 +11,25 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.redfrog404.mobycraft.generic.BoxContainer;
+import org.redfrog404.mobycraft.utils.BoxContainer;
 
 import com.github.dockerjava.api.model.Container;
 
 public class ContainerListCommands {
 	
-	public static <T extends Comparable<? super T>> List<T> asSortedList(
+	static <T extends Comparable<? super T>> List<T> asSortedList(
 			Collection<T> c) {
 		List<T> list = new ArrayList<T>(c);
 		java.util.Collections.sort(list);
 		return list;
 	}
 	
-	public static void refreshContainers() {
-		List<Container> containers = getAllContainers();
+	public static void refresh() {
+		List<Container> containers = getAll();
 		boxContainers = builder.containerPanel(containers, getStartPosition(),
 				sender.getEntityWorld());
 		List<String> stoppedContainerNames = new ArrayList<String>();
-		for (Container container : getStoppedContainers()) {
+		for (Container container : getStopped()) {
 			stoppedContainerNames.add(container.getNames()[0]);
 		}
 		for (BoxContainer boxContainer : boxContainers) {
@@ -51,7 +51,7 @@ public class ContainerListCommands {
 		return getDockerClient().listContainersCmd().exec();
 	}
 
-	public static List<Container> getStoppedContainers() {
+	public static List<Container> getStopped() {
 		List<Container> containers = new ArrayList<Container>();
 		for (Container container : getDockerClient().listContainersCmd()
 				.withShowAll(true).exec()) {
@@ -63,7 +63,7 @@ public class ContainerListCommands {
 		return containers;
 	}
 	
-	public static Container getContainerWithName(String name) {
+	public static Container getFromName(String name) {
 		for (Container container : getContainers()) {
 			if (container.getNames()[0].equals(name)) {
 				return container;
@@ -72,8 +72,8 @@ public class ContainerListCommands {
 		return null;
 	}
 
-	public static Container getContainerFromAllContainersWithName(String name) {
-		List<Container> containers = getAllContainers();
+	public static Container getFromAllWithName(String name) {
+		List<Container> containers = getAll();
 		for (Container container : containers) {
 			if (container.getNames()[0].equals(name)) {
 				return container;
@@ -82,9 +82,9 @@ public class ContainerListCommands {
 		return null;
 	}
 
-	public static List<Container> getAllContainers() {
+	public static List<Container> getAll() {
 		List<Container> containers = getContainers();
-		containers.addAll(getStoppedContainers());
+		containers.addAll(getStopped());
 		return containers;
 	}
 
@@ -99,12 +99,12 @@ public class ContainerListCommands {
 	}
 	
 
-	public static boolean isContainerStopped(String containerName) {
-		if (getContainerWithName(containerName).equals(null)) {
+	public static boolean isStopped(String containerName) {
+		if (getFromName(containerName).equals(null)) {
 			return false;
 		}
 
-		Container container = getContainerWithName(containerName);
+		Container container = getFromName(containerName);
 
 		if (container.getStatus().toLowerCase().contains("exited")) {
 			return true;

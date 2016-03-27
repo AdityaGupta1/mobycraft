@@ -1,4 +1,4 @@
-package org.redfrog404.mobycraft.generic;
+package org.redfrog404.mobycraft.utils;
 
 import java.util.Random;
 

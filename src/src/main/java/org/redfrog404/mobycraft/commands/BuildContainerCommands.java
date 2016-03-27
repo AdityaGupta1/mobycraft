@@ -1,7 +1,7 @@
 package org.redfrog404.mobycraft.commands;
 
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getBoxContainerWithID;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.refreshContainers;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.refresh;
 import static org.redfrog404.mobycraft.commands.DockerCommands.boxContainers;
 import static org.redfrog404.mobycraft.commands.DockerCommands.builder;
 import static org.redfrog404.mobycraft.commands.DockerCommands.containerIDMap;
@@ -9,7 +9,7 @@ import static org.redfrog404.mobycraft.commands.DockerCommands.sender;
 
 import java.util.List;
 
-import org.redfrog404.mobycraft.generic.BoxContainer;
+import org.redfrog404.mobycraft.utils.BoxContainer;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
@@ -33,7 +33,7 @@ public class BuildContainerCommands {
 	}
 
 	public static void refreshAndBuildContainers() {
-		refreshContainers();
+		refresh();
 		if (boxContainers.size() < 1) {
 			return;
 		}

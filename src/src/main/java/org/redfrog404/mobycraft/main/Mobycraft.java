@@ -1,4 +1,4 @@
-package org.redfrog404.mobycraft.generic;
+package org.redfrog404.mobycraft.main;
 
 import java.io.File;
 
@@ -27,11 +27,12 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 
 import org.redfrog404.mobycraft.commands.DockerCommands;
 import org.redfrog404.mobycraft.dimension.DimensionRegistry;
-import org.redfrog404.mobycraft.entity.EntityDockerWhale;
-import org.redfrog404.mobycraft.entity.RenderDockerWhale;
+import org.redfrog404.mobycraft.entity.EntityMoby;
+import org.redfrog404.mobycraft.entity.RenderMoby;
+import org.redfrog404.mobycraft.utils.GenericBlock;
 
-@Mod(modid = Moby.MODID, version = Moby.VERSION)
-public final class Moby {
+@Mod(modid = Mobycraft.MODID, version = Mobycraft.VERSION)
+public final class Mobycraft {
 	public static final String MODID = "moby";
 	public static final String VERSION = "1.0";
 
@@ -40,8 +41,6 @@ public final class Moby {
 	public static Block docker_block;
 
 	ItemModelMesher mesher;
-
-//	public static final StructureBuilder builder = new StructureBuilder();
 
 	DockerCommands commands = new DockerCommands();
 
@@ -60,8 +59,8 @@ public final class Moby {
 
 		RenderManager render = Minecraft.getMinecraft().getRenderManager();
 
-		registerModEntity(EntityDockerWhale.class, new RenderDockerWhale(),
-				"docker_whale", EntityRegistry.findGlobalUniqueEntityId(),
+		registerModEntity(EntityMoby.class, new RenderMoby(),
+				"moby", EntityRegistry.findGlobalUniqueEntityId(),
 				0x24B8EB, 0x008BB8);
 
 		DimensionRegistry.mainRegistry();
@@ -88,7 +87,7 @@ public final class Moby {
 				"2",
 				"The rate in seconds at which the containers will update (set using /docker poll_rate <rate in seconds>)");
 		config.save();
-		commands.updateProperties();
+		commands.readConfigProperties();
 	}
 
 	private void registerBlock(Block block, String name) {
@@ -97,14 +96,14 @@ public final class Moby {
 				new ModelResourceLocation("moby:" + name, "inventory"));
 	}
 
-	public void registerModEntity(Class parEntityClass, Render render,
-			String parEntityName, int entityId, int foregroundColor,
+	public void registerModEntity(Class entityClass, Render render,
+			String entityName, int entityId, int foregroundColor,
 			int backgroundColor) {
-		EntityRegistry.registerGlobalEntityID(parEntityClass, parEntityName,
+		EntityRegistry.registerGlobalEntityID(entityClass, entityName,
 				entityId, foregroundColor, backgroundColor);
-		EntityRegistry.registerModEntity(parEntityClass, parEntityName,
+		EntityRegistry.registerModEntity(entityClass, entityName,
 				entityId, this, 80, 1, false);
 		RenderingRegistry
-				.registerEntityRenderingHandler(parEntityClass, render);
+				.registerEntityRenderingHandler(entityClass, render);
 	}
 }

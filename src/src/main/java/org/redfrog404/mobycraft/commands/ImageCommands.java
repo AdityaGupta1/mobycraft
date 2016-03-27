@@ -1,18 +1,16 @@
 package org.redfrog404.mobycraft.commands;
 
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAllContainers;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAll;
 import static org.redfrog404.mobycraft.commands.DockerCommands.arg1;
 import static org.redfrog404.mobycraft.commands.DockerCommands.checkIfArgIsNull;
+import static org.redfrog404.mobycraft.commands.DockerCommands.convertBytesAndMultiply;
 import static org.redfrog404.mobycraft.commands.DockerCommands.getDockerClient;
-import static org.redfrog404.mobycraft.commands.DockerCommands.sendBarMessage;
-import static org.redfrog404.mobycraft.commands.DockerCommands.sendConfirmMessage;
-import static org.redfrog404.mobycraft.commands.DockerCommands.sendErrorMessage;
-import static org.redfrog404.mobycraft.commands.DockerCommands.sendFeedbackMessage;
-import static org.redfrog404.mobycraft.commands.DockerCommands.sendMessage;
-import static org.redfrog404.mobycraft.commands.DockerCommands.suffixNumbers;
+import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendBarMessage;
+import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendConfirmMessage;
+import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendErrorMessage;
+import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendFeedbackMessage;
+import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendMessage;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.List;
 
 import net.minecraft.util.EnumChatFormatting;
@@ -61,31 +59,9 @@ public class ImageCommands {
 		}
 	}
 
-	public static String convertBytesAndMultiply(double bytes) {
-		int suffixNumber = 0;
-
-		while (bytes / 1024 > 1) {
-			bytes /= 1024;
-			suffixNumber++;
-		}
-
-		if (suffixNumber != 0) {
-			bytes *= 1.04851005D;
-		}
-
-		NumberFormat formatter = new DecimalFormat("#0.0");
-		String byteString = formatter.format(bytes) + " "
-				+ suffixNumbers.get(suffixNumber);
-		if (byteString.contains(".0")) {
-			byteString = byteString.replace(".0", "");
-		}
-
-		return byteString;
-	}
-
 	public static void removeAllImages() {
 		sendFeedbackMessage("Working on it...");
-		if (getAllContainers().size() < 1) {
+		if (getAll().size() < 1) {
 			sendFeedbackMessage("No images currently currently.");
 			return;
 		}

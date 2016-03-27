@@ -1,18 +1,18 @@
 package org.redfrog404.mobycraft.commands;
 
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAllContainers;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getContainerFromAllContainersWithName;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getContainerWithName;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAll;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getContainers;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getStoppedContainers;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromAllWithName;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromName;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getStopped;
 import static org.redfrog404.mobycraft.commands.DockerCommands.arg1;
 import static org.redfrog404.mobycraft.commands.DockerCommands.args;
 import static org.redfrog404.mobycraft.commands.DockerCommands.checkIfArgIsNull;
 import static org.redfrog404.mobycraft.commands.DockerCommands.getDockerClient;
-import static org.redfrog404.mobycraft.commands.DockerCommands.sendConfirmMessage;
-import static org.redfrog404.mobycraft.commands.DockerCommands.sendErrorMessage;
-import static org.redfrog404.mobycraft.commands.DockerCommands.sendFeedbackMessage;
 import static org.redfrog404.mobycraft.commands.ImageCommands.getImageWithName;
+import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendConfirmMessage;
+import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendErrorMessage;
+import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendFeedbackMessage;
 
 import java.util.ArrayList;
 
@@ -21,9 +21,9 @@ import org.apache.commons.lang.math.NumberUtils;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.model.Container;
 
-public class BasicContainerCommands {
+public class ContainerLifecycleCommands {
 	
-	public static void startContainer() {
+	public static void start() {
 		if (checkIfArgIsNull(2)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker start <name> .");
 			return;
@@ -31,7 +31,7 @@ public class BasicContainerCommands {
 
 		try {
 			getDockerClient().startContainerCmd(
-					getContainerFromAllContainersWithName("/" + arg1).getId())
+					getFromAllWithName("/" + arg1).getId())
 					.exec();
 			sendConfirmMessage("Started container with name \"/" + arg1 + "\"");
 		} catch (NullPointerException exception) {
@@ -40,7 +40,7 @@ public class BasicContainerCommands {
 		}
 	}
 	
-	public static void stopContainer() {
+	public static void stop() {
 		if (checkIfArgIsNull(2)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker stop <name> .");
 			return;
@@ -48,7 +48,7 @@ public class BasicContainerCommands {
 
 		try {
 			getDockerClient().stopContainerCmd(
-					getContainerWithName("/" + arg1).getId()).exec();
+					getFromName("/" + arg1).getId()).exec();
 			sendConfirmMessage("Stopped container with name \"/" + arg1 + "\"");
 		} catch (NullPointerException exception) {
 			sendErrorMessage("No container exists with the name \"/" + arg1
@@ -65,7 +65,7 @@ public class BasicContainerCommands {
 		try {
 			getDockerClient()
 					.removeContainerCmd(
-							getContainerFromAllContainersWithName("/" + arg1)
+							getFromAllWithName("/" + arg1)
 									.getId()).withForce().exec();
 			sendConfirmMessage("Removed container with name \"/" + arg1 + "\"");
 		} catch (NullPointerException exception) {
@@ -76,11 +76,11 @@ public class BasicContainerCommands {
 	
 	public static void removeAll() {
 		sendFeedbackMessage("Working on it...");
-		if (getAllContainers().size() < 1) {
+		if (getAll().size() < 1) {
 			sendFeedbackMessage("No containers currently existing.");
 			return;
 		}
-		for (Container container : getAllContainers()) {
+		for (Container container : getAll()) {
 			getDockerClient().removeContainerCmd(container.getId()).withForce()
 					.exec();
 		}
@@ -95,7 +95,7 @@ public class BasicContainerCommands {
 
 		try {
 			getDockerClient().restartContainerCmd(
-					getContainerWithName("/" + arg1).getId()).exec();
+					getFromName("/" + arg1).getId()).exec();
 			sendConfirmMessage("Restart container with name \"/" + arg1 + "\"");
 		} catch (NullPointerException exception) {
 			sendErrorMessage("No container exists with the name \"/" + arg1
@@ -111,7 +111,7 @@ public class BasicContainerCommands {
 
 		try {
 			getDockerClient().killContainerCmd(
-					getContainerWithName("/" + arg1).getId()).exec();
+					getFromName("/" + arg1).getId()).exec();
 			sendConfirmMessage("Killed container with name \"/" + arg1 + "\"");
 		} catch (NullPointerException exception) {
 			sendErrorMessage("No container exists with the name \"/" + arg1
@@ -131,7 +131,7 @@ public class BasicContainerCommands {
 		sendConfirmMessage("Killed all containers.");
 	}
 	
-	public static void runContainer() {
+	public static void run() {
 		sendFeedbackMessage("Working on it...");
 		
 		if (getImageWithName(arg1).equals(null)) {
@@ -190,13 +190,13 @@ public class BasicContainerCommands {
 		}
 	}
 	
-	public static void removeStoppedContainers() {
+	public static void removeStopped() {
 		sendFeedbackMessage("Working on it...");
-		if (getStoppedContainers().size() < 1) {
+		if (getStopped().size() < 1) {
 			sendFeedbackMessage("No containers currently stopped.");
 			return;
 		}
-		for (Container container : getStoppedContainers()) {
+		for (Container container : getStopped()) {
 			getDockerClient().removeContainerCmd(container.getId()).withForce()
 					.exec();
 		}

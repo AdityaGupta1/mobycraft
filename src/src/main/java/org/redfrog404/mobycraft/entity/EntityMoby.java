@@ -20,9 +20,9 @@ import net.minecraft.pathfinding.PathNavigateGround;
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
 
-public class EntityDockerWhale extends EntityAnimal
+public class EntityMoby extends EntityAnimal
 {
-    public EntityDockerWhale(World worldIn)
+    public EntityMoby(World worldIn)
     {
         super(worldIn);
         this.setSize(1.8F, 1.3F);
@@ -113,9 +113,9 @@ public class EntityDockerWhale extends EntityAnimal
         }
     }
 
-    public EntityDockerWhale createChild(EntityAgeable ageable)
+    public EntityMoby createChild(EntityAgeable ageable)
     {
-        return new EntityDockerWhale(this.worldObj);
+        return new EntityMoby(this.worldObj);
     }
 
     public float getEyeHeight()
