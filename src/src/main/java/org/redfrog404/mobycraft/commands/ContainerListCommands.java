@@ -3,7 +3,7 @@ package org.redfrog404.mobycraft.commands;
 import static org.redfrog404.mobycraft.commands.MainCommand.boxContainers;
 import static org.redfrog404.mobycraft.commands.MainCommand.builder;
 import static org.redfrog404.mobycraft.commands.MainCommand.containerIDMap;
-import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
+import static org.redfrog404.mobycraft.commands.MainCommand.dockerClient;
 import static org.redfrog404.mobycraft.commands.MainCommand.getStartPosition;
 import static org.redfrog404.mobycraft.commands.MainCommand.sender;
 
@@ -48,12 +48,12 @@ public class ContainerListCommands {
 	}
 
 	public static List<Container> getContainers() {
-		return getDockerClient().listContainersCmd().exec();
+		return dockerClient.listContainersCmd().exec();
 	}
 
 	public static List<Container> getStopped() {
 		List<Container> containers = new ArrayList<Container>();
-		for (Container container : getDockerClient().listContainersCmd()
+		for (Container container : dockerClient.listContainersCmd()
 				.withShowAll(true).exec()) {
 			if (container.getStatus().toLowerCase().contains("exited")) {
 				containers.add(container);

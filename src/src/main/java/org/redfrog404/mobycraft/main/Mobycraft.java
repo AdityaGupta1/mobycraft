@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.ItemModelMesher;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
@@ -30,6 +31,7 @@ import org.redfrog404.mobycraft.dimension.DimensionRegistry;
 import org.redfrog404.mobycraft.entity.EntityMoby;
 import org.redfrog404.mobycraft.entity.RenderMoby;
 import org.redfrog404.mobycraft.utils.GenericBlock;
+import org.redfrog404.mobycraft.utils.GenericItem;
 
 @Mod(modid = Mobycraft.MODID, version = Mobycraft.VERSION)
 public final class Mobycraft {
@@ -39,6 +41,7 @@ public final class Mobycraft {
 	public static Configuration config;
 
 	public static Block docker_block;
+	public static Item container_wand;
 
 	ItemModelMesher mesher;
 
@@ -56,6 +59,9 @@ public final class Mobycraft {
 		docker_block = new GenericBlock("docker_block", Material.iron, 5.0F,
 				10.0F, "pickaxe", 1, Block.soundTypeMetal);
 		registerBlock(docker_block, "docker_block");
+		
+		container_wand = new GenericItem("container_wand", CreativeTabs.tabTools);
+		registerItem(container_wand, "container_wand");
 
 		RenderManager render = Minecraft.getMinecraft().getRenderManager();
 
@@ -65,6 +71,7 @@ public final class Mobycraft {
 
 		DimensionRegistry.mainRegistry();
 
+		MinecraftForge.EVENT_BUS.register(commands);
 		FMLCommonHandler.instance().bus().register(commands);
 	}
 
@@ -80,7 +87,7 @@ public final class Mobycraft {
 				"start-pos",
 				"container-building",
 				"0, 0, 0",
-				"The position - x, y, z - to start building contianers at (set using /docker start_pos");
+				"The position - x, y, z - to start building containers at (set using /docker start_pos");
 		config.getString(
 				"poll-rate",
 				"container-building",
@@ -88,6 +95,12 @@ public final class Mobycraft {
 				"The rate in seconds at which the containers will update (set using /docker poll_rate <rate in seconds>)");
 		config.save();
 		commands.readConfigProperties();
+	}
+	
+	private void registerItem(Item item, String name) {
+		GameRegistry.registerItem(item, name);
+		mesher.register(item, 0, new ModelResourceLocation("moby:" + name,
+				"inventory"));
 	}
 
 	private void registerBlock(Block block, String name) {

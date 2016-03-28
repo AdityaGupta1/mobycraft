@@ -2,14 +2,13 @@ package org.redfrog404.mobycraft.commands;
 
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.asSortedList;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getBoxContainerWithID;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromAllWithName;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.refreshContainerIDMap;
 import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
 import static org.redfrog404.mobycraft.commands.MainCommand.args;
 import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
 import static org.redfrog404.mobycraft.commands.MainCommand.containerIDMap;
+import static org.redfrog404.mobycraft.commands.MainCommand.dockerClient;
 import static org.redfrog404.mobycraft.commands.MainCommand.dockerPath;
-import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
 import static org.redfrog404.mobycraft.commands.MainCommand.helpMessages;
 import static org.redfrog404.mobycraft.commands.MainCommand.sendHelpMessage;
 import static org.redfrog404.mobycraft.commands.MainCommand.sender;
@@ -25,15 +24,10 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumChatFormatting;
 
 import org.redfrog404.mobycraft.main.Mobycraft;
-import org.redfrog404.mobycraft.utils.BoxContainer;
 import org.redfrog404.mobycraft.utils.StatisticsResultCallback;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.api.model.Event;
-import com.github.dockerjava.api.model.Statistics;
-import com.github.dockerjava.core.async.ResultCallbackTemplate;
-import com.github.dockerjava.core.command.EventsResultCallback;
 
 public class BasicDockerCommands {
 
@@ -73,9 +67,6 @@ public class BasicDockerCommands {
 	}
 
 	public static void ps() {
-		sendFeedbackMessage("Loading...");
-
-		DockerClient dockerClient = getDockerClient();
 
 		List<Container> containers = dockerClient.listContainersCmd().exec();
 
@@ -133,7 +124,7 @@ public class BasicDockerCommands {
 				senderPos.getX(), senderPos.getY(),
 				senderPos.getZ(), -1);
 
-		getDockerClient().statsCmd().exec(new StatisticsResultCallback());
+		dockerClient.statsCmd().exec(new StatisticsResultCallback());
 	}
 
 }

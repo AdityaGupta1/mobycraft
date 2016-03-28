@@ -1,2 +1,3 @@
 tile.docker_block.name=Docker Logo Block
 entity.moby.name=Moby
+item.container_wand.name=Container Wand

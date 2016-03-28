@@ -18,14 +18,13 @@ import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.start
 import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.stop;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAll;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getBoxContainerWithID;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getContainers;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromAllWithName;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getStopped;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getWithName;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.isStopped;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.refreshContainerIDMap;
 import static org.redfrog404.mobycraft.commands.ImageCommands.images;
 import static org.redfrog404.mobycraft.commands.ImageCommands.removeAllImages;
 import static org.redfrog404.mobycraft.commands.ImageCommands.removeImage;
+import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendFeedbackMessage;
@@ -41,10 +40,14 @@ import java.util.Map;
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.world.World;
 import net.minecraftforge.common.config.Property;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
@@ -52,8 +55,6 @@ import org.apache.http.conn.UnsupportedSchemeException;
 import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.utils.BoxContainer;
 import org.redfrog404.mobycraft.utils.StructureBuilder;
-
-import scala.xml.persistent.SetStorage;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
@@ -88,6 +89,8 @@ public class MainCommand implements ICommand {
 
 	public int count = 0;
 	public int maxCount;
+
+	public static DockerClient dockerClient;
 
 	public MainCommand() {
 		this.commandAliases = new ArrayList();
@@ -152,7 +155,7 @@ public class MainCommand implements ICommand {
 				.get("container-building",
 						"start-pos",
 						"0, 0, 0",
-						"The position - x, y, z - to start building contianers at (set using /docker start_pos");
+						"The position - x, y, z - to start building containers at (set using /docker start_pos");
 		pollRate = Mobycraft.config
 				.get("container-building",
 						"poll-rate",
@@ -319,7 +322,7 @@ public class MainCommand implements ICommand {
 
 	public static void switchState(String containerID) {
 		refreshContainerIDMap();
-		
+
 		// If there is no container with the ID, return
 		if (getBoxContainerWithID(containerID) == null) {
 			return;
@@ -337,7 +340,7 @@ public class MainCommand implements ICommand {
 		if (boxContainer.getState()) {
 			containerBlock = Blocks.iron_block;
 			prevContainerBlock = Blocks.redstone_block;
-			getDockerClient().startContainerCmd(boxContainer.getID()).exec();
+			dockerClient.startContainerCmd(boxContainer.getID()).exec();
 
 		}
 		// Otherwise, if the container is now off (previously on):
@@ -345,7 +348,7 @@ public class MainCommand implements ICommand {
 			containerBlock = Blocks.redstone_block;
 			prevContainerBlock = Blocks.iron_block;
 
-			getDockerClient().stopContainerCmd(boxContainer.getID()).exec();
+			dockerClient.stopContainerCmd(boxContainer.getID()).exec();
 
 		}
 
@@ -401,7 +404,9 @@ public class MainCommand implements ICommand {
 	}
 
 	private void updateContainers() {
+		dockerClient = getDockerClient();
 		refreshContainerIDMap();
+
 		List<Container> containers = getAll();
 		List<BoxContainer> newContainers = builder.containerPanel(containers,
 				getStartPosition(), sender.getEntityWorld());
@@ -459,8 +464,10 @@ public class MainCommand implements ICommand {
 			suffixNumber++;
 		}
 
-		// Multiplying by a constant that seems to make the memory size match
-		// that shown by the Docker command "docker images"
+		/*
+		 * Multiplying by a constant that seems to make the memory size match
+		 * that shown by the Docker command "docker images"
+		 */
 		if (suffixNumber != 0) {
 			bytes *= 1.04851005D;
 		}
@@ -473,5 +480,46 @@ public class MainCommand implements ICommand {
 		}
 
 		return byteString;
+	}
+	
+	@SubscribeEvent
+	public void containerWand(PlayerInteractEvent event) {
+		EntityPlayer player = event.entityPlayer;
+		
+		if (player.getHeldItem().getItem() == null) {
+			return;
+		}
+		
+		if (player.getHeldItem().getItem() != Mobycraft.container_wand) {
+			return;
+		}
+		
+		World world = event.world;
+		BlockPos pos = event.pos;
+		
+		if (world.getBlockState(pos).getBlock() != Blocks.wall_sign
+				&& world.getBlockState(pos).getBlock() != Blocks.standing_sign) {
+			return;
+		}
+
+		TileEntitySign sign = (TileEntitySign) world.getTileEntity(pos);
+
+		if (!sign.signText[0].getUnformattedText().contains("Name:")) {
+			return;
+		}
+
+		String name = sign.signText[1].getUnformattedText().concat(
+				sign.signText[2].getUnformattedText().concat(
+						sign.signText[3].getUnformattedText()));
+		
+		System.out.println(name);
+
+		if (getWithName(name) == null) {
+			return;
+		}
+		
+		Container container = getWithName(name);
+		getDockerClient().removeContainerCmd(container.getId()).withForce().exec();
+		sendConfirmMessage("Removed container with name \"" + name + "\"");
 	}
 }

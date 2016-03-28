@@ -3,13 +3,13 @@ package org.redfrog404.mobycraft.commands;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAll;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getContainers;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromAllWithName;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getWithName;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getStopped;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getWithName;
 import static org.redfrog404.mobycraft.commands.ImageCommands.getImageWithName;
 import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
 import static org.redfrog404.mobycraft.commands.MainCommand.args;
 import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
-import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
+import static org.redfrog404.mobycraft.commands.MainCommand.dockerClient;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendFeedbackMessage;
@@ -31,7 +31,7 @@ public class ContainerLifecycleCommands {
 		}
 
 		try {
-			getDockerClient().startContainerCmd(
+			dockerClient.startContainerCmd(
 					getFromAllWithName("/" + arg1).getId())
 					.exec();
 			sendConfirmMessage("Started container with name \"/" + arg1 + "\"");
@@ -48,7 +48,7 @@ public class ContainerLifecycleCommands {
 		}
 
 		try {
-			getDockerClient().stopContainerCmd(
+			dockerClient.stopContainerCmd(
 					getWithName("/" + arg1).getId()).exec();
 			sendConfirmMessage("Stopped container with name \"/" + arg1 + "\"");
 		} catch (NullPointerException exception) {
@@ -64,7 +64,7 @@ public class ContainerLifecycleCommands {
 		}
 
 		try {
-			getDockerClient()
+			dockerClient
 					.removeContainerCmd(
 							getFromAllWithName("/" + arg1)
 									.getId()).withForce().exec();
@@ -82,7 +82,7 @@ public class ContainerLifecycleCommands {
 			return;
 		}
 		for (Container container : getAll()) {
-			getDockerClient().removeContainerCmd(container.getId()).withForce()
+			dockerClient.removeContainerCmd(container.getId()).withForce()
 					.exec();
 		}
 		sendConfirmMessage("Removed all containers.");
@@ -95,7 +95,7 @@ public class ContainerLifecycleCommands {
 		}
 
 		try {
-			getDockerClient().restartContainerCmd(
+			dockerClient.restartContainerCmd(
 					getWithName("/" + arg1).getId()).exec();
 			sendConfirmMessage("Restart container with name \"/" + arg1 + "\"");
 		} catch (NullPointerException exception) {
@@ -111,7 +111,7 @@ public class ContainerLifecycleCommands {
 		}
 
 		try {
-			getDockerClient().killContainerCmd(
+			dockerClient.killContainerCmd(
 					getWithName("/" + arg1).getId()).exec();
 			sendConfirmMessage("Killed container with name \"/" + arg1 + "\"");
 		} catch (NullPointerException exception) {
@@ -127,7 +127,7 @@ public class ContainerLifecycleCommands {
 			return;
 		}
 		for (Container container : getContainers()) {
-			getDockerClient().killContainerCmd(container.getId()).exec();
+			dockerClient.killContainerCmd(container.getId()).exec();
 		}
 		sendConfirmMessage("Killed all containers.");
 	}
@@ -137,15 +137,15 @@ public class ContainerLifecycleCommands {
 		
 		if (getImageWithName(arg1) == null) {
 			PullImageResultCallback callback = new PullImageResultCallback();
-			getDockerClient().pullImageCmd(arg1).withTag("latest").exec(callback);
+			dockerClient.pullImageCmd(arg1).withTag("latest").exec(callback);
 			callback.awaitCompletion();
 		}
 
 		if (args.length < 3) {
 			// No name, no number
-			CreateContainerResponse response = getDockerClient()
+			CreateContainerResponse response = dockerClient
 					.createContainerCmd(arg1).exec();
-			getDockerClient().startContainerCmd(response.getId()).exec();
+			dockerClient.startContainerCmd(response.getId()).exec();
 			String name = "";
 			for (Container container : getContainers()) {
 				if (container.getId().equals(response.getId())) {
@@ -156,18 +156,18 @@ public class ContainerLifecycleCommands {
 					+ "\" and name \"" + name + "\"");
 		} else if (!NumberUtils.isNumber(args[2])) {
 			// Name
-			CreateContainerResponse response = getDockerClient()
+			CreateContainerResponse response = dockerClient
 					.createContainerCmd(arg1).withName(args[2]).exec();
-			getDockerClient().startContainerCmd(response.getId()).exec();
+			dockerClient.startContainerCmd(response.getId()).exec();
 			sendConfirmMessage("Created container with image \"" + arg1
 					+ "\" and name \"/" + args[2] + "\"");
 		} else {
 			// Number
 			ArrayList<String> names = new ArrayList<String>();
 			for (int i = 0; i < Integer.parseInt(args[2]); i++) {
-				CreateContainerResponse response = getDockerClient()
+				CreateContainerResponse response = dockerClient
 						.createContainerCmd(arg1).exec();
-				getDockerClient().startContainerCmd(response.getId()).exec();
+				dockerClient.startContainerCmd(response.getId()).exec();
 				String name = "";
 				for (Container container : getContainers()) {
 					if (container.getId().equals(response.getId())) {
@@ -199,7 +199,7 @@ public class ContainerLifecycleCommands {
 			return;
 		}
 		for (Container container : getStopped()) {
-			getDockerClient().removeContainerCmd(container.getId()).withForce()
+			dockerClient.removeContainerCmd(container.getId()).withForce()
 					.exec();
 		}
 		sendConfirmMessage("Removed all stopped containers.");
