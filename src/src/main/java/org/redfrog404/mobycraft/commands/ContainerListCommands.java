@@ -1,11 +1,11 @@
 package org.redfrog404.mobycraft.commands;
 
-import static org.redfrog404.mobycraft.commands.DockerCommands.boxContainers;
-import static org.redfrog404.mobycraft.commands.DockerCommands.builder;
-import static org.redfrog404.mobycraft.commands.DockerCommands.containerIDMap;
-import static org.redfrog404.mobycraft.commands.DockerCommands.getDockerClient;
-import static org.redfrog404.mobycraft.commands.DockerCommands.getStartPosition;
-import static org.redfrog404.mobycraft.commands.DockerCommands.sender;
+import static org.redfrog404.mobycraft.commands.MainCommand.boxContainers;
+import static org.redfrog404.mobycraft.commands.MainCommand.builder;
+import static org.redfrog404.mobycraft.commands.MainCommand.containerIDMap;
+import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
+import static org.redfrog404.mobycraft.commands.MainCommand.getStartPosition;
+import static org.redfrog404.mobycraft.commands.MainCommand.sender;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,7 +63,7 @@ public class ContainerListCommands {
 		return containers;
 	}
 	
-	public static Container getFromName(String name) {
+	public static Container getWithName(String name) {
 		for (Container container : getContainers()) {
 			if (container.getNames()[0].equals(name)) {
 				return container;
@@ -100,11 +100,11 @@ public class ContainerListCommands {
 	
 
 	public static boolean isStopped(String containerName) {
-		if (getFromName(containerName).equals(null)) {
+		if (getFromAllWithName(containerName) == null) {
 			return false;
 		}
 
-		Container container = getFromName(containerName);
+		Container container = getFromAllWithName(containerName);
 
 		if (container.getStatus().toLowerCase().contains("exited")) {
 			return true;

@@ -1,5 +1,9 @@
 package org.redfrog404.mobycraft.commands;
 
+import static org.redfrog404.mobycraft.commands.BasicDockerCommands.help;
+import static org.redfrog404.mobycraft.commands.BasicDockerCommands.path;
+import static org.redfrog404.mobycraft.commands.BasicDockerCommands.ps;
+import static org.redfrog404.mobycraft.commands.BasicDockerCommands.showDetailedInfo;
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.buildContainersFromList;
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.refreshAndBuildContainers;
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.setContainerAppearance;
@@ -12,14 +16,16 @@ import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.resta
 import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.run;
 import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.start;
 import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.stop;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.asSortedList;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAll;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getBoxContainerWithID;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getContainers;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromAllWithName;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getStopped;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.isStopped;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.refreshContainerIDMap;
 import static org.redfrog404.mobycraft.commands.ImageCommands.images;
 import static org.redfrog404.mobycraft.commands.ImageCommands.removeAllImages;
 import static org.redfrog404.mobycraft.commands.ImageCommands.removeImage;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendBarMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendFeedbackMessage;
@@ -47,15 +53,18 @@ import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.utils.BoxContainer;
 import org.redfrog404.mobycraft.utils.StructureBuilder;
 
+import scala.xml.persistent.SetStorage;
+
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 
-public class DockerCommands implements ICommand {
+public class MainCommand implements ICommand {
 	public static List commandAliases;
 
-	// Maps commands to numbers for use in the switch statement in processCommand()
+	// Maps commands to numbers for use in the switch statement in
+	// processCommand()
 	static Map<String, Integer> commandNumbers = new HashMap<String, Integer>();
 	// Help messages that are shown when /docker help is used
 	static Map<String, String> helpMessages = new HashMap<String, String>();
@@ -73,14 +82,14 @@ public class DockerCommands implements ICommand {
 	static Property pollRate;
 
 	static String[] args;
-	static String arg1;
+	public static String arg1;
 
 	static StructureBuilder builder = new StructureBuilder();
 
 	public int count = 0;
 	public int maxCount;
 
-	public DockerCommands() {
+	public MainCommand() {
 		this.commandAliases = new ArrayList();
 		this.commandAliases.add("docker");
 
@@ -101,6 +110,7 @@ public class DockerCommands implements ICommand {
 		commandNumbers.put("rmi", 14);
 		commandNumbers.put("rmi_all", 15);
 		commandNumbers.put("set_start_pos", 16);
+		commandNumbers.put("show_detailed_info", 17);
 
 		helpMessages.put("help <page>",
 				"Brings up page number <page> of this help list");
@@ -133,7 +143,7 @@ public class DockerCommands implements ICommand {
 		byteSuffixNumbers.put(2, "MB");
 		byteSuffixNumbers.put(3, "GB");
 	}
-	
+
 	public void readConfigProperties() {
 		dockerPath = Mobycraft.config
 				.get("files", "docker-cert-path", "File path",
@@ -255,6 +265,9 @@ public class DockerCommands implements ICommand {
 				sendConfirmMessage("Set start position for building containers to ("
 						+ startPos.getString() + ").");
 				break;
+			case 17:
+				showDetailedInfo();
+				break;
 			}
 		} catch (Exception e) {
 			if (e instanceof UnsupportedSchemeException && commandNumber == 2) {
@@ -289,81 +302,9 @@ public class DockerCommands implements ICommand {
 		return new ArrayList<String>(commandNumbers.keySet());
 	}
 
-	private void sendHelpMessage(String command, String helpMessage) {
+	public static void sendHelpMessage(String command, String helpMessage) {
 		sendMessage(EnumChatFormatting.DARK_GREEN + "/docker " + command
 				+ " - " + EnumChatFormatting.GOLD + helpMessage);
-	}
-
-	private void help() {
-		int size = helpMessages.size();
-		int maxCommandsPerPage = 8;
-
-		int page = 1;
-		int maxPages = ((size - size % maxCommandsPerPage) / maxCommandsPerPage) + 1;
-
-		if (!checkIfArgIsNull(2)) {
-			page = Integer.parseInt(args[1]);
-		}
-
-		if (page > maxPages) {
-			page = maxPages;
-		}
-
-		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
-				+ "============== Docker Help ==============");
-		sendMessage(EnumChatFormatting.DARK_AQUA + "" + EnumChatFormatting.BOLD
-				+ "== Page " + page + "/" + maxPages);
-		sendMessage(EnumChatFormatting.AQUA
-				+ "-- <arg> is required, (arg) is optional");
-		sendMessage(EnumChatFormatting.AQUA
-				+ "-- \"|\" means \"or\"; e.g. \"<name | amount>\" means you can either put the name or the amount");
-
-		int toIndex = page * maxCommandsPerPage;
-		if (toIndex > size) {
-			toIndex = size;
-		}
-
-		for (String key : asSortedList(helpMessages.keySet()).subList(
-				(page - 1) * maxCommandsPerPage, toIndex)) {
-			sendHelpMessage(key, helpMessages.get(key));
-		}
-	}
-
-	private void ps() {
-		sendFeedbackMessage("Loading...");
-
-		DockerClient dockerClient = getDockerClient();
-
-		List<Container> containers = dockerClient.listContainersCmd().exec();
-
-		if (containers.size() == 0) {
-			sendFeedbackMessage("No containers currently running.");
-			return;
-		}
-
-		sendBarMessage(EnumChatFormatting.BLUE);
-		sendMessage(EnumChatFormatting.AQUA + "Name(s)"
-				+ EnumChatFormatting.RESET + ", " + EnumChatFormatting.GOLD
-				+ "Image" + EnumChatFormatting.RESET + ", "
-				+ EnumChatFormatting.GREEN + "Container ID");
-		sendBarMessage(EnumChatFormatting.BLUE);
-
-		for (Container container : containers) {
-			String message = "";
-			for (String name : container.getNames()) {
-				if (container.getNames()[0].equals(name)) {
-					message += EnumChatFormatting.AQUA + name;
-				} else {
-					message += ", " + name;
-				}
-			}
-			message += EnumChatFormatting.RESET + ", "
-					+ EnumChatFormatting.GOLD + container.getImage()
-					+ EnumChatFormatting.RESET + ", "
-					+ EnumChatFormatting.GREEN
-					+ container.getId().substring(0, 12);
-			sendMessage(message);
-		}
 	}
 
 	public static DockerClient getDockerClient() {
@@ -376,18 +317,9 @@ public class DockerCommands implements ICommand {
 		return dockerClient;
 	}
 
-	private void path() {
-		if (args.length < 2) {
-			sendErrorMessage("Docker path is not specified! Command is used as /docker path <path> .");
-			return;
-		}
-
-		dockerPath.setValue(arg1);
-		Mobycraft.config.save();
-		sendConfirmMessage("Docker path set to \"" + arg1 + "\"");
-	}
-
 	public static void switchState(String containerID) {
+		refreshContainerIDMap();
+		
 		// If there is no container with the ID, return
 		if (getBoxContainerWithID(containerID) == null) {
 			return;
@@ -448,7 +380,8 @@ public class DockerCommands implements ICommand {
 	 * Used to update containers at the rate specified by the poll rate in the
 	 * config file
 	 * 
-	 * NOTE TO SELF: DO NOT ADD "STATIC" MODIFIER - otherwise exception is thrown
+	 * NOTE TO SELF: DO NOT ADD "STATIC" MODIFIER - otherwise exception is
+	 * thrown
 	 */
 	@SubscribeEvent
 	public void onTick(PlayerTickEvent event) {
@@ -468,14 +401,13 @@ public class DockerCommands implements ICommand {
 	}
 
 	private void updateContainers() {
+		refreshContainerIDMap();
 		List<Container> containers = getAll();
 		List<BoxContainer> newContainers = builder.containerPanel(containers,
 				getStartPosition(), sender.getEntityWorld());
 		if (boxContainers.equals(newContainers)) {
 			return;
 		}
-
-		refreshContainerIDMap();
 
 		int start = 0;
 
@@ -507,13 +439,16 @@ public class DockerCommands implements ICommand {
 				newContainersToBuild.size());
 		buildContainersFromList(newContainersToBuild);
 
-		for (BoxContainer container : newContainersToBuild) {
-			if (!container.getState()) {
-				setContainerAppearance(container.getID(), false);
+		boxContainers = newContainers;
+
+		for (BoxContainer container : boxContainers) {
+			if (isStopped(container.getName())) {
+				setContainerAppearance(container, false);
+				container.setState(false);
+			} else {
+				container.setState(true);
 			}
 		}
-
-		boxContainers = newContainers;
 	}
 
 	public static String convertBytesAndMultiply(double bytes) {
@@ -524,7 +459,8 @@ public class DockerCommands implements ICommand {
 			suffixNumber++;
 		}
 
-		// Multiplying by a constant that seems to make the memory size match that shown by the Docker command "docker images"
+		// Multiplying by a constant that seems to make the memory size match
+		// that shown by the Docker command "docker images"
 		if (suffixNumber != 0) {
 			bytes *= 1.04851005D;
 		}

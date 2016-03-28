@@ -2,10 +2,10 @@ package org.redfrog404.mobycraft.commands;
 
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getBoxContainerWithID;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.refresh;
-import static org.redfrog404.mobycraft.commands.DockerCommands.boxContainers;
-import static org.redfrog404.mobycraft.commands.DockerCommands.builder;
-import static org.redfrog404.mobycraft.commands.DockerCommands.containerIDMap;
-import static org.redfrog404.mobycraft.commands.DockerCommands.sender;
+import static org.redfrog404.mobycraft.commands.MainCommand.boxContainers;
+import static org.redfrog404.mobycraft.commands.MainCommand.builder;
+import static org.redfrog404.mobycraft.commands.MainCommand.containerIDMap;
+import static org.redfrog404.mobycraft.commands.MainCommand.sender;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class BuildContainerCommands {
 					boxContainer.getName(), boxContainer.getImage(),
 					boxContainer.getID());
 			if (!boxContainer.getState()) {
-				setContainerAppearance(boxContainer.getID(), false);
+				setContainerAppearance(boxContainer, false);
 			}
 		}
 	}
@@ -40,17 +40,7 @@ public class BuildContainerCommands {
 		buildContainers();
 	}
 	
-	public static void setContainerAppearance(String containerID, boolean state) {
-		
-		System.out.println(containerIDMap);
-		System.out.println(getBoxContainerWithID(containerID));
-
-		if (getBoxContainerWithID(containerID) == null) {
-			return;
-		}
-
-		BoxContainer boxContainer = getBoxContainerWithID(containerID);
-
+	public static void setContainerAppearance(BoxContainer container, boolean state) {		
 		Block containerBlock;
 		Block prevContainerBlock;
 
@@ -63,12 +53,12 @@ public class BuildContainerCommands {
 			prevContainerBlock = Blocks.iron_block;
 		}
 
-		builder.replace(boxContainer.getWorld(), boxContainer.getPosition()
-				.add(2, 0, 1), boxContainer.getPosition().add(-2, 0, 7),
+		builder.replace(container.getWorld(), container.getPosition()
+				.add(2, 0, 1), container.getPosition().add(-2, 0, 7),
 				prevContainerBlock, containerBlock);
 
-		builder.replace(boxContainer.getWorld(), boxContainer.getPosition()
-				.add(2, 4, 1), boxContainer.getPosition().add(-2, 4, 7),
+		builder.replace(container.getWorld(), container.getPosition()
+				.add(2, 4, 1), container.getPosition().add(-2, 4, 7),
 				prevContainerBlock, containerBlock);
 	}
 

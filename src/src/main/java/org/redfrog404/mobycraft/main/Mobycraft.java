@@ -25,7 +25,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-import org.redfrog404.mobycraft.commands.DockerCommands;
+import org.redfrog404.mobycraft.commands.MainCommand;
 import org.redfrog404.mobycraft.dimension.DimensionRegistry;
 import org.redfrog404.mobycraft.entity.EntityMoby;
 import org.redfrog404.mobycraft.entity.RenderMoby;
@@ -42,7 +42,7 @@ public final class Mobycraft {
 
 	ItemModelMesher mesher;
 
-	DockerCommands commands = new DockerCommands();
+	MainCommand commands = new MainCommand();
 
 	@EventHandler
 	public void registerDockerCommands(FMLServerStartingEvent event) {

@@ -1,10 +1,10 @@
 package org.redfrog404.mobycraft.commands;
 
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAll;
-import static org.redfrog404.mobycraft.commands.DockerCommands.arg1;
-import static org.redfrog404.mobycraft.commands.DockerCommands.checkIfArgIsNull;
-import static org.redfrog404.mobycraft.commands.DockerCommands.convertBytesAndMultiply;
-import static org.redfrog404.mobycraft.commands.DockerCommands.getDockerClient;
+import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
+import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
+import static org.redfrog404.mobycraft.commands.MainCommand.convertBytesAndMultiply;
+import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendBarMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendErrorMessage;
@@ -61,12 +61,12 @@ public class ImageCommands {
 
 	public static void removeAllImages() {
 		sendFeedbackMessage("Working on it...");
-		if (getAll().size() < 1) {
-			sendFeedbackMessage("No images currently currently.");
+		if (getImages().size() < 1) {
+			sendFeedbackMessage("No images currently installed.");
 			return;
 		}
 		for (Image image : getImages()) {
-			getDockerClient().removeImageCmd(image.getId()).exec();
+			getDockerClient().removeImageCmd(image.getId()).withForce().exec();
 		}
 		sendConfirmMessage("Removed all images.");
 	}

@@ -77,6 +77,10 @@ public class BoxContainer {
 	
 	@Override
 	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
+		
 		return obj.toString().equals(this.toString());
     }
 

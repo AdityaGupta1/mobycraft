@@ -84,13 +84,16 @@ public class StructureBuilder {
 				String containerName, String containerImage,
 				String containerID) {
 
+			// Iron room
 			start = start.add(-2, 0, 1);
 			room(world, start, start.add(4, 4, 4), Blocks.iron_block);
 
+			// Logo block and entrance
 			world.setBlockState(start.add(2, 3, 0),
 					Mobycraft.docker_block.getDefaultState());
 			fill(world, start.add(2, 2, 0), start.add(2, 1, 0), Blocks.air);
 
+			// Start/Stop Container sign and its command block
 			world.setBlockState(start.add(3, 2, 3),
 					Blocks.stone_button.getDefaultState());
 			IBlockState wallSign = Blocks.wall_sign.getDefaultState();
@@ -104,19 +107,6 @@ public class StructureBuilder {
 					+ EnumChatFormatting.BOLD + "Stop");
 			sign.signText[2] = new ChatComponentText(EnumChatFormatting.BLACK
 					+ "" + EnumChatFormatting.BOLD + "Container");
-
-			world.setBlockState(start.add(4, 1, -1), wallSign);
-			sign = ((TileEntitySign) world.getTileEntity(start.add(4, 1, -1)));
-			sign.signText[0] = new ChatComponentText(EnumChatFormatting.BOLD
-					+ "Name:");
-			wrapSignText(containerName, sign);
-
-			world.setBlockState(start.add(3, 1, -1), wallSign);
-			sign = ((TileEntitySign) world.getTileEntity(start.add(3, 1, -1)));
-			sign.signText[0] = new ChatComponentText(EnumChatFormatting.BOLD
-					+ "Image:");
-			wrapSignText(containerImage, sign);
-
 			room(world, start.add(0, 0, 6), start.add(4, 4, 4),
 					Blocks.iron_block);
 			world.setBlockState(start.add(3, 2, 5),
@@ -125,7 +115,39 @@ public class StructureBuilder {
 					.getTileEntity(start.add(3, 2, 5));
 			commandBlock.getCommandBlockLogic().setCommand(
 					"/docker switch_state " + containerID);
+			
+			// Detailed Information sign and its command block
+			world.setBlockState(start.add(1, 2, 3),
+					Blocks.stone_button.getDefaultState());
+			world.setBlockState(start.add(1, 3, 3), wallSign);
+			sign = ((TileEntitySign) world.getTileEntity(start
+					.add(1, 3, 3)));
+			sign.signText[1] = new ChatComponentText(EnumChatFormatting.BLACK
+					+ "" + EnumChatFormatting.BOLD + "Detailed");
+			sign.signText[2] = new ChatComponentText(EnumChatFormatting.BLACK
+					+ "" + EnumChatFormatting.BOLD + "Information");
+			world.setBlockState(start.add(1, 2, 5),
+					Blocks.command_block.getDefaultState());
+			commandBlock = (TileEntityCommandBlock) world
+					.getTileEntity(start.add(1, 2, 5));
+			commandBlock.getCommandBlockLogic().setCommand(
+					"/docker show_detailed_info " + containerID);
 
+			// Name sign
+			world.setBlockState(start.add(4, 1, -1), wallSign);
+			sign = ((TileEntitySign) world.getTileEntity(start.add(4, 1, -1)));
+			sign.signText[0] = new ChatComponentText(EnumChatFormatting.BOLD
+					+ "Name:");
+			wrapSignText(containerName, sign);
+
+			// Image sign
+			world.setBlockState(start.add(3, 1, -1), wallSign);
+			sign = ((TileEntitySign) world.getTileEntity(start.add(3, 1, -1)));
+			sign.signText[0] = new ChatComponentText(EnumChatFormatting.BOLD
+					+ "Image:");
+			wrapSignText(containerImage, sign);
+
+			// Glowstone lighting
 			IBlockState glowstone = Blocks.glowstone.getDefaultState();
 			Vec3i[] addVectors = { new Vec3i(3, 0, 1), new Vec3i(1, 0, 1),
 					new Vec3i(3, 0, 3), new Vec3i(1, 0, 3), new Vec3i(3, 0, 5),

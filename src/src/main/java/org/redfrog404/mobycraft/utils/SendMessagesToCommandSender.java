@@ -1,6 +1,6 @@
 package org.redfrog404.mobycraft.utils;
 
-import static org.redfrog404.mobycraft.commands.DockerCommands.sender;
+import static org.redfrog404.mobycraft.commands.MainCommand.sender;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 
