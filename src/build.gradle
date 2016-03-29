@@ -75,7 +75,8 @@ shadowJar {
     */
 
     // Relocate fluent-hc to prevent conflicts with other mods that include it
-    relocate 'org.apache.commons.logging', 'org.movycraft.org.apache.commons.logging'
+    relocate 'org.apache.commons.logging', 'org.mobycraft.org.apache.commons.logging'
+    relocate 'org.slf4j', 'org.mobycraft.org.slf4j'
 
     classifier '' // Replace the default JAR
 }
