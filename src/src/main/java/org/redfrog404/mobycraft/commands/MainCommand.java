@@ -117,8 +117,9 @@ public class MainCommand implements ICommand {
 		commandNumbers.put("set_start_pos", 16);
 		commandNumbers.put("show_detailed_info", 17);
 
-		helpMessages.put("help <page>",
-				"Brings up page number <page> of this help list");
+		helpMessages
+				.put("help (page | command)",
+						"Brings up page number (page) of this help list or help specifically relating to command (command); if neither is specified, this command will show page 1 of regular help");
 		helpMessages
 				.put("ps [options]",
 						"Lists all of your containers and some important information about them");

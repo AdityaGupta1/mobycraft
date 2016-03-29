@@ -46,7 +46,7 @@ public class BasicDockerCommands {
 		int maxCommandsPerPage = 8;
 
 		int page = 1;
-		int maxPages = ((size - size % maxCommandsPerPage) / maxCommandsPerPage) + 1;
+		int maxPages = (((size - 1) - size % maxCommandsPerPage) / maxCommandsPerPage) + 1;
 
 		boolean specificHelp = false;
 
