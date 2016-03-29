@@ -4,6 +4,7 @@ import static org.redfrog404.mobycraft.commands.BasicDockerCommands.help;
 import static org.redfrog404.mobycraft.commands.BasicDockerCommands.path;
 import static org.redfrog404.mobycraft.commands.BasicDockerCommands.ps;
 import static org.redfrog404.mobycraft.commands.BasicDockerCommands.showDetailedInfo;
+import static org.redfrog404.mobycraft.commands.BasicDockerCommands.specificHelpMessages;
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.buildContainersFromList;
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.refreshAndBuildContainers;
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.setContainerAppearance;
@@ -24,7 +25,6 @@ import static org.redfrog404.mobycraft.commands.ContainerListCommands.refreshCon
 import static org.redfrog404.mobycraft.commands.ImageCommands.images;
 import static org.redfrog404.mobycraft.commands.ImageCommands.removeAllImages;
 import static org.redfrog404.mobycraft.commands.ImageCommands.removeImage;
-import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendFeedbackMessage;
@@ -33,6 +33,7 @@ import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendMes
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +49,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
@@ -118,7 +120,7 @@ public class MainCommand implements ICommand {
 		helpMessages.put("help <page>",
 				"Brings up page number <page> of this help list");
 		helpMessages
-				.put("ps",
+				.put("ps [options]",
 						"Lists all of your containers and some important information about them");
 		helpMessages.put("path <path>", "Sets the Docker path to <path>");
 		helpMessages
@@ -140,6 +142,12 @@ public class MainCommand implements ICommand {
 						"Sets the start position of container building to the sender's current position");
 		helpMessages.put("rm_stopped",
 				"Removes all currently stopped containers");
+
+		specificHelpMessages
+				.put("ps",
+						new String[] { "ps [options]",
+								"Does not show stopped containers by default",
+								"[options]: \"-a\" to show all containers, including stopped ones" });
 
 		byteSuffixNumbers.put(0, "B");
 		byteSuffixNumbers.put(1, "KB");
@@ -191,7 +199,7 @@ public class MainCommand implements ICommand {
 		}
 
 		String command = args[0].toLowerCase();
-		this.args = args;
+		this.args = Arrays.copyOfRange(args, 1, args.length);
 		if (args.length > 1) {
 			arg1 = args[1];
 		}
@@ -363,7 +371,7 @@ public class MainCommand implements ICommand {
 
 	public static boolean checkIfArgIsNull(int argNumber) {
 		try {
-			if (args[argNumber - 1].equals(null)) {
+			if (args[argNumber].equals(null)) {
 				return true;
 			}
 		} catch (ArrayIndexOutOfBoundsException e) {
@@ -456,7 +464,7 @@ public class MainCommand implements ICommand {
 		}
 	}
 
-	public static String convertBytesAndMultiply(double bytes) {
+	public static String imageSizeConversion(double bytes) {
 		int suffixNumber = 0;
 
 		while (bytes / 1024 > 1) {
@@ -481,22 +489,24 @@ public class MainCommand implements ICommand {
 
 		return byteString;
 	}
-	
+
 	@SubscribeEvent
 	public void containerWand(PlayerInteractEvent event) {
 		EntityPlayer player = event.entityPlayer;
-		
-		if (player.getHeldItem().getItem() == null) {
+
+		if (!event.action.equals(Action.RIGHT_CLICK_BLOCK)
+				|| !event.action.equals(Action.LEFT_CLICK_BLOCK)) {
 			return;
 		}
-		
-		if (player.getHeldItem().getItem() != Mobycraft.container_wand) {
+
+		if (player.getHeldItem() == null
+				|| player.getHeldItem().getItem() != Mobycraft.container_wand) {
 			return;
 		}
-		
+
 		World world = event.world;
 		BlockPos pos = event.pos;
-		
+
 		if (world.getBlockState(pos).getBlock() != Blocks.wall_sign
 				&& world.getBlockState(pos).getBlock() != Blocks.standing_sign) {
 			return;
@@ -511,15 +521,16 @@ public class MainCommand implements ICommand {
 		String name = sign.signText[1].getUnformattedText().concat(
 				sign.signText[2].getUnformattedText().concat(
 						sign.signText[3].getUnformattedText()));
-		
+
 		System.out.println(name);
 
 		if (getWithName(name) == null) {
 			return;
 		}
-		
+
 		Container container = getWithName(name);
-		getDockerClient().removeContainerCmd(container.getId()).withForce().exec();
+		getDockerClient().removeContainerCmd(container.getId()).withForce()
+				.exec();
 		sendConfirmMessage("Removed container with name \"" + name + "\"");
 	}
 }

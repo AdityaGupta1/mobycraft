@@ -1,5 +1,9 @@
 package org.redfrog404.mobycraft.utils;
 
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getContainers;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromAllWithName;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.isStopped;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -215,6 +219,12 @@ public class StructureBuilder {
 				boxContainers
 						.addAll(containerColumn(containers, i, pos, world));
 				pos = pos.add(6, 0, 0);
+			}
+			
+			for (BoxContainer container : boxContainers) {
+				if (isStopped(container.getName())) {
+					container.setState(false);
+				}
 			}
 
 			return boxContainers;

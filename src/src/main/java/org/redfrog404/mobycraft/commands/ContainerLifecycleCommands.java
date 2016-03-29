@@ -25,7 +25,7 @@ import com.github.dockerjava.core.command.PullImageResultCallback;
 public class ContainerLifecycleCommands {
 	
 	public static void start() {
-		if (checkIfArgIsNull(2)) {
+		if (checkIfArgIsNull(0)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker start <name> .");
 			return;
 		}
@@ -42,7 +42,7 @@ public class ContainerLifecycleCommands {
 	}
 	
 	public static void stop() {
-		if (checkIfArgIsNull(2)) {
+		if (checkIfArgIsNull(0)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker stop <name> .");
 			return;
 		}
@@ -58,7 +58,7 @@ public class ContainerLifecycleCommands {
 	}
 	
 	public static void remove() {
-		if (checkIfArgIsNull(2)) {
+		if (checkIfArgIsNull(0)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker rm <name> .");
 			return;
 		}
@@ -89,7 +89,7 @@ public class ContainerLifecycleCommands {
 	}
 	
 	public static void restart() {
-		if (checkIfArgIsNull(2)) {
+		if (checkIfArgIsNull(0)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker restart <name> .");
 			return;
 		}
@@ -97,7 +97,7 @@ public class ContainerLifecycleCommands {
 		try {
 			dockerClient.restartContainerCmd(
 					getWithName("/" + arg1).getId()).exec();
-			sendConfirmMessage("Restart container with name \"/" + arg1 + "\"");
+			sendConfirmMessage("Restarted container with name \"/" + arg1 + "\"");
 		} catch (NullPointerException exception) {
 			sendErrorMessage("No container exists with the name \"/" + arg1
 					+ "\"");
@@ -105,7 +105,7 @@ public class ContainerLifecycleCommands {
 	}
 	
 	public static void kill() {
-		if (checkIfArgIsNull(2)) {
+		if (checkIfArgIsNull(0)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker kill <name> .");
 			return;
 		}
@@ -154,17 +154,17 @@ public class ContainerLifecycleCommands {
 			}
 			sendConfirmMessage("Created container with image \"" + arg1
 					+ "\" and name \"" + name + "\"");
-		} else if (!NumberUtils.isNumber(args[2])) {
+		} else if (!NumberUtils.isNumber(args[1])) {
 			// Name
 			CreateContainerResponse response = dockerClient
-					.createContainerCmd(arg1).withName(args[2]).exec();
+					.createContainerCmd(arg1).withName(args[1]).exec();
 			dockerClient.startContainerCmd(response.getId()).exec();
 			sendConfirmMessage("Created container with image \"" + arg1
-					+ "\" and name \"/" + args[2] + "\"");
+					+ "\" and name \"/" + args[1] + "\"");
 		} else {
 			// Number
 			ArrayList<String> names = new ArrayList<String>();
-			for (int i = 0; i < Integer.parseInt(args[2]); i++) {
+			for (int i = 0; i < Integer.parseInt(args[1]); i++) {
 				CreateContainerResponse response = dockerClient
 						.createContainerCmd(arg1).exec();
 				dockerClient.startContainerCmd(response.getId()).exec();

@@ -18,7 +18,7 @@ public class StatisticsResultCallback extends ResultCallbackTemplate<StatisticsR
 		Container container = getFromAllWithName(boxContainer.getName());
 		
 		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
-				+ "========= Container Information =========");
+				+ "=========== Container Information ===========");
 		sendMessage(EnumChatFormatting.AQUA + "" + EnumChatFormatting.BOLD
 				+ "Name: " + EnumChatFormatting.RESET + boxContainer.getName());
 		sendMessage(EnumChatFormatting.GOLD + "" + EnumChatFormatting.BOLD

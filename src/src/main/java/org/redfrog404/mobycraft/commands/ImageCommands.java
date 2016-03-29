@@ -2,8 +2,8 @@ package org.redfrog404.mobycraft.commands;
 
 import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
 import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
-import static org.redfrog404.mobycraft.commands.MainCommand.convertBytesAndMultiply;
 import static org.redfrog404.mobycraft.commands.MainCommand.dockerClient;
+import static org.redfrog404.mobycraft.commands.MainCommand.imageSizeConversion;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendBarMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendErrorMessage;
@@ -14,7 +14,6 @@ import java.util.List;
 
 import net.minecraft.util.EnumChatFormatting;
 
-import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Image;
 
 public class ImageCommands {
@@ -49,7 +48,7 @@ public class ImageCommands {
 			message += EnumChatFormatting.RESET + ", "
 					+ EnumChatFormatting.GOLD + tag + EnumChatFormatting.RESET
 					+ ", " + EnumChatFormatting.GREEN
-					+ convertBytesAndMultiply(image.getSize());
+					+ imageSizeConversion(image.getSize());
 			sendMessage(message);
 		}
 	}
@@ -67,8 +66,8 @@ public class ImageCommands {
 	}
 
 	public static void removeImage() {
-		if (checkIfArgIsNull(2)) {
-			sendErrorMessage("Container name not specified! Command is used as /docker rmi <name> .");
+		if (checkIfArgIsNull(0)) {
+			sendErrorMessage("Image name not specified! Command is used as /docker rmi <name> .");
 			return;
 		}
 
