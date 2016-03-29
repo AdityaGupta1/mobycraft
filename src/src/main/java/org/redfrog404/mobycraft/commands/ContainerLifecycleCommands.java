@@ -141,7 +141,7 @@ public class ContainerLifecycleCommands {
 			callback.awaitCompletion();
 		}
 
-		if (args.length < 3) {
+		if (args.length < 2) {
 			// No name, no number
 			CreateContainerResponse response = dockerClient
 					.createContainerCmd(arg1).exec();

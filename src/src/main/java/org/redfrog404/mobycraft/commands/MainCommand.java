@@ -217,6 +217,10 @@ public class MainCommand implements ICommand {
 			sendErrorMessage("Docker path has not been set! Set it using /docker path <path> .");
 			return;
 		}
+		
+		if (dockerClient == null) {
+			dockerClient = getDockerClient();
+		}
 
 		BlockPos position = sender.getPosition();
 
@@ -468,17 +472,12 @@ public class MainCommand implements ICommand {
 	public static String imageSizeConversion(double bytes) {
 		int suffixNumber = 0;
 
-		while (bytes / 1024 > 1) {
-			bytes /= 1024;
-			suffixNumber++;
-		}
-
 		/*
-		 * Multiplying by a constant that seems to make the memory size match
-		 * that shown by the Docker command "docker images"
+		 * Docker seems to convert bytes using 1000 instead of 1024
 		 */
-		if (suffixNumber != 0) {
-			bytes *= 1.04851005D;
+		while (bytes / 1000 > 1) {
+			bytes /= 1000;
+			suffixNumber++;
 		}
 
 		NumberFormat formatter = new DecimalFormat("#0.0");

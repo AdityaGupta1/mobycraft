@@ -7,6 +7,7 @@ import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendMes
 
 import java.util.List;
 
+import scala.xml.persistent.SetStorage;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -24,11 +25,6 @@ import com.github.dockerjava.api.model.Container;
 
 public class GenericItem extends Item {
 
-	public GenericItem(String name) {
-		super();
-		this.setUnlocalizedName(name);
-		this.setCreativeTab(CreativeTabs.tabMisc);
-	}
 
 	public GenericItem(String name, CreativeTabs tab) {
 		super();

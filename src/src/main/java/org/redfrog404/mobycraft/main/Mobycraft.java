@@ -60,7 +60,7 @@ public final class Mobycraft {
 				10.0F, "pickaxe", 1, Block.soundTypeMetal);
 		registerBlock(docker_block, "docker_block");
 		
-		container_wand = new GenericItem("container_wand", CreativeTabs.tabTools);
+		container_wand = new GenericItem("container_wand", CreativeTabs.tabTools).setMaxStackSize(1);
 		registerItem(container_wand, "container_wand");
 
 		RenderManager render = Minecraft.getMinecraft().getRenderManager();

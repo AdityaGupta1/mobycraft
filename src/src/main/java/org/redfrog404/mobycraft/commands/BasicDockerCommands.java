@@ -4,6 +4,7 @@ import static org.redfrog404.mobycraft.commands.ContainerListCommands.asSortedLi
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAll;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getBoxContainerWithID;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getContainers;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromAllWithName;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.isStopped;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.refreshContainerIDMap;
 import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
@@ -13,6 +14,7 @@ import static org.redfrog404.mobycraft.commands.MainCommand.commandNumbers;
 import static org.redfrog404.mobycraft.commands.MainCommand.containerIDMap;
 import static org.redfrog404.mobycraft.commands.MainCommand.dockerClient;
 import static org.redfrog404.mobycraft.commands.MainCommand.dockerPath;
+import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
 import static org.redfrog404.mobycraft.commands.MainCommand.helpMessages;
 import static org.redfrog404.mobycraft.commands.MainCommand.sendHelpMessage;
 import static org.redfrog404.mobycraft.commands.MainCommand.sender;
@@ -22,6 +24,8 @@ import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendErr
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendFeedbackMessage;
 import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendMessage;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +36,7 @@ import net.minecraft.util.EnumChatFormatting;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.redfrog404.mobycraft.main.Mobycraft;
+import org.redfrog404.mobycraft.utils.BoxContainer;
 import org.redfrog404.mobycraft.utils.StatisticsResultCallback;
 
 import com.github.dockerjava.api.model.Container;
@@ -195,7 +200,11 @@ public class BasicDockerCommands {
 		sendConfirmMessage("Docker path set to \"" + arg1 + "\"");
 	}
 
-	public static void showDetailedInfo() {
+	public static void showDetailedInfo() throws InterruptedException {
+		if (dockerClient == null) {
+			dockerClient = getDockerClient();
+		}
+		
 		refreshContainerIDMap();
 		System.out.println(containerIDMap);
 
@@ -207,7 +216,32 @@ public class BasicDockerCommands {
 		sender = sender.getEntityWorld().getClosestPlayer(senderPos.getX(),
 				senderPos.getY(), senderPos.getZ(), -1);
 
-		dockerClient.statsCmd().exec(new StatisticsResultCallback());
+		if (isStopped(getBoxContainerWithID(arg1).getName())) {
+			BoxContainer boxContainer = getBoxContainerWithID(arg1);
+			Container container = getFromAllWithName(boxContainer.getName());
+			printBasicContainerInformation(boxContainer, container);
+			return;
+		}
+
+		StatisticsResultCallback callback = new StatisticsResultCallback();
+		callback = dockerClient.statsCmd().withContainerId(arg1).exec(callback);
+		callback.awaitCompletion();
+	}
+
+	public static void printBasicContainerInformation(
+			BoxContainer boxContainer, Container container) {
+		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
+				+ "=========== Container Information ===========");
+		sendMessage(EnumChatFormatting.AQUA + "" + EnumChatFormatting.BOLD
+				+ "Name: " + EnumChatFormatting.RESET + boxContainer.getName());
+		sendMessage(EnumChatFormatting.GOLD + "" + EnumChatFormatting.BOLD
+				+ "Image: " + EnumChatFormatting.RESET
+				+ boxContainer.getImage());
+		sendMessage(EnumChatFormatting.GREEN + "" + EnumChatFormatting.BOLD
+				+ "ID: " + EnumChatFormatting.RESET + boxContainer.getShortID());
+		sendMessage(EnumChatFormatting.LIGHT_PURPLE + ""
+				+ EnumChatFormatting.BOLD + "Status: "
+				+ EnumChatFormatting.RESET + container.getStatus());
 	}
 
 }
