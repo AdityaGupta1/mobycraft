@@ -36,7 +36,7 @@ import org.redfrog404.mobycraft.utils.GenericItem;
 @Mod(modid = Mobycraft.MODID, version = Mobycraft.VERSION)
 public final class Mobycraft {
 	public static final String MODID = "moby";
-	public static final String VERSION = "1.0";
+	public static final String VERSION = "1.0-beta";
 
 	public static Configuration config;
 

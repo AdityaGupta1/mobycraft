@@ -156,6 +156,12 @@ public class MainCommand implements ICommand {
 						new String[] { "ps [options]",
 								"Does not show stopped containers by default",
 								"[options]: \"-a\" to show all containers, including stopped ones" });
+		specificHelpMessages
+		.put("heat_map",
+				new String[] { "heat_map <cpu | memory>",
+						"Shows in the format of (container name) - (image) - (usage)",
+						"If there are multiple containers with the same usage, the container name will say \"and (number) others\"",
+						"If there are multiple containers with the same usage, the image refers to the one whose name is shown in the (container name)" });
 
 		byteSuffixNumbers.put(0, "B");
 		byteSuffixNumbers.put(1, "KB");

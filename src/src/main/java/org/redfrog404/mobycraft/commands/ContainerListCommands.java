@@ -148,39 +148,38 @@ public class ContainerListCommands {
 		sendFeedbackMessage("Loading...");
 
 		refreshRunning();
-		Map<Double, BoxContainer> finalUsagesMap = new HashMap<Double, BoxContainer>();
 
 		Map<Double, BoxContainer> usagesMap = new HashMap<Double, BoxContainer>();
-		for (BoxContainer container : boxContainers) {
-			if (arg1.equalsIgnoreCase("cpu")) {
-				usagesMap.put(container.getCpuUsage(), container);
-			} else {
-				usagesMap.put(container.getMemoryUsage(), container);
-			}
-		}
-
 		List<Double> sortedUsages = new ArrayList<Double>();
-
+		Map<Double, Integer> andOthers = new HashMap<Double, Integer>();
 		for (BoxContainer container : boxContainers) {
+			double usage = 0D;
 			if (arg1.equalsIgnoreCase("cpu")) {
-				sortedUsages.add(container.getCpuUsage());
+				usage = container.getCpuUsage();
 			} else {
-				sortedUsages.add(container.getMemoryUsage());
+				usage = container.getMemoryUsage();
+			}
+
+			if (usagesMap.containsKey(usage)) {
+				if (andOthers.containsKey(usage)) {
+					andOthers.put(usage, andOthers.get(usage) + 1);
+				} else {
+					andOthers.put(usage, 1);
+				}
+			} else {
+				usagesMap.put(usage, container);
 			}
 		}
 
+		sortedUsages.addAll(usagesMap.keySet());
 		sortedUsages = Lists.reverse(asSortedList(sortedUsages));
 
 		int maxNumber = 0;
 
-		if (boxContainers.size() >= 5) {
+		if (usagesMap.size() >= 5) {
 			maxNumber = 5;
 		} else {
-			maxNumber = boxContainers.size();
-		}
-		for (int i = 0; i < maxNumber; i++) {
-			finalUsagesMap.put(sortedUsages.get(i),
-					usagesMap.get(sortedUsages.get(i)));
+			maxNumber = usagesMap.size();
 		}
 
 		if (arg1.equalsIgnoreCase("cpu")) {
@@ -193,17 +192,31 @@ public class ContainerListCommands {
 
 		int number = 1;
 		NumberFormat formatter = new DecimalFormat("#0.00");
+		
+		List<Double> finishedUsages = new ArrayList<Double>();
 
 		for (double usage : sortedUsages.subList(0, maxNumber)) {
-			sendMessage(EnumChatFormatting.GOLD + "" + number + ". "
+			if (finishedUsages.contains(usage) && andOthers.containsKey(usage)) {
+				continue;
+			}
+			String message = EnumChatFormatting.GOLD + "" + number + ". "
 					+ EnumChatFormatting.DARK_AQUA
-					+ finalUsagesMap.get(usage).getName()
-					+ EnumChatFormatting.GOLD + " - "
+					+ usagesMap.get(usage).getName();
+			if (andOthers.containsKey(usage)) {
+				if (andOthers.get(usage) == 1) {
+					message = message + " and " + andOthers.get(usage) + " other";
+				} else {
+					message = message + " and " + andOthers.get(usage) + " others";
+				}
+			}
+			message = message + EnumChatFormatting.GOLD + " - "
 					+ EnumChatFormatting.DARK_AQUA
-					+ finalUsagesMap.get(usage).getImage()
-					+ EnumChatFormatting.GOLD + " - " + EnumChatFormatting.AQUA
-					+ formatter.format(usage) + "%");
+					+ usagesMap.get(usage).getImage() + EnumChatFormatting.GOLD
+					+ " - " + EnumChatFormatting.AQUA + formatter.format(usage)
+					+ "%";
+			sendMessage(message);
 			number++;
+			finishedUsages.add(usage);
 		}
 		refresh();
 	}
