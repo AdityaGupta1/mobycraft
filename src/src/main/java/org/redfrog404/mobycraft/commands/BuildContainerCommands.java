@@ -1,18 +1,25 @@
 package org.redfrog404.mobycraft.commands;
 
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getBoxContainerWithID;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromAllWithName;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.refresh;
+import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
 import static org.redfrog404.mobycraft.commands.MainCommand.boxContainers;
 import static org.redfrog404.mobycraft.commands.MainCommand.builder;
-import static org.redfrog404.mobycraft.commands.MainCommand.containerIDMap;
+import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
 import static org.redfrog404.mobycraft.commands.MainCommand.sender;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 
 import java.util.List;
 
+import net.minecraft.block.Block;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.util.BlockPos;
+
 import org.redfrog404.mobycraft.utils.BoxContainer;
 
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
+import com.github.dockerjava.api.model.Container;
 
 public class BuildContainerCommands {
 	
@@ -60,6 +67,24 @@ public class BuildContainerCommands {
 		builder.replace(container.getWorld(), container.getPosition()
 				.add(2, 4, 1), container.getPosition().add(-2, 4, 7),
 				prevContainerBlock, containerBlock);
+	}
+	
+	public static void teleport () {
+		if (checkIfArgIsNull(0)) {
+			sendErrorMessage("Container name not specified! Command is used as /docker rm <name> .");
+			return;
+		}
+		
+		Container container = getFromAllWithName("/" + arg1);
+		
+		if (container == null) {
+			sendErrorMessage("No container exists with the name \"/" + arg1
+					+ "\"");
+		}
+
+		BoxContainer boxContainer = getBoxContainerWithID(container.getId());
+		BlockPos pos = boxContainer.getPosition();
+		((EntityPlayer) sender).setLocationAndAngles(pos.getX(), pos.getY(), pos.getZ(), 0, 0);
 	}
 
 }

@@ -8,6 +8,7 @@ import static org.redfrog404.mobycraft.commands.BasicDockerCommands.specificHelp
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.buildContainersFromList;
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.refreshAndBuildContainers;
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.setContainerAppearance;
+import static org.redfrog404.mobycraft.commands.BuildContainerCommands.teleport;
 import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.kill;
 import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.killAll;
 import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.remove;
@@ -20,15 +21,16 @@ import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.stop;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAll;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getBoxContainerWithID;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.getWithName;
+import static org.redfrog404.mobycraft.commands.ContainerListCommands.heatMap;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.isStopped;
 import static org.redfrog404.mobycraft.commands.ContainerListCommands.refreshContainerIDMap;
 import static org.redfrog404.mobycraft.commands.ImageCommands.images;
 import static org.redfrog404.mobycraft.commands.ImageCommands.removeAllImages;
 import static org.redfrog404.mobycraft.commands.ImageCommands.removeImage;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendConfirmMessage;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendErrorMessage;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendFeedbackMessage;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -92,8 +94,6 @@ public class MainCommand implements ICommand {
 	public int count = 0;
 	public int maxCount;
 
-	public static DockerClient dockerClient;
-
 	public MainCommand() {
 		this.commandAliases = new ArrayList();
 		this.commandAliases.add("docker");
@@ -116,6 +116,9 @@ public class MainCommand implements ICommand {
 		commandNumbers.put("rmi_all", 15);
 		commandNumbers.put("set_start_pos", 16);
 		commandNumbers.put("show_detailed_info", 17);
+		commandNumbers.put("tp", 18);
+		commandNumbers.put("teleport", 18);
+		commandNumbers.put("heat_map", 19);
 
 		helpMessages
 				.put("help (page | command)",
@@ -143,6 +146,10 @@ public class MainCommand implements ICommand {
 						"Sets the start position of container building to the sender's current position");
 		helpMessages.put("rm_stopped",
 				"Removes all currently stopped containers");
+		helpMessages.put("teleport | tp <name>",
+				"Teleports to the box container with the name <name>");
+		helpMessages.put("heat_map <cpu | memory>",
+				"Shows a list of the top five containers that use the most <cpu> or <memory>");
 
 		specificHelpMessages
 				.put("ps",
@@ -172,6 +179,7 @@ public class MainCommand implements ICommand {
 						"The rate in seconds at which the containers will update (set using /docker poll_rate <rate in seconds>)");
 		maxCount = (int) Math
 				.floor((Float.parseFloat(pollRate.getString()) * 50));
+		System.out.println(maxCount);
 	}
 
 	@Override
@@ -216,10 +224,6 @@ public class MainCommand implements ICommand {
 		if (dockerPath.isDefault() && commandNumber != 2) {
 			sendErrorMessage("Docker path has not been set! Set it using /docker path <path> .");
 			return;
-		}
-		
-		if (dockerClient == null) {
-			dockerClient = getDockerClient();
 		}
 
 		BlockPos position = sender.getPosition();
@@ -280,9 +284,17 @@ public class MainCommand implements ICommand {
 				Mobycraft.config.save();
 				sendConfirmMessage("Set start position for building containers to ("
 						+ startPos.getString() + ").");
+				readConfigProperties();
+				updateContainers();
 				break;
 			case 17:
 				showDetailedInfo();
+				break;
+			case 18:
+				teleport();
+				break;
+			case 19:
+				heatMap();
 				break;
 			}
 		} catch (Exception e) {
@@ -353,7 +365,7 @@ public class MainCommand implements ICommand {
 		if (boxContainer.getState()) {
 			containerBlock = Blocks.iron_block;
 			prevContainerBlock = Blocks.redstone_block;
-			dockerClient.startContainerCmd(boxContainer.getID()).exec();
+			getDockerClient().startContainerCmd(boxContainer.getID()).exec();
 
 		}
 		// Otherwise, if the container is now off (previously on):
@@ -361,7 +373,7 @@ public class MainCommand implements ICommand {
 			containerBlock = Blocks.redstone_block;
 			prevContainerBlock = Blocks.iron_block;
 
-			dockerClient.stopContainerCmd(boxContainer.getID()).exec();
+			getDockerClient().stopContainerCmd(boxContainer.getID()).exec();
 
 		}
 
@@ -404,10 +416,11 @@ public class MainCommand implements ICommand {
 		if (event.player.getEntityWorld().isRemote) {
 			return;
 		}
+
 		count++;
 		if (count >= maxCount) {
 			sender = event.player;
-			if (boxContainers.equals(null)) {
+			if (boxContainers == null) {
 				refreshAndBuildContainers();
 			} else {
 				updateContainers();
@@ -417,12 +430,12 @@ public class MainCommand implements ICommand {
 	}
 
 	private void updateContainers() {
-		dockerClient = getDockerClient();
 		refreshContainerIDMap();
 
 		List<Container> containers = getAll();
 		List<BoxContainer> newContainers = builder.containerPanel(containers,
 				getStartPosition(), sender.getEntityWorld());
+
 		if (boxContainers.equals(newContainers)) {
 			return;
 		}

@@ -12,20 +12,17 @@ import static org.redfrog404.mobycraft.commands.MainCommand.args;
 import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
 import static org.redfrog404.mobycraft.commands.MainCommand.commandNumbers;
 import static org.redfrog404.mobycraft.commands.MainCommand.containerIDMap;
-import static org.redfrog404.mobycraft.commands.MainCommand.dockerClient;
 import static org.redfrog404.mobycraft.commands.MainCommand.dockerPath;
 import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
 import static org.redfrog404.mobycraft.commands.MainCommand.helpMessages;
 import static org.redfrog404.mobycraft.commands.MainCommand.sendHelpMessage;
 import static org.redfrog404.mobycraft.commands.MainCommand.sender;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendBarMessage;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendConfirmMessage;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendErrorMessage;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendFeedbackMessage;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendBarMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -105,7 +102,7 @@ public class BasicDockerCommands {
 		sendMessage(EnumChatFormatting.DARK_AQUA + "" + EnumChatFormatting.BOLD
 				+ "== Page " + page + "/" + maxPages);
 		sendMessage(EnumChatFormatting.AQUA
-				+ "= <arg> is required, (arg) is optional");
+				+ "= <arg> is required, (arg) and [options] are optional");
 		sendMessage(EnumChatFormatting.AQUA
 				+ "= \"|\" means \"or\"; e.g. \"<name | amount>\" means you can either put the name or the amount");
 
@@ -201,10 +198,6 @@ public class BasicDockerCommands {
 	}
 
 	public static void showDetailedInfo() throws InterruptedException {
-		if (dockerClient == null) {
-			dockerClient = getDockerClient();
-		}
-		
 		refreshContainerIDMap();
 		System.out.println(containerIDMap);
 
@@ -223,9 +216,7 @@ public class BasicDockerCommands {
 			return;
 		}
 
-		StatisticsResultCallback callback = new StatisticsResultCallback();
-		callback = dockerClient.statsCmd().withContainerId(arg1).exec(callback);
-		callback.awaitCompletion();
+		execStatsCommand(arg1, true);
 	}
 
 	public static void printBasicContainerInformation(
@@ -242,6 +233,16 @@ public class BasicDockerCommands {
 		sendMessage(EnumChatFormatting.LIGHT_PURPLE + ""
 				+ EnumChatFormatting.BOLD + "Status: "
 				+ EnumChatFormatting.RESET + container.getStatus());
+	}
+	
+	public static void execStatsCommand(String containerID, boolean sendMessages) {
+		StatisticsResultCallback callback = new StatisticsResultCallback(containerID, sendMessages);
+		callback = getDockerClient().statsCmd().withContainerId(containerID).exec(callback);
+		try {
+			callback.awaitCompletion();
+		} catch (InterruptedException exception) {
+			return;
+		}
 	}
 
 }

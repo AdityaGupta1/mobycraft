@@ -2,13 +2,13 @@ package org.redfrog404.mobycraft.commands;
 
 import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
 import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
-import static org.redfrog404.mobycraft.commands.MainCommand.dockerClient;
+import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
 import static org.redfrog404.mobycraft.commands.MainCommand.imageSizeConversion;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendBarMessage;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendConfirmMessage;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendErrorMessage;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendFeedbackMessage;
-import static org.redfrog404.mobycraft.utils.SendMessagesToCommandSender.sendMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendBarMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ import com.github.dockerjava.api.model.Image;
 public class ImageCommands {
 	
 	public static void images() {
-		List<Image> images = dockerClient.listImagesCmd().exec();
+		List<Image> images = getDockerClient().listImagesCmd().exec();
 
 		if (images.size() == 0) {
 			sendFeedbackMessage("No images currently installed.");
@@ -60,7 +60,7 @@ public class ImageCommands {
 			return;
 		}
 		for (Image image : getImages()) {
-			dockerClient.removeImageCmd(image.getId()).withForce().exec();
+			getDockerClient().removeImageCmd(image.getId()).withForce().exec();
 		}
 		sendConfirmMessage("Removed all images.");
 	}
@@ -72,7 +72,7 @@ public class ImageCommands {
 		}
 
 		try {
-			dockerClient.removeImageCmd(getImageWithName(arg1).getId())
+			getDockerClient().removeImageCmd(getImageWithName(arg1).getId())
 					.withForce().exec();
 			sendConfirmMessage("Removed image with name \"" + arg1 + "\"");
 		} catch (NullPointerException exception) {
@@ -81,7 +81,7 @@ public class ImageCommands {
 	}
 
 	public static List<Image> getImages() {
-		return dockerClient.listImagesCmd().exec();
+		return getDockerClient().listImagesCmd().exec();
 	}
 
 	public static Image getImageWithName(String name) {

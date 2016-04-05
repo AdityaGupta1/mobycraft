@@ -4,10 +4,10 @@ import static org.redfrog404.mobycraft.commands.MainCommand.sender;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 
-public class SendMessagesToCommandSender {
+public class MessageSender {
 	
-	public static void sendMessage(String message) {
-		sender.addChatMessage(new ChatComponentText(message));
+	public static void sendMessage(Object message) {
+		sender.addChatMessage(new ChatComponentText(message.toString()));
 	}
 
 	public static void sendErrorMessage(String message) {
