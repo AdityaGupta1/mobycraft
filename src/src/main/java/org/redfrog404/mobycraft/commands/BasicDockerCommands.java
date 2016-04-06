@@ -12,7 +12,8 @@ import static org.redfrog404.mobycraft.commands.MainCommand.args;
 import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
 import static org.redfrog404.mobycraft.commands.MainCommand.commandNumbers;
 import static org.redfrog404.mobycraft.commands.MainCommand.containerIDMap;
-import static org.redfrog404.mobycraft.commands.MainCommand.dockerPath;
+import static org.redfrog404.mobycraft.commands.MainCommand.certPathProperty;
+import static org.redfrog404.mobycraft.commands.MainCommand.dockerHostProperty;
 import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
 import static org.redfrog404.mobycraft.commands.MainCommand.helpMessages;
 import static org.redfrog404.mobycraft.commands.MainCommand.sendHelpMessage;
@@ -192,9 +193,20 @@ public class BasicDockerCommands {
 			return;
 		}
 
-		dockerPath.setValue(arg1);
+		certPathProperty.setValue(arg1);
 		Mobycraft.config.save();
 		sendConfirmMessage("Docker path set to \"" + arg1 + "\"");
+	}
+	
+	public static void host() {
+		if (checkIfArgIsNull(0)) {
+			sendErrorMessage("Docker host is not specified! Command is used as /docker host <host> .");
+			return;
+		}
+
+		dockerHostProperty.setValue(arg1);
+		Mobycraft.config.save();
+		sendConfirmMessage("Docker host set to \"" + arg1 + "\"");
 	}
 
 	public static void showDetailedInfo() throws InterruptedException {

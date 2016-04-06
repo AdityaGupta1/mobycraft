@@ -59,15 +59,15 @@ public final class Mobycraft {
 		docker_block = new GenericBlock("docker_block", Material.iron, 5.0F,
 				10.0F, "pickaxe", 1, Block.soundTypeMetal);
 		registerBlock(docker_block, "docker_block");
-		
-		container_wand = new GenericItem("container_wand", CreativeTabs.tabTools).setMaxStackSize(1);
+
+		container_wand = new GenericItem("container_wand",
+				CreativeTabs.tabTools).setMaxStackSize(1);
 		registerItem(container_wand, "container_wand");
 
 		RenderManager render = Minecraft.getMinecraft().getRenderManager();
 
-		registerModEntity(EntityMoby.class, new RenderMoby(),
-				"moby", EntityRegistry.findGlobalUniqueEntityId(),
-				0x24B8EB, 0x008BB8);
+		registerModEntity(EntityMoby.class, new RenderMoby(), "moby",
+				EntityRegistry.findGlobalUniqueEntityId(), 0x24B8EB, 0x008BB8);
 
 		DimensionRegistry.mainRegistry();
 
@@ -82,7 +82,12 @@ public final class Mobycraft {
 		config = new Configuration(configFile);
 		config.load();
 		config.getString("docker-cert-path", "files", "File path",
-				"The directory path of your Docker certificate (set using /docker path <path>)");
+				"The directory path of your Docker certificate (set using /docker path <path>); only used if DOCKER_CERT_PATH environment variable is not set");
+		config.getString(
+				"docker-host",
+				"files",
+				"Docker host IP",
+				"The IP of your Docker host (set using /docker host <host>); only used if DOCKER_HOST environment variable is not set");
 		config.getString(
 				"start-pos",
 				"container-building",
@@ -96,7 +101,7 @@ public final class Mobycraft {
 		config.save();
 		commands.readConfigProperties();
 	}
-	
+
 	private void registerItem(Item item, String name) {
 		GameRegistry.registerItem(item, name);
 		mesher.register(item, 0, new ModelResourceLocation("moby:" + name,
@@ -114,9 +119,8 @@ public final class Mobycraft {
 			int backgroundColor) {
 		EntityRegistry.registerGlobalEntityID(entityClass, entityName,
 				entityId, foregroundColor, backgroundColor);
-		EntityRegistry.registerModEntity(entityClass, entityName,
-				entityId, this, 80, 1, false);
-		RenderingRegistry
-				.registerEntityRenderingHandler(entityClass, render);
+		EntityRegistry.registerModEntity(entityClass, entityName, entityId,
+				this, 80, 1, false);
+		RenderingRegistry.registerEntityRenderingHandler(entityClass, render);
 	}
 }

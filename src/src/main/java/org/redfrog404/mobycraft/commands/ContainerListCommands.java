@@ -161,7 +161,7 @@ public class ContainerListCommands {
 			}
 
 			if (usagesMap.containsKey(usage)) {
-				if (andOthers.containsKey(usage)) {
+				if (andOthers.containsKey(usage)) {	
 					andOthers.put(usage, andOthers.get(usage) + 1);
 				} else {
 					andOthers.put(usage, 1);

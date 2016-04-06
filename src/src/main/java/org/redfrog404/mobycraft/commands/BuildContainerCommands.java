@@ -13,7 +13,10 @@ import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.command.PlayerNotFoundException;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 
@@ -22,7 +25,7 @@ import org.redfrog404.mobycraft.utils.BoxContainer;
 import com.github.dockerjava.api.model.Container;
 
 public class BuildContainerCommands {
-	
+
 	public static void buildContainers() {
 		buildContainersFromList(boxContainers);
 	}
@@ -46,8 +49,9 @@ public class BuildContainerCommands {
 		}
 		buildContainers();
 	}
-	
-	public static void setContainerAppearance(BoxContainer container, boolean state) {		
+
+	public static void setContainerAppearance(BoxContainer container,
+			boolean state) {
 		Block containerBlock;
 		Block prevContainerBlock;
 
@@ -60,31 +64,56 @@ public class BuildContainerCommands {
 			prevContainerBlock = Blocks.iron_block;
 		}
 
-		builder.replace(container.getWorld(), container.getPosition()
-				.add(2, 0, 1), container.getPosition().add(-2, 0, 7),
-				prevContainerBlock, containerBlock);
+		builder.replace(container.getWorld(),
+				container.getPosition().add(2, 0, 1), container.getPosition()
+						.add(-2, 0, 7), prevContainerBlock, containerBlock);
 
-		builder.replace(container.getWorld(), container.getPosition()
-				.add(2, 4, 1), container.getPosition().add(-2, 4, 7),
-				prevContainerBlock, containerBlock);
+		builder.replace(container.getWorld(),
+				container.getPosition().add(2, 4, 1), container.getPosition()
+						.add(-2, 4, 7), prevContainerBlock, containerBlock);
 	}
-	
-	public static void teleport () {
+
+	public static void teleport() throws PlayerNotFoundException {
+		if (!(sender instanceof EntityPlayer)) {
+			return;
+		}
+
+		if (boxContainers.size() < 1) {
+			refreshAndBuildContainers();
+			if (boxContainers.size() < 1) {
+				sendErrorMessage("No containers currently existing!");
+			}
+		}
+
 		if (checkIfArgIsNull(0)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker rm <name> .");
 			return;
 		}
-		
+
 		Container container = getFromAllWithName("/" + arg1);
-		
+
 		if (container == null) {
 			sendErrorMessage("No container exists with the name \"/" + arg1
 					+ "\"");
 		}
 
 		BoxContainer boxContainer = getBoxContainerWithID(container.getId());
+
 		BlockPos pos = boxContainer.getPosition();
-		((EntityPlayer) sender).setLocationAndAngles(pos.getX(), pos.getY(), pos.getZ(), 0, 0);
+
+		getCommandSenderAsPlayer(sender).playerNetServerHandler
+				.setPlayerLocation(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() - 0.5, 0, 0);
+	}
+
+	public static EntityPlayerMP getCommandSenderAsPlayer(ICommandSender sender)
+			throws PlayerNotFoundException {
+		if (sender instanceof EntityPlayerMP) {
+			return (EntityPlayerMP) sender;
+		} else {
+			throw new PlayerNotFoundException(
+					"You must specify which player you wish to perform this action on.",
+					new Object[0]);
+		}
 	}
 
 }
