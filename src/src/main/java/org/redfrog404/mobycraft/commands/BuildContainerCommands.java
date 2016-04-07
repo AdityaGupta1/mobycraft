@@ -93,7 +93,7 @@ public class BuildContainerCommands {
 		Container container = getFromAllWithName("/" + arg1);
 
 		if (container == null) {
-			sendErrorMessage("No container exists with the name \"/" + arg1
+			sendErrorMessage("No container exists with the name \"" + arg1
 					+ "\"");
 		}
 

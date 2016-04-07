@@ -163,7 +163,7 @@ public class BasicDockerCommands {
 			String message = "";
 			for (String name : container.getNames()) {
 				if (container.getNames()[0].equals(name)) {
-					message += EnumChatFormatting.AQUA + name;
+					message += EnumChatFormatting.AQUA + name.substring(1, name.length());
 				} else {
 					message += ", " + name;
 				}
