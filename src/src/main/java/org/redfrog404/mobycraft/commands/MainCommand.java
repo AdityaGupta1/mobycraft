@@ -100,7 +100,7 @@ public class MainCommand implements ICommand {
 	static String dockerHost;
 	static String certPath;
 
-	private static boolean suppressWarnings = false;
+	private static boolean refresh = false;
 
 	public MainCommand() {
 		this.commandAliases = new ArrayList();
@@ -369,9 +369,9 @@ public class MainCommand implements ICommand {
 	public static DockerClient getDockerClient() {
 		DockerClient dockerClient;
 
-		if (!suppressWarnings) {
+		if (!refresh) {
 			refreshHostAndPath();
-			suppressWarnings = true;
+			refresh = true;
 		}
 
 		DockerClientConfig dockerConfig = DockerClientConfig
@@ -594,7 +594,7 @@ public class MainCommand implements ICommand {
 		EntityPlayer player = event.entityPlayer;
 
 		if (!event.action.equals(Action.RIGHT_CLICK_BLOCK)
-				|| !event.action.equals(Action.LEFT_CLICK_BLOCK)) {
+				&& !event.action.equals(Action.LEFT_CLICK_BLOCK)) {
 			return;
 		}
 
@@ -603,6 +603,7 @@ public class MainCommand implements ICommand {
 			return;
 		}
 
+		sender = player;
 		World world = event.world;
 		BlockPos pos = event.pos;
 
@@ -631,6 +632,8 @@ public class MainCommand implements ICommand {
 		getDockerClient().removeContainerCmd(container.getId()).withForce()
 				.exec();
 		sendConfirmMessage("Removed container with name \"" + name + "\"");
+		
+		updateContainers();
 	}
 
 	private void getHostAndPath() {
