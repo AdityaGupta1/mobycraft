@@ -83,9 +83,6 @@ public class ContainerListCommands {
 	}
 
 	public static Container getWithName(String name) {
-		if (String.valueOf(name.charAt(0)) != "/") {
-			name = "/" + name;
-		}
 		for (Container container : getContainers()) {
 			if (container.getNames()[0].equals(name)) {
 				return container;
@@ -105,8 +102,7 @@ public class ContainerListCommands {
 	}
 
 	public static List<Container> getAll() {
-		List<Container> containers = getContainers();
-		containers.addAll(getStopped());
+		List<Container> containers = getDockerClient().listContainersCmd().withShowAll(true).exec();
 		return containers;
 	}
 

@@ -34,9 +34,9 @@ public class ContainerLifecycleCommands {
 			getDockerClient().startContainerCmd(
 					getFromAllWithName("/" + arg1).getId())
 					.exec();
-			sendConfirmMessage("Started container with name \"/" + arg1 + "\"");
+			sendConfirmMessage("Started container with name \"" + arg1 + "\"");
 		} catch (NullPointerException exception) {
-			sendErrorMessage("No container exists with the name \"/" + arg1
+			sendErrorMessage("No container exists with the name \"" + arg1
 					+ "\"");
 		}
 	}
@@ -50,9 +50,9 @@ public class ContainerLifecycleCommands {
 		try {
 			getDockerClient().stopContainerCmd(
 					getWithName("/" + arg1).getId()).exec();
-			sendConfirmMessage("Stopped container with name \"/" + arg1 + "\"");
+			sendConfirmMessage("Stopped container with name \"" + arg1 + "\"");
 		} catch (NullPointerException exception) {
-			sendErrorMessage("No container exists with the name \"/" + arg1
+			sendErrorMessage("No container exists with the name \"" + arg1
 					+ "\"");
 		}
 	}
@@ -68,9 +68,9 @@ public class ContainerLifecycleCommands {
 					.removeContainerCmd(
 							getFromAllWithName("/" + arg1)
 									.getId()).withForce().exec();
-			sendConfirmMessage("Removed container with name \"/" + arg1 + "\"");
+			sendConfirmMessage("Removed container with name \"" + arg1 + "\"");
 		} catch (NullPointerException exception) {
-			sendErrorMessage("No container exists with the name \"/" + arg1
+			sendErrorMessage("No container exists with the name \"" + arg1
 					+ "\"");
 		}
 	}
@@ -97,9 +97,9 @@ public class ContainerLifecycleCommands {
 		try {
 			getDockerClient().restartContainerCmd(
 					getWithName("/" + arg1).getId()).exec();
-			sendConfirmMessage("Restarted container with name \"/" + arg1 + "\"");
+			sendConfirmMessage("Restarted container with name \"" + arg1 + "\"");
 		} catch (NullPointerException exception) {
-			sendErrorMessage("No container exists with the name \"/" + arg1
+			sendErrorMessage("No container exists with the name \"" + arg1
 					+ "\"");
 		}
 	}
@@ -113,9 +113,9 @@ public class ContainerLifecycleCommands {
 		try {
 			getDockerClient().killContainerCmd(
 					getWithName("/" + arg1).getId()).exec();
-			sendConfirmMessage("Killed container with name \"/" + arg1 + "\"");
+			sendConfirmMessage("Killed container with name \"" + arg1 + "\"");
 		} catch (NullPointerException exception) {
-			sendErrorMessage("No container exists with the name \"/" + arg1
+			sendErrorMessage("No container exists with the name \"" + arg1
 					+ "\"");
 		}
 	}
@@ -160,7 +160,7 @@ public class ContainerLifecycleCommands {
 					.createContainerCmd(arg1).withName(args[1]).exec();
 			getDockerClient().startContainerCmd(response.getId()).exec();
 			sendConfirmMessage("Created container with image \"" + arg1
-					+ "\" and name \"/" + args[1] + "\"");
+					+ "\" and name \"" + args[1] + "\"");
 		} else {
 			// Number
 			ArrayList<String> names = new ArrayList<String>();
