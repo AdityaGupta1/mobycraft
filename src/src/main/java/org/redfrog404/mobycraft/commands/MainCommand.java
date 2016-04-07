@@ -412,7 +412,7 @@ public class MainCommand implements ICommand {
 
 			if (certPathProperty.isDefault()) {
 				certPath = System.getProperty("user.home")
-						+ "machine/machines/default";
+						+ "/.docker/machine/machines/default";
 				sendConfirmMessage("Using default value of \"" + certPath
 						+ "\"");
 			} else {
