@@ -49,8 +49,9 @@ public class BasicDockerCommands {
 		int maxCommandsPerPage = 8;
 
 		int page = 1;
-		int maxPages = (((size - 1) - size % maxCommandsPerPage) / maxCommandsPerPage) + 1;
-
+		int maxPages = (int) Math.ceil(((double) (size - 1))
+				/ maxCommandsPerPage);
+		
 		boolean specificHelp = false;
 
 		if (!checkIfArgIsNull(0)) {
@@ -197,7 +198,7 @@ public class BasicDockerCommands {
 		Mobycraft.config.save();
 		sendConfirmMessage("Docker path set to \"" + arg1 + "\"");
 	}
-	
+
 	public static void host() {
 		if (checkIfArgIsNull(0)) {
 			sendErrorMessage("Docker host is not specified! Command is used as /docker host <host> .");
@@ -246,10 +247,12 @@ public class BasicDockerCommands {
 				+ EnumChatFormatting.BOLD + "Status: "
 				+ EnumChatFormatting.RESET + container.getStatus());
 	}
-	
+
 	public static void execStatsCommand(String containerID, boolean sendMessages) {
-		StatisticsResultCallback callback = new StatisticsResultCallback(containerID, sendMessages);
-		callback = getDockerClient().statsCmd().withContainerId(containerID).exec(callback);
+		StatisticsResultCallback callback = new StatisticsResultCallback(
+				containerID, sendMessages);
+		callback = getDockerClient().statsCmd().withContainerId(containerID)
+				.exec(callback);
 		try {
 			callback.awaitCompletion();
 		} catch (InterruptedException exception) {
