@@ -102,7 +102,8 @@ public class ContainerListCommands {
 	}
 
 	public static List<Container> getAll() {
-		List<Container> containers = getDockerClient().listContainersCmd().withShowAll(true).exec();
+		List<Container> containers = getDockerClient().listContainersCmd()
+				.withShowAll(true).exec();
 		return containers;
 	}
 
@@ -160,7 +161,7 @@ public class ContainerListCommands {
 			}
 
 			if (usagesMap.containsKey(usage)) {
-				if (andOthers.containsKey(usage)) {	
+				if (andOthers.containsKey(usage)) {
 					andOthers.put(usage, andOthers.get(usage) + 1);
 				} else {
 					andOthers.put(usage, 1);
@@ -191,7 +192,7 @@ public class ContainerListCommands {
 
 		int number = 1;
 		NumberFormat formatter = new DecimalFormat("#0.00");
-		
+
 		List<Double> finishedUsages = new ArrayList<Double>();
 
 		for (double usage : sortedUsages.subList(0, maxNumber)) {
@@ -203,9 +204,11 @@ public class ContainerListCommands {
 					+ usagesMap.get(usage).getName();
 			if (andOthers.containsKey(usage)) {
 				if (andOthers.get(usage) == 1) {
-					message = message + " and " + andOthers.get(usage) + " other";
+					message = message + " and " + andOthers.get(usage)
+							+ " other";
 				} else {
-					message = message + " and " + andOthers.get(usage) + " others";
+					message = message + " and " + andOthers.get(usage)
+							+ " others";
 				}
 			}
 			message = message + EnumChatFormatting.GOLD + " - "
@@ -216,6 +219,26 @@ public class ContainerListCommands {
 			sendMessage(message);
 			number++;
 			finishedUsages.add(usage);
+		}
+
+		int notIncluded = getContainers().size();
+		notIncluded -= maxNumber;
+
+		for (Double usage : finishedUsages) {
+			if (andOthers.containsKey(usage)) {
+				notIncluded -= andOthers.get(usage);
+			}
+		}
+		System.out.println(notIncluded);
+		switch (notIncluded) {
+		case 0:
+			break;
+		case 1:
+			sendMessage(EnumChatFormatting.DARK_AQUA
+					+ "1 container not included in this heat map");
+		default:
+			sendMessage(EnumChatFormatting.DARK_AQUA + "" + notIncluded
+					+ " containers not included in this heat map");
 		}
 		refresh();
 	}
