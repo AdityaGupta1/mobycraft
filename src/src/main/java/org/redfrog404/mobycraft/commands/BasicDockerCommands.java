@@ -204,6 +204,10 @@ public class BasicDockerCommands {
 			sendErrorMessage("Docker host is not specified! Command is used as /docker host <host> .");
 			return;
 		}
+		
+		if (!arg1.contains(":")) {
+			arg1 = arg1 + ":2376";
+		}
 
 		dockerHostProperty.setValue(arg1);
 		Mobycraft.config.save();
