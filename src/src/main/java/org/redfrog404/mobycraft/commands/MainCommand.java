@@ -401,6 +401,7 @@ public class MainCommand implements ICommand {
 				dockerHost = "192.168.99.100:2376";
 				sendConfirmMessage("Using default value of \"" + dockerHost
 						+ "\"");
+				sendConfirmMessage("Use /docker host <host> to override this value");
 			} else {
 				dockerHost = dockerHostProperty.getString();
 				sendConfirmMessage("Using config value of \""
@@ -422,6 +423,7 @@ public class MainCommand implements ICommand {
 						+ "/.docker/machine/machines/default";
 				sendConfirmMessage("Using default value of \"" + certPath
 						+ "\"");
+				sendConfirmMessage("Use /docker path <path> to override this value");
 			} else {
 				certPath = certPathProperty.getString();
 				sendConfirmMessage("Using config value of \"" + certPath + "\"");
