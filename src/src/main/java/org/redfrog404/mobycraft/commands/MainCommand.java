@@ -10,6 +10,7 @@ import static org.redfrog404.mobycraft.commands.BasicDockerCommands.specificHelp
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.buildContainersFromList;
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.refreshAndBuildContainers;
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.setContainerAppearance;
+import static org.redfrog404.mobycraft.commands.BuildContainerCommands.setStartPos;
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.teleport;
 import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.kill;
 import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.killAll;
@@ -97,7 +98,7 @@ public class MainCommand implements ICommand {
 	static StructureBuilder builder = new StructureBuilder();
 
 	public int count = 0;
-	public int maxCount;
+	public static int maxCount;
 
 	static String dockerHost;
 	static String certPath;
@@ -194,7 +195,7 @@ public class MainCommand implements ICommand {
 		byteSuffixNumbers.put(3, "GB");
 	}
 
-	public void readConfigProperties() {
+	public static void readConfigProperties() {
 		certPathProperty = Mobycraft.config
 				.get("files",
 						"docker-cert-path",
@@ -312,13 +313,7 @@ public class MainCommand implements ICommand {
 				removeAllImages();
 				break;
 			case 16:
-				startPosProperty.setValue(position.getX() + ", "
-						+ position.getY() + ", " + position.getZ());
-				Mobycraft.config.save();
-				sendConfirmMessage("Set start position for building containers to ("
-						+ startPosProperty.getString() + ").");
-				readConfigProperties();
-				updateContainers();
+				setStartPos();
 				break;
 			case 17:
 				showDetailedInfo();
@@ -486,7 +481,7 @@ public class MainCommand implements ICommand {
 		return false;
 	}
 
-	public static BlockPos getStartPosition() {
+	public static BlockPos getStartPos() {
 		String[] posStrings = startPosProperty.getString().split(", ");
 		return new BlockPos(Integer.parseInt(posStrings[0]),
 				Integer.parseInt(posStrings[1]),
@@ -513,40 +508,42 @@ public class MainCommand implements ICommand {
 			if (boxContainers == null) {
 				refreshAndBuildContainers();
 			} else {
-				updateContainers();
+				updateContainers(true);
 			}
 			count = 0;
 		}
 	}
 
-	private void updateContainers() {
+	public static void updateContainers(boolean checkForEqual) {
 		refreshContainerIDMap();
 
 		List<Container> containers = getAll();
 		List<BoxContainer> newContainers = builder.containerPanel(containers,
-				getStartPosition(), sender.getEntityWorld());
+				getStartPos(), sender.getEntityWorld());
 
-		if (boxContainers.equals(newContainers)) {
+		if (boxContainers.equals(newContainers) && checkForEqual) {
 			return;
 		}
 
 		int start = 0;
 
-		findDifferences: for (; start < boxContainers.size(); start++) {
-			if (start == newContainers.size()) {
-				start--;
-				break findDifferences;
+		if (checkForEqual) {
+			findDifferences: for (; start < boxContainers.size(); start++) {
+				if (start == newContainers.size()) {
+					start--;
+					break findDifferences;
+				}
+				if (!boxContainers.get(start).equals(newContainers.get(start))) {
+					break findDifferences;
+				}
 			}
-			if (!boxContainers.get(start).equals(newContainers.get(start))) {
-				break findDifferences;
+
+			start -= start % 10;
+			start--;
+
+			if (start < 0) {
+				start = 0;
 			}
-		}
-
-		start -= start % 10;
-		start--;
-
-		if (start < 0) {
-			start = 0;
 		}
 
 		List<BoxContainer> containersToReplace = new ArrayList<BoxContainer>();
@@ -560,7 +557,7 @@ public class MainCommand implements ICommand {
 
 		List<BoxContainer> newContainersToBuild = new ArrayList<BoxContainer>();
 		newContainersToBuild = builder.containerPanel(getAll(),
-				getStartPosition(), sender.getEntityWorld());
+				getStartPos(), sender.getEntityWorld());
 		newContainersToBuild = newContainersToBuild.subList(start,
 				newContainersToBuild.size());
 		buildContainersFromList(newContainersToBuild);
@@ -642,7 +639,7 @@ public class MainCommand implements ICommand {
 				.exec();
 		sendConfirmMessage("Removed container with name \"" + name + "\"");
 
-		updateContainers();
+		updateContainers(false);
 	}
 
 	private void getHostAndPath() {

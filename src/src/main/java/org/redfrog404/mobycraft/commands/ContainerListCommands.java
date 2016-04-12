@@ -7,7 +7,7 @@ import static org.redfrog404.mobycraft.commands.MainCommand.builder;
 import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
 import static org.redfrog404.mobycraft.commands.MainCommand.containerIDMap;
 import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
-import static org.redfrog404.mobycraft.commands.MainCommand.getStartPosition;
+import static org.redfrog404.mobycraft.commands.MainCommand.getStartPos;
 import static org.redfrog404.mobycraft.commands.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
@@ -40,7 +40,7 @@ public class ContainerListCommands {
 
 	public static void refresh() {
 		List<Container> containers = getAll();
-		boxContainers = builder.containerPanel(containers, getStartPosition(),
+		boxContainers = builder.containerPanel(containers, getStartPos(),
 				sender.getEntityWorld());
 		List<String> stoppedContainerNames = new ArrayList<String>();
 		for (Container container : getStopped()) {
@@ -56,7 +56,7 @@ public class ContainerListCommands {
 
 	public static void refreshRunning() {
 		List<Container> containers = getContainers();
-		boxContainers = builder.containerPanel(containers, getStartPosition(),
+		boxContainers = builder.containerPanel(containers, getStartPos(),
 				sender.getEntityWorld());
 		refreshContainerIDMap();
 	}

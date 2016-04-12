@@ -7,7 +7,11 @@ import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
 import static org.redfrog404.mobycraft.commands.MainCommand.boxContainers;
 import static org.redfrog404.mobycraft.commands.MainCommand.builder;
 import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
+import static org.redfrog404.mobycraft.commands.MainCommand.readConfigProperties;
 import static org.redfrog404.mobycraft.commands.MainCommand.sender;
+import static org.redfrog404.mobycraft.commands.MainCommand.startPosProperty;
+import static org.redfrog404.mobycraft.commands.MainCommand.updateContainers;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 
 import java.util.List;
@@ -20,6 +24,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
 
+import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.utils.BoxContainer;
 
 import com.github.dockerjava.api.model.Container;
@@ -114,6 +119,17 @@ public class BuildContainerCommands {
 					"You must specify which player you wish to perform this action on.",
 					new Object[0]);
 		}
+	}
+	
+	public static void setStartPos(){
+		BlockPos position = sender.getPosition();
+		startPosProperty.setValue((int) Math.floor(position.getX()) + ", "
+				+ (int) Math.floor(position.getY()) + ", " + (int) Math.floor(position.getZ()));
+		Mobycraft.config.save();
+		sendConfirmMessage("Set start position for building containers to ("
+				+ startPosProperty.getString() + ").");
+		readConfigProperties();
+		updateContainers(false);
 	}
 
 }
