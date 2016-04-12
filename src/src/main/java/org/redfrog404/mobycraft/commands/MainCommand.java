@@ -3,6 +3,7 @@ package org.redfrog404.mobycraft.commands;
 import static org.redfrog404.mobycraft.commands.BasicDockerCommands.help;
 import static org.redfrog404.mobycraft.commands.BasicDockerCommands.host;
 import static org.redfrog404.mobycraft.commands.BasicDockerCommands.path;
+import static org.redfrog404.mobycraft.commands.BasicDockerCommands.pollRate;
 import static org.redfrog404.mobycraft.commands.BasicDockerCommands.ps;
 import static org.redfrog404.mobycraft.commands.BasicDockerCommands.showDetailedInfo;
 import static org.redfrog404.mobycraft.commands.BasicDockerCommands.specificHelpMessages;
@@ -29,6 +30,7 @@ import static org.redfrog404.mobycraft.commands.ContainerListCommands.refreshCon
 import static org.redfrog404.mobycraft.commands.ImageCommands.images;
 import static org.redfrog404.mobycraft.commands.ImageCommands.removeAllImages;
 import static org.redfrog404.mobycraft.commands.ImageCommands.removeImage;
+import static org.redfrog404.mobycraft.commands.MainCommand.args;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
@@ -130,6 +132,7 @@ public class MainCommand implements ICommand {
 		commandNumbers.put("host", 20);
 		commandNumbers.put("get_host_and_path", 21);
 		commandNumbers.put("get_path_and_host", 21);
+		commandNumbers.put("poll_rate", 22);
 
 		helpMessages
 				.put("help (page | command)",
@@ -166,9 +169,11 @@ public class MainCommand implements ICommand {
 				"Teleports to the box container with the name <name>");
 		helpMessages
 				.put("heat_map <cpu | memory>",
-						"Shows a list of the top five containers that use the most <cpu> or <memory>");
+						"Shows a list of the top 5 containers that use the most <cpu> or <memory>");
 		helpMessages.put("get_host_and_path | get_path_and_host",
 				"Returns the Docker host and cert path");
+		helpMessages.put("poll_rate <rate>",
+				"Sets the poll rate to <rate> seconds");
 
 		specificHelpMessages
 				.put("ps",
@@ -330,6 +335,8 @@ public class MainCommand implements ICommand {
 			case 21:
 				getHostAndPath();
 				break;
+			case 22:
+				pollRate();
 			}
 		} catch (Exception exception) {
 			if (exception instanceof UnsupportedSchemeException) {
@@ -535,7 +542,7 @@ public class MainCommand implements ICommand {
 
 		start -= start % 10;
 		start--;
-		
+
 		if (start < 0) {
 			start = 0;
 		}
@@ -632,7 +639,7 @@ public class MainCommand implements ICommand {
 		getDockerClient().removeContainerCmd(container.getId()).withForce()
 				.exec();
 		sendConfirmMessage("Removed container with name \"" + name + "\"");
-		
+
 		updateContainers();
 	}
 

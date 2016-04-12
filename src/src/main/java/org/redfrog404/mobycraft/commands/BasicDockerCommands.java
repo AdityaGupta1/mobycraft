@@ -16,6 +16,7 @@ import static org.redfrog404.mobycraft.commands.MainCommand.certPathProperty;
 import static org.redfrog404.mobycraft.commands.MainCommand.dockerHostProperty;
 import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
 import static org.redfrog404.mobycraft.commands.MainCommand.helpMessages;
+import static org.redfrog404.mobycraft.commands.MainCommand.pollRateProperty;
 import static org.redfrog404.mobycraft.commands.MainCommand.sendHelpMessage;
 import static org.redfrog404.mobycraft.commands.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendBarMessage;
@@ -51,7 +52,7 @@ public class BasicDockerCommands {
 		int page = 1;
 		int maxPages = (int) Math.ceil(((double) (size - 1))
 				/ maxCommandsPerPage);
-		
+
 		boolean specificHelp = false;
 
 		if (!checkIfArgIsNull(0)) {
@@ -163,7 +164,8 @@ public class BasicDockerCommands {
 			String message = "";
 			for (String name : container.getNames()) {
 				if (container.getNames()[0].equals(name)) {
-					message += EnumChatFormatting.AQUA + name.substring(1, name.length());
+					message += EnumChatFormatting.AQUA
+							+ name.substring(1, name.length());
 				} else {
 					message += ", " + name;
 				}
@@ -204,7 +206,7 @@ public class BasicDockerCommands {
 			sendErrorMessage("Docker host is not specified! Command is used as /docker host <host> .");
 			return;
 		}
-		
+
 		if (!arg1.contains(":")) {
 			arg1 = arg1 + ":2376";
 		}
@@ -212,6 +214,17 @@ public class BasicDockerCommands {
 		dockerHostProperty.setValue(arg1);
 		Mobycraft.config.save();
 		sendConfirmMessage("Docker host set to \"" + arg1 + "\"");
+	}
+
+	public static void pollRate() {
+		if (checkIfArgIsNull(0)) {
+			sendErrorMessage("Poll rate is not specified! Command is used as /docker poll_rate <rate> .");
+			return;
+		}
+
+		pollRateProperty.setValue(arg1);
+		Mobycraft.config.save();
+		sendConfirmMessage("Poll rate set to " + arg1 + " seconds");
 	}
 
 	public static void showDetailedInfo() throws InterruptedException {

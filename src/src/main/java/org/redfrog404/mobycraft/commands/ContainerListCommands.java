@@ -1,6 +1,7 @@
 package org.redfrog404.mobycraft.commands;
 
 import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
+import static org.redfrog404.mobycraft.commands.MainCommand.args;
 import static org.redfrog404.mobycraft.commands.MainCommand.boxContainers;
 import static org.redfrog404.mobycraft.commands.MainCommand.builder;
 import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
@@ -22,6 +23,7 @@ import java.util.Map;
 
 import net.minecraft.util.EnumChatFormatting;
 
+import org.apache.commons.lang.math.NumberUtils;
 import org.redfrog404.mobycraft.utils.BoxContainer;
 
 import com.github.dockerjava.api.model.Container;
@@ -175,9 +177,10 @@ public class ContainerListCommands {
 		sortedUsages = Lists.reverse(asSortedList(sortedUsages));
 
 		int maxNumber = 0;
+		int maxContainers = 5;
 
-		if (usagesMap.size() >= 5) {
-			maxNumber = 5;
+		if (usagesMap.size() >= maxContainers) {
+			maxNumber = maxContainers;
 		} else {
 			maxNumber = usagesMap.size();
 		}
