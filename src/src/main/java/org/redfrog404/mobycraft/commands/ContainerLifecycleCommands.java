@@ -18,6 +18,7 @@ import java.util.ArrayList;
 
 import org.apache.commons.lang.math.NumberUtils;
 
+import com.github.dockerjava.api.DockerClientException;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.command.PullImageResultCallback;
@@ -138,7 +139,11 @@ public class ContainerLifecycleCommands {
 		if (getImageWithName(arg1) == null) {
 			PullImageResultCallback callback = new PullImageResultCallback();
 			getDockerClient().pullImageCmd(arg1).withTag("latest").exec(callback);
-			callback.awaitCompletion();
+			try {
+				callback.awaitCompletion();
+			} catch (DockerClientException exception) {
+				sendErrorMessage("\"" + arg1 + "\" + is not a valid image name!");
+			}
 		}
 
 		if (args.length < 2) {
