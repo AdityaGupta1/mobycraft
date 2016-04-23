@@ -221,10 +221,26 @@ public class BasicDockerCommands {
 			sendErrorMessage("Poll rate is not specified! Command is used as /docker poll_rate <rate> .");
 			return;
 		}
+		
+		if (!NumberUtils.isNumber(arg1)) {
+			sendErrorMessage("The argument \"" + arg1 + "\" is invalid (must be a positive integer)! Command is used as /docker poll_rate <rate> .");
+			return;
+		}
 
 		pollRateProperty.setValue(arg1);
 		Mobycraft.config.save();
-		sendConfirmMessage("Poll rate set to " + arg1 + " seconds");
+		int intArg1 = Integer.parseInt(arg1);
+		if (intArg1 < 1) {
+			if (intArg1 == 0) {
+				sendErrorMessage("The argument \"" + arg1 + "\" is invalid (can't be zero)! Command is used as /docker poll_rate <rate> .");
+			} else {
+				sendErrorMessage("The argument \"" + arg1 + "\" is invalid (can't be negative)! Command is used as /docker poll_rate <rate> .");
+			}
+		} else if (intArg1 == 1) {
+			sendConfirmMessage("Poll rate set to 1 second");
+		} else {
+			sendConfirmMessage("Poll rate set to " + arg1 + " seconds");
+		}
 	}
 
 	public static void showDetailedInfo() throws InterruptedException {
