@@ -1,7 +1,6 @@
 package org.redfrog404.mobycraft.api;
 
-import org.apache.commons.lang.NotImplementedException;
-import org.redfrog404.mobycraft.commands.dockerjava.BasicCommands;
+import org.redfrog404.mobycraft.commands.BasicCommands;
 
 public class MobycraftDockerFactory {
 	public static final MobycraftDockerFactory INSTANCE = new MobycraftDockerFactory(); 
@@ -19,6 +18,6 @@ public class MobycraftDockerFactory {
 			return getMobycraftCommands();
 		}
 		
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 }
