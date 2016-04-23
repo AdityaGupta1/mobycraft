@@ -1,10 +1,7 @@
 package org.redfrog404.mobycraft.commands;
 
-import static org.redfrog404.mobycraft.commands.BasicDockerCommands.help;
 import static org.redfrog404.mobycraft.commands.BasicDockerCommands.host;
-import static org.redfrog404.mobycraft.commands.BasicDockerCommands.path;
 import static org.redfrog404.mobycraft.commands.BasicDockerCommands.pollRate;
-import static org.redfrog404.mobycraft.commands.BasicDockerCommands.ps;
 import static org.redfrog404.mobycraft.commands.BasicDockerCommands.showDetailedInfo;
 import static org.redfrog404.mobycraft.commands.BasicDockerCommands.specificHelpMessages;
 import static org.redfrog404.mobycraft.commands.BuildContainerCommands.buildContainersFromList;
@@ -61,6 +58,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
 import org.apache.http.conn.UnsupportedSchemeException;
+import org.redfrog404.mobycraft.api.MobycraftCommands;
 import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.utils.BoxContainer;
 import org.redfrog404.mobycraft.utils.StructureBuilder;
@@ -262,16 +260,19 @@ public class MainCommand implements ICommand {
 
 		BlockPos position = sender.getPosition();
 
+                MobycraftDockerFactory factory = MobycraftDockerFactory.getInstance();
+                MobycraftCommands commands = factory.getMobycraftCommands();
+
 		try {
 			switch (commandNumber) {
 			case 0:
-				help();
+				commands.help();
 				break;
 			case 1:
-				ps();
+				commands.ps();
 				break;
 			case 2:
-				path();
+				commands.path();
 				break;
 			case 3:
 				switchState(arg1);

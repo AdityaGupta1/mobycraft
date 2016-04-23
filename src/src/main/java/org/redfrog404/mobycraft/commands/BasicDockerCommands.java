@@ -34,13 +34,14 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumChatFormatting;
 
 import org.apache.commons.lang.math.NumberUtils;
+import org.redfrog404.mobycraft.api.MobycraftCommands;
 import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.utils.BoxContainer;
 import org.redfrog404.mobycraft.utils.StatisticsResultCallback;
 
 import com.github.dockerjava.api.model.Container;
 
-public class BasicDockerCommands {
+public class BasicDockerCommands implements MobycraftCommands {
 
 	// Used for help messages specific to a certain command
 	public static Map<String, String[]> specificHelpMessages = new HashMap<String, String[]>();
