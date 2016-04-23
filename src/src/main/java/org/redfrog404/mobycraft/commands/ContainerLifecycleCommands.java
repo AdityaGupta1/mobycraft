@@ -134,6 +134,11 @@ public class ContainerLifecycleCommands {
 	}
 	
 	public static void run() throws InterruptedException {
+		if (args.length < 2) {
+			sendErrorMessage("No arguments specified! Command is used as /docker run <image> (name | amount) .");
+			return;
+		}
+		
 		sendFeedbackMessage("Working on it...");
 		
 		if (getImageWithName(arg1) == null) {
