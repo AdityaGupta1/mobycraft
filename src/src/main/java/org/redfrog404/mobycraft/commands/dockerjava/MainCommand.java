@@ -451,15 +451,12 @@ public class MainCommand implements ICommand {
 			containerBlock = Blocks.iron_block;
 			prevContainerBlock = Blocks.redstone_block;
 			getDockerClient().startContainerCmd(boxContainer.getID()).exec();
-
 		}
 		// Otherwise, if the container is now off (previously on):
 		else {
 			containerBlock = Blocks.redstone_block;
 			prevContainerBlock = Blocks.iron_block;
-
 			getDockerClient().stopContainerCmd(boxContainer.getID()).exec();
-
 		}
 
 		builder.replace(boxContainer.getWorld(), boxContainer.getPosition()
