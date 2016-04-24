@@ -26,7 +26,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-import org.redfrog404.mobycraft.commands.MainCommand;
+import org.redfrog404.mobycraft.commands.dockerjava.MainCommand;
 import org.redfrog404.mobycraft.dimension.DimensionRegistry;
 import org.redfrog404.mobycraft.entity.EntityMoby;
 import org.redfrog404.mobycraft.entity.RenderMoby;

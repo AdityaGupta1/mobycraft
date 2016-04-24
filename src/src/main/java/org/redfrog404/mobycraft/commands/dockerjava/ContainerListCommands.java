@@ -1,14 +1,14 @@
-package org.redfrog404.mobycraft.commands;
+package org.redfrog404.mobycraft.commands.dockerjava;
 
-import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
-import static org.redfrog404.mobycraft.commands.MainCommand.args;
-import static org.redfrog404.mobycraft.commands.MainCommand.boxContainers;
-import static org.redfrog404.mobycraft.commands.MainCommand.builder;
-import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
-import static org.redfrog404.mobycraft.commands.MainCommand.containerIDMap;
-import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
-import static org.redfrog404.mobycraft.commands.MainCommand.getStartPos;
-import static org.redfrog404.mobycraft.commands.MainCommand.sender;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.args;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.boxContainers;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.builder;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.checkIfArgIsNull;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.containerIDMap;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.getDockerClient;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.getStartPos;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;

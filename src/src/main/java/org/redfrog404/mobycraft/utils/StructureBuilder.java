@@ -1,8 +1,8 @@
 package org.redfrog404.mobycraft.utils;
 
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getContainers;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromAllWithName;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.isStopped;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getContainers;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getFromAllWithName;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.isStopped;
 
 import java.util.ArrayList;
 import java.util.List;

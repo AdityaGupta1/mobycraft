@@ -1,6 +1,6 @@
 package org.redfrog404.mobycraft.api;
 
-import org.redfrog404.mobycraft.commands.BasicDockerCommands;
+import org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands;
 
 public class MobycraftDockerFactory {
 	public static final MobycraftDockerFactory INSTANCE = new MobycraftDockerFactory(); 

@@ -1,13 +1,13 @@
 package org.redfrog404.mobycraft.utils;
 
-import static org.redfrog404.mobycraft.commands.BasicDockerCommands.printBasicContainerInformation;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAll;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getBoxContainerWithID;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getContainers;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromAllWithName;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getStopped;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getWithName;
-import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
+import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.printBasicContainerInformation;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getAll;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getBoxContainerWithID;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getContainers;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getFromAllWithName;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getStopped;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getWithName;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
 import java.io.IOException;

@@ -1,9 +1,9 @@
-package org.redfrog404.mobycraft.commands;
+package org.redfrog404.mobycraft.commands.dockerjava;
 
-import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
-import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
-import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
-import static org.redfrog404.mobycraft.commands.MainCommand.imageSizeConversion;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.checkIfArgIsNull;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.getDockerClient;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.imageSizeConversion;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendBarMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;

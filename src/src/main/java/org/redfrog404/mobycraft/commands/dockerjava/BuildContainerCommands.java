@@ -1,16 +1,16 @@
-package org.redfrog404.mobycraft.commands;
+package org.redfrog404.mobycraft.commands.dockerjava;
 
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getBoxContainerWithID;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromAllWithName;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.refresh;
-import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
-import static org.redfrog404.mobycraft.commands.MainCommand.boxContainers;
-import static org.redfrog404.mobycraft.commands.MainCommand.builder;
-import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
-import static org.redfrog404.mobycraft.commands.MainCommand.readConfigProperties;
-import static org.redfrog404.mobycraft.commands.MainCommand.sender;
-import static org.redfrog404.mobycraft.commands.MainCommand.startPosProperty;
-import static org.redfrog404.mobycraft.commands.MainCommand.updateContainers;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getBoxContainerWithID;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getFromAllWithName;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.refresh;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.boxContainers;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.builder;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.checkIfArgIsNull;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.readConfigProperties;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.startPosProperty;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.updateContainers;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 

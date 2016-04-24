@@ -1,24 +1,24 @@
-package org.redfrog404.mobycraft.commands;
+package org.redfrog404.mobycraft.commands.dockerjava;
 
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.asSortedList;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAll;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getBoxContainerWithID;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getContainers;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromAllWithName;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.isStopped;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.refreshContainerIDMap;
-import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
-import static org.redfrog404.mobycraft.commands.MainCommand.args;
-import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
-import static org.redfrog404.mobycraft.commands.MainCommand.commandNumbers;
-import static org.redfrog404.mobycraft.commands.MainCommand.containerIDMap;
-import static org.redfrog404.mobycraft.commands.MainCommand.certPathProperty;
-import static org.redfrog404.mobycraft.commands.MainCommand.dockerHostProperty;
-import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
-import static org.redfrog404.mobycraft.commands.MainCommand.helpMessages;
-import static org.redfrog404.mobycraft.commands.MainCommand.pollRateProperty;
-import static org.redfrog404.mobycraft.commands.MainCommand.sendHelpMessage;
-import static org.redfrog404.mobycraft.commands.MainCommand.sender;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.asSortedList;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getAll;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getBoxContainerWithID;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getContainers;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getFromAllWithName;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.isStopped;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.refreshContainerIDMap;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.args;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.certPathProperty;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.checkIfArgIsNull;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.commandNumbers;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.containerIDMap;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.dockerHostProperty;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.getDockerClient;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.helpMessages;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.pollRateProperty;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sendHelpMessage;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendBarMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
@@ -46,7 +46,7 @@ public class BasicDockerCommands implements MobycraftCommands {
 	// Used for help messages specific to a certain command
 	public static Map<String, String[]> specificHelpMessages = new HashMap<String, String[]>();
 
-	public static void help() {
+	public void help() {
 		int size = helpMessages.size();
 		int maxCommandsPerPage = 8;
 
@@ -121,7 +121,7 @@ public class BasicDockerCommands implements MobycraftCommands {
 		}
 	}
 
-	public static void ps() {
+	public void ps() {
 
 		boolean showAll = false;
 
@@ -191,7 +191,7 @@ public class BasicDockerCommands implements MobycraftCommands {
 		}
 	}
 
-	public static void path() {
+	public void path() {
 		if (checkIfArgIsNull(0)) {
 			sendErrorMessage("Docker path is not specified! Command is used as /docker path <path> .");
 			return;

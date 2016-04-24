@@ -1,34 +1,33 @@
-package org.redfrog404.mobycraft.commands;
+package org.redfrog404.mobycraft.commands.dockerjava;
 
-import static org.redfrog404.mobycraft.commands.BasicDockerCommands.host;
-import static org.redfrog404.mobycraft.commands.BasicDockerCommands.pollRate;
-import static org.redfrog404.mobycraft.commands.BasicDockerCommands.showDetailedInfo;
-import static org.redfrog404.mobycraft.commands.BasicDockerCommands.specificHelpMessages;
-import static org.redfrog404.mobycraft.commands.BuildContainerCommands.buildContainersFromList;
-import static org.redfrog404.mobycraft.commands.BuildContainerCommands.refreshAndBuildContainers;
-import static org.redfrog404.mobycraft.commands.BuildContainerCommands.setContainerAppearance;
-import static org.redfrog404.mobycraft.commands.BuildContainerCommands.setStartPos;
-import static org.redfrog404.mobycraft.commands.BuildContainerCommands.teleport;
-import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.kill;
-import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.killAll;
-import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.remove;
-import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.removeAll;
-import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.removeStopped;
-import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.restart;
-import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.run;
-import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.start;
-import static org.redfrog404.mobycraft.commands.ContainerLifecycleCommands.stop;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.asSortedList;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAll;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getBoxContainerWithID;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getWithName;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.heatMap;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.isStopped;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.refreshContainerIDMap;
-import static org.redfrog404.mobycraft.commands.ImageCommands.images;
-import static org.redfrog404.mobycraft.commands.ImageCommands.removeAllImages;
-import static org.redfrog404.mobycraft.commands.ImageCommands.removeImage;
-import static org.redfrog404.mobycraft.commands.MainCommand.args;
+import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.host;
+import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.pollRate;
+import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.showDetailedInfo;
+import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.specificHelpMessages;
+import static org.redfrog404.mobycraft.commands.dockerjava.BuildContainerCommands.buildContainersFromList;
+import static org.redfrog404.mobycraft.commands.dockerjava.BuildContainerCommands.refreshAndBuildContainers;
+import static org.redfrog404.mobycraft.commands.dockerjava.BuildContainerCommands.setContainerAppearance;
+import static org.redfrog404.mobycraft.commands.dockerjava.BuildContainerCommands.setStartPos;
+import static org.redfrog404.mobycraft.commands.dockerjava.BuildContainerCommands.teleport;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.kill;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.killAll;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.remove;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.removeAll;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.removeStopped;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.restart;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.run;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.start;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.stop;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.asSortedList;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getAll;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getBoxContainerWithID;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getWithName;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.heatMap;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.isStopped;
+import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.refreshContainerIDMap;
+import static org.redfrog404.mobycraft.commands.dockerjava.ImageCommands.images;
+import static org.redfrog404.mobycraft.commands.dockerjava.ImageCommands.removeAllImages;
+import static org.redfrog404.mobycraft.commands.dockerjava.ImageCommands.removeImage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
@@ -41,6 +40,18 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.http.conn.UnsupportedSchemeException;
+import org.redfrog404.mobycraft.api.MobycraftCommands;
+import org.redfrog404.mobycraft.api.MobycraftDockerFactory;
+import org.redfrog404.mobycraft.main.Mobycraft;
+import org.redfrog404.mobycraft.utils.BoxContainer;
+import org.redfrog404.mobycraft.utils.StructureBuilder;
+
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.DockerClientConfig;
 
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommand;
@@ -56,17 +67,6 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
-
-import org.apache.http.conn.UnsupportedSchemeException;
-import org.redfrog404.mobycraft.api.MobycraftCommands;
-import org.redfrog404.mobycraft.main.Mobycraft;
-import org.redfrog404.mobycraft.utils.BoxContainer;
-import org.redfrog404.mobycraft.utils.StructureBuilder;
-
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
 
 public class MainCommand implements ICommand {
 	public static List commandAliases;
@@ -260,8 +260,8 @@ public class MainCommand implements ICommand {
 
 		BlockPos position = sender.getPosition();
 
-                MobycraftDockerFactory factory = MobycraftDockerFactory.getInstance();
-                MobycraftCommands commands = factory.getMobycraftCommands();
+        MobycraftDockerFactory factory = MobycraftDockerFactory.getInstance();
+        MobycraftCommands commands = factory.getMobycraftCommands();
 
 		try {
 			switch (commandNumber) {
