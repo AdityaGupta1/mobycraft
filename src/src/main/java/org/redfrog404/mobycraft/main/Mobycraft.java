@@ -26,7 +26,9 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-import org.redfrog404.mobycraft.commands.MainCommand;
+import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
+import org.redfrog404.mobycraft.commands.dockerjava.ConfigProperties;
+import org.redfrog404.mobycraft.commands.dockerjava.MainCommand;
 import org.redfrog404.mobycraft.dimension.DimensionRegistry;
 import org.redfrog404.mobycraft.entity.EntityMoby;
 import org.redfrog404.mobycraft.entity.RenderMoby;
@@ -45,7 +47,7 @@ public final class Mobycraft {
 
 	ItemModelMesher mesher;
 
-	MainCommand commands = new MainCommand();
+	private static final MainCommand commands = new MainCommand();
 
 	@EventHandler
 	public void registerDockerCommands(FMLServerStartingEvent event) {
@@ -56,18 +58,16 @@ public final class Mobycraft {
 	public void init(FMLInitializationEvent event) {
 		mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
 
-		docker_block = new GenericBlock("docker_block", Material.iron, 5.0F,
-				10.0F, "pickaxe", 1, Block.soundTypeMetal);
+		docker_block = new GenericBlock("docker_block", Material.iron, 5.0F, 10.0F, "pickaxe", 1, Block.soundTypeMetal);
 		registerBlock(docker_block, "docker_block");
 
-		container_wand = new GenericItem("container_wand",
-				CreativeTabs.tabTools).setMaxStackSize(1);
+		container_wand = new GenericItem("container_wand", CreativeTabs.tabTools).setMaxStackSize(1);
 		registerItem(container_wand, "container_wand");
 
 		RenderManager render = Minecraft.getMinecraft().getRenderManager();
 
-		registerModEntity(EntityMoby.class, new RenderMoby(), "moby",
-				EntityRegistry.findGlobalUniqueEntityId(), 0x24B8EB, 0x008BB8);
+		registerModEntity(EntityMoby.class, new RenderMoby(), "moby", EntityRegistry.findGlobalUniqueEntityId(),
+				0x24B8EB, 0x008BB8);
 
 		DimensionRegistry.mainRegistry();
 
@@ -77,50 +77,39 @@ public final class Mobycraft {
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		File configFile = new File(event.getModConfigurationDirectory()
-				.toString() + "/mobycraft/mobycraft.txt");
+		File configFile = new File(event.getModConfigurationDirectory().toString() + "/mobycraft/mobycraft.txt");
+
 		config = new Configuration(configFile);
 		config.load();
 		config.getString("docker-cert-path", "files", "File path",
 				"The directory path of your Docker certificate (set using /docker path <path>); only used if DOCKER_CERT_PATH environment variable is not set");
-		config.getString(
-				"docker-host",
-				"files",
-				"Docker host IP",
+		config.getString("docker-host", "files", "Docker host IP",
 				"The IP of your Docker host (set using /docker host <host>); only used if DOCKER_HOST environment variable is not set");
-		config.getString(
-				"start-pos",
-				"container-building",
-				"0, 0, 0",
-				"The position - x, y, z - to start building containers at (set using /docker start_pos");
-		config.getString(
-				"poll-rate",
-				"container-building",
-				"2",
+		config.getString("start-pos", "container-building", "0, 0, 0",
+				"The position - x, y, z - to start building containers at (set using /docker start_pos)");
+		config.getString("poll-rate", "container-building", "2",
 				"The rate in seconds at which the containers will update (set using /docker poll_rate <rate in seconds>)");
 		config.save();
-		commands.readConfigProperties();
 	}
 
 	private void registerItem(Item item, String name) {
 		GameRegistry.registerItem(item, name);
-		mesher.register(item, 0, new ModelResourceLocation("moby:" + name,
-				"inventory"));
+		mesher.register(item, 0, new ModelResourceLocation("moby:" + name, "inventory"));
 	}
 
 	private void registerBlock(Block block, String name) {
 		GameRegistry.registerBlock(block, name);
-		mesher.register(Item.getItemFromBlock(block), 0,
-				new ModelResourceLocation("moby:" + name, "inventory"));
+		mesher.register(Item.getItemFromBlock(block), 0, new ModelResourceLocation("moby:" + name, "inventory"));
 	}
 
-	public void registerModEntity(Class entityClass, Render render,
-			String entityName, int entityId, int foregroundColor,
-			int backgroundColor) {
-		EntityRegistry.registerGlobalEntityID(entityClass, entityName,
-				entityId, foregroundColor, backgroundColor);
-		EntityRegistry.registerModEntity(entityClass, entityName, entityId,
-				this, 80, 1, false);
+	public void registerModEntity(Class entityClass, Render render, String entityName, int entityId,
+			int foregroundColor, int backgroundColor) {
+		EntityRegistry.registerGlobalEntityID(entityClass, entityName, entityId, foregroundColor, backgroundColor);
+		EntityRegistry.registerModEntity(entityClass, entityName, entityId, this, 80, 1, false);
 		RenderingRegistry.registerEntityRenderingHandler(entityClass, render);
+	}
+
+	public static MainCommand getMainCommand() {
+		return commands;
 	}
 }

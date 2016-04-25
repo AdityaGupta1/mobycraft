@@ -21,3 +21,22 @@ src/src_Client.launch
 src/src_Server.launch
 libraries/
 docker-compose.yml
+
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
+*.ipr
+*.iws
+*.iml
+.idea
+
+# gradle
+build
+.gradle

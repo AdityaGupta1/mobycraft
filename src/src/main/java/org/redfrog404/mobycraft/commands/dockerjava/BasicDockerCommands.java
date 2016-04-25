@@ -1,24 +1,13 @@
-package org.redfrog404.mobycraft.commands;
+package org.redfrog404.mobycraft.commands.dockerjava;
 
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.asSortedList;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getAll;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getBoxContainerWithID;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getContainers;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.getFromAllWithName;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.isStopped;
-import static org.redfrog404.mobycraft.commands.ContainerListCommands.refreshContainerIDMap;
-import static org.redfrog404.mobycraft.commands.MainCommand.arg1;
-import static org.redfrog404.mobycraft.commands.MainCommand.args;
-import static org.redfrog404.mobycraft.commands.MainCommand.checkIfArgIsNull;
-import static org.redfrog404.mobycraft.commands.MainCommand.commandNumbers;
-import static org.redfrog404.mobycraft.commands.MainCommand.containerIDMap;
-import static org.redfrog404.mobycraft.commands.MainCommand.certPathProperty;
-import static org.redfrog404.mobycraft.commands.MainCommand.dockerHostProperty;
-import static org.redfrog404.mobycraft.commands.MainCommand.getDockerClient;
-import static org.redfrog404.mobycraft.commands.MainCommand.helpMessages;
-import static org.redfrog404.mobycraft.commands.MainCommand.pollRateProperty;
-import static org.redfrog404.mobycraft.commands.MainCommand.sendHelpMessage;
-import static org.redfrog404.mobycraft.commands.MainCommand.sender;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.args;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.commandNumbers;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.containerIDMap;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.getDockerClient;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.helpMessages;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sendHelpMessage;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendBarMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
@@ -34,19 +23,21 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumChatFormatting;
 
 import org.apache.commons.lang.math.NumberUtils;
-import org.redfrog404.mobycraft.api.MobycraftCommands;
+import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
+import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
+import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.utils.BoxContainer;
 import org.redfrog404.mobycraft.utils.StatisticsResultCallback;
 
 import com.github.dockerjava.api.model.Container;
 
-public class BasicDockerCommands implements MobycraftCommands {
+public class BasicDockerCommands implements MobycraftBasicCommands {
 
 	// Used for help messages specific to a certain command
 	public static Map<String, String[]> specificHelpMessages = new HashMap<String, String[]>();
-
-	public static void help() {
+	
+	public void help() {
 		int size = helpMessages.size();
 		int maxCommandsPerPage = 8;
 
@@ -56,7 +47,7 @@ public class BasicDockerCommands implements MobycraftCommands {
 
 		boolean specificHelp = false;
 
-		if (!checkIfArgIsNull(0)) {
+		if (!Utils.checkIfArgIsNull(args, 0)) {
 			if (NumberUtils.isNumber(args[0])) {
 				page = Integer.parseInt(args[0]);
 			} else {
@@ -115,17 +106,17 @@ public class BasicDockerCommands implements MobycraftCommands {
 			toIndex = size;
 		}
 
-		for (String key : asSortedList(helpMessages.keySet()).subList(
+		for (String key : Utils.asSortedList(helpMessages.keySet()).subList(
 				(page - 1) * maxCommandsPerPage, toIndex)) {
 			sendHelpMessage(key, helpMessages.get(key));
 		}
 	}
 
-	public static void ps() {
+	public void ps() {
 
 		boolean showAll = false;
 
-		if (!checkIfArgIsNull(0)
+		if (!Utils.checkIfArgIsNull(args, 0)
 				&& args[0].split("-")[1].toLowerCase().contains("a")) {
 			showAll = true;
 		}
@@ -133,9 +124,9 @@ public class BasicDockerCommands implements MobycraftCommands {
 		List<Container> containers;
 
 		if (showAll) {
-			containers = getAll();
+			containers = MobycraftCommandsFactory.getInstance().getListCommands().getAll();
 		} else {
-			containers = getContainers();
+			containers = MobycraftCommandsFactory.getInstance().getListCommands().getContainers();
 		}
 
 		if (containers.size() == 0) {
@@ -174,7 +165,7 @@ public class BasicDockerCommands implements MobycraftCommands {
 
 			String state = "running";
 
-			if (isStopped(container.getNames()[0])) {
+			if (MobycraftCommandsFactory.getInstance().getListCommands().isStopped(container.getNames()[0])) {
 				state = "stopped";
 			}
 
@@ -191,64 +182,13 @@ public class BasicDockerCommands implements MobycraftCommands {
 		}
 	}
 
-	public static void path() {
-		if (checkIfArgIsNull(0)) {
-			sendErrorMessage("Docker path is not specified! Command is used as /docker path <path> .");
-			return;
-		}
-
-		certPathProperty.setValue(arg1);
-		Mobycraft.config.save();
-		sendConfirmMessage("Docker path set to \"" + arg1 + "\"");
-	}
-
-	public static void host() {
-		if (checkIfArgIsNull(0)) {
-			sendErrorMessage("Docker host is not specified! Command is used as /docker host <host> .");
-			return;
-		}
-
-		if (!arg1.contains(":")) {
-			arg1 = arg1 + ":2376";
-		}
-
-		dockerHostProperty.setValue(arg1);
-		Mobycraft.config.save();
-		sendConfirmMessage("Docker host set to \"" + arg1 + "\"");
-	}
-
-	public static void pollRate() {
-		if (checkIfArgIsNull(0)) {
-			sendErrorMessage("Poll rate is not specified! Command is used as /docker poll_rate <rate> .");
-			return;
-		}
+	public void showDetailedInfo() throws InterruptedException {
+		MobycraftContainerListCommands listCommands = MobycraftCommandsFactory.getInstance().getListCommands();
 		
-		if (!NumberUtils.isNumber(arg1)) {
-			sendErrorMessage("The argument \"" + arg1 + "\" is invalid (must be a positive integer)! Command is used as /docker poll_rate <rate> .");
-			return;
-		}
-
-		pollRateProperty.setValue(arg1);
-		Mobycraft.config.save();
-		int intArg1 = Integer.parseInt(arg1);
-		if (intArg1 < 1) {
-			if (intArg1 == 0) {
-				sendErrorMessage("The argument \"" + arg1 + "\" is invalid (can't be zero)! Command is used as /docker poll_rate <rate> .");
-			} else {
-				sendErrorMessage("The argument \"" + arg1 + "\" is invalid (can't be negative)! Command is used as /docker poll_rate <rate> .");
-			}
-		} else if (intArg1 == 1) {
-			sendConfirmMessage("Poll rate set to 1 second");
-		} else {
-			sendConfirmMessage("Poll rate set to " + arg1 + " seconds");
-		}
-	}
-
-	public static void showDetailedInfo() throws InterruptedException {
-		refreshContainerIDMap();
+		MobycraftCommandsFactory.getInstance().getListCommands().refreshContainerIDMap();
 		System.out.println(containerIDMap);
 
-		if (getBoxContainerWithID(arg1).equals(null)) {
+		if (MobycraftCommandsFactory.getInstance().getListCommands().getBoxContainerWithID(arg1).equals(null)) {
 			return;
 		}
 
@@ -256,9 +196,9 @@ public class BasicDockerCommands implements MobycraftCommands {
 		sender = sender.getEntityWorld().getClosestPlayer(senderPos.getX(),
 				senderPos.getY(), senderPos.getZ(), -1);
 
-		if (isStopped(getBoxContainerWithID(arg1).getName())) {
-			BoxContainer boxContainer = getBoxContainerWithID(arg1);
-			Container container = getFromAllWithName(boxContainer.getName());
+		if (listCommands.isStopped(listCommands.getBoxContainerWithID(arg1).getName())) {
+			BoxContainer boxContainer = listCommands.getBoxContainerWithID(arg1);
+			Container container = listCommands.getFromAllWithName(boxContainer.getName());
 			printBasicContainerInformation(boxContainer, container);
 			return;
 		}
@@ -266,7 +206,7 @@ public class BasicDockerCommands implements MobycraftCommands {
 		execStatsCommand(arg1, true);
 	}
 
-	public static void printBasicContainerInformation(
+	public void printBasicContainerInformation(
 			BoxContainer boxContainer, Container container) {
 		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
 				+ "=========== Container Information ===========");
@@ -281,6 +221,8 @@ public class BasicDockerCommands implements MobycraftCommands {
 				+ EnumChatFormatting.BOLD + "Status: "
 				+ EnumChatFormatting.RESET + container.getStatus());
 	}
+	
+
 
 	public static void execStatsCommand(String containerID, boolean sendMessages) {
 		StatisticsResultCallback callback = new StatisticsResultCallback(
@@ -293,5 +235,7 @@ public class BasicDockerCommands implements MobycraftCommands {
 			return;
 		}
 	}
+	
+	
 
 }
