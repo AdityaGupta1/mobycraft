@@ -4,10 +4,8 @@ import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.args;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.boxContainers;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.builder;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.checkIfArgIsNull;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.containerIDMap;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.getDockerClient;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.getStartPos;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
@@ -16,7 +14,6 @@ import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,23 +21,19 @@ import java.util.Map;
 import net.minecraft.util.EnumChatFormatting;
 
 import org.apache.commons.lang.math.NumberUtils;
+import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
+import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.utils.BoxContainer;
 
 import com.github.dockerjava.api.model.Container;
 import com.google.common.collect.Lists;
 
-public class ContainerListCommands {
+public class ContainerListCommands implements MobycraftContainerListCommands {
 
-	static <T extends Comparable<? super T>> List<T> asSortedList(
-			Collection<T> c) {
-		List<T> list = new ArrayList<T>(c);
-		java.util.Collections.sort(list);
-		return list;
-	}
-
-	public static void refresh() {
+	public void refresh() {
 		List<Container> containers = getAll();
-		boxContainers = builder.containerPanel(containers, getStartPos(),
+		boxContainers = builder.containerPanel(containers, 
+				MobycraftCommandsFactory.getInstance().getConfigurationCommands().getStartPos(),
 				sender.getEntityWorld());
 		List<String> stoppedContainerNames = new ArrayList<String>();
 		for (Container container : getStopped()) {
@@ -54,25 +47,26 @@ public class ContainerListCommands {
 		refreshContainerIDMap();
 	}
 
-	public static void refreshRunning() {
+	public void refreshRunning() {
 		List<Container> containers = getContainers();
-		boxContainers = builder.containerPanel(containers, getStartPos(),
+		boxContainers = builder.containerPanel(containers, 
+				MobycraftCommandsFactory.getInstance().getConfigurationCommands().getStartPos(),
 				sender.getEntityWorld());
 		refreshContainerIDMap();
 	}
 
-	public static void refreshContainerIDMap() {
+	public void refreshContainerIDMap() {
 		containerIDMap.clear();
 		for (BoxContainer boxContainer : boxContainers) {
 			containerIDMap.put(boxContainer.getID(), boxContainer);
 		}
 	}
 
-	public static List<Container> getContainers() {
+	public List<Container> getContainers() {
 		return getDockerClient().listContainersCmd().exec();
 	}
 
-	public static List<Container> getStopped() {
+	public List<Container> getStopped() {
 		List<Container> containers = new ArrayList<Container>();
 		for (Container container : getDockerClient().listContainersCmd()
 				.withShowAll(true).exec()) {
@@ -84,7 +78,7 @@ public class ContainerListCommands {
 		return containers;
 	}
 
-	public static Container getWithName(String name) {
+	public Container getWithName(String name) {
 		for (Container container : getContainers()) {
 			if (container.getNames()[0].equals(name)) {
 				return container;
@@ -93,7 +87,7 @@ public class ContainerListCommands {
 		return null;
 	}
 
-	public static Container getFromAllWithName(String name) {
+	public Container getFromAllWithName(String name) {
 		List<Container> containers = getAll();
 		for (Container container : containers) {
 			if (container.getNames()[0].equals(name)) {
@@ -103,7 +97,7 @@ public class ContainerListCommands {
 		return null;
 	}
 
-	public static List<Container> getAll() {
+	public List<Container> getAll() {
 		List<Container> containers = getDockerClient().listContainersCmd()
 				.withShowAll(true).exec();
 		return containers;
@@ -112,7 +106,7 @@ public class ContainerListCommands {
 	/*
 	 * Gets the BoxContainer from the containerIDMap with id <id>
 	 */
-	public static BoxContainer getBoxContainerWithID(String id) {
+	public BoxContainer getBoxContainerWithID(String id) {
 		refreshContainerIDMap();
 		if (!containerIDMap.containsKey(id)) {
 			return null;
@@ -120,7 +114,7 @@ public class ContainerListCommands {
 		return containerIDMap.get(id);
 	}
 
-	public static boolean isStopped(String containerName) {
+	public boolean isStopped(String containerName) {
 		if (getFromAllWithName(containerName) == null) {
 			return false;
 		}
@@ -134,7 +128,7 @@ public class ContainerListCommands {
 		return false;
 	}
 
-	public static void heatMap() {
+	public void heatMap() {
 		if (arg1 == null) {
 			sendErrorMessage("Type of heat map not specified! \"cpu\" and \"memory\" are accepted as types.");
 			return;
@@ -174,7 +168,7 @@ public class ContainerListCommands {
 		}
 
 		sortedUsages.addAll(usagesMap.keySet());
-		sortedUsages = Lists.reverse(asSortedList(sortedUsages));
+		sortedUsages = Lists.reverse(Utils.asSortedList(sortedUsages));
 
 		int maxNumber = 0;
 		int maxContainers = 5;

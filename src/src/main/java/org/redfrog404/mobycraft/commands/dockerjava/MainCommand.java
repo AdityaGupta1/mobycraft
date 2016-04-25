@@ -1,33 +1,6 @@
 package org.redfrog404.mobycraft.commands.dockerjava;
 
-import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.host;
-import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.pollRate;
-import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.showDetailedInfo;
 import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.specificHelpMessages;
-import static org.redfrog404.mobycraft.commands.dockerjava.BuildContainerCommands.buildContainersFromList;
-import static org.redfrog404.mobycraft.commands.dockerjava.BuildContainerCommands.refreshAndBuildContainers;
-import static org.redfrog404.mobycraft.commands.dockerjava.BuildContainerCommands.setContainerAppearance;
-import static org.redfrog404.mobycraft.commands.dockerjava.BuildContainerCommands.setStartPos;
-import static org.redfrog404.mobycraft.commands.dockerjava.BuildContainerCommands.teleport;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.kill;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.killAll;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.remove;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.removeAll;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.removeStopped;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.restart;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.run;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.start;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerLifecycleCommands.stop;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.asSortedList;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getAll;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getBoxContainerWithID;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getWithName;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.heatMap;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.isStopped;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.refreshContainerIDMap;
-import static org.redfrog404.mobycraft.commands.dockerjava.ImageCommands.images;
-import static org.redfrog404.mobycraft.commands.dockerjava.ImageCommands.removeAllImages;
-import static org.redfrog404.mobycraft.commands.dockerjava.ImageCommands.removeImage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
@@ -42,8 +15,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.http.conn.UnsupportedSchemeException;
-import org.redfrog404.mobycraft.api.MobycraftCommands;
-import org.redfrog404.mobycraft.api.MobycraftDockerFactory;
+import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
+import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
+import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.utils.BoxContainer;
 import org.redfrog404.mobycraft.utils.StructureBuilder;
@@ -80,15 +54,8 @@ public class MainCommand implements ICommand {
 	static List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
 	// Containers container's IDs
 	static Map<String, BoxContainer> containerIDMap = new HashMap<String, BoxContainer>();
-	// Used for byte conversions
-	static Map<Integer, String> byteSuffixNumbers = new HashMap<Integer, String>();
 
 	public static ICommandSender sender;
-
-	static Property certPathProperty;
-	static Property dockerHostProperty;
-	static Property startPosProperty;
-	static Property pollRateProperty;
 
 	static String[] args;
 	public static String arg1;
@@ -98,12 +65,13 @@ public class MainCommand implements ICommand {
 	public int count = 0;
 	public static int maxCount;
 
-	static String dockerHost;
-	static String certPath;
+//	static String dockerHost;
+//	static String certPath;
 
-	private static boolean refresh = false;
+//	ConfigProperties configProperties;
 
 	public MainCommand() {
+		
 		this.commandAliases = new ArrayList();
 		this.commandAliases.add("docker");
 
@@ -133,21 +101,15 @@ public class MainCommand implements ICommand {
 		commandNumbers.put("get_path_and_host", 21);
 		commandNumbers.put("poll_rate", 22);
 
-		helpMessages
-				.put("help (page | command)",
-						"Brings up page number (page) of this help list or help specifically relating to command (command); if neither is specified, this command will show page 1 of regular help");
-		helpMessages
-				.put("ps [options]",
-						"Lists all of your containers and some important information about them");
-		helpMessages
-				.put("path <path>",
-						"Sets the Docker path to <path>; this value is only used if DOCKER_CERT_PATH environment variable is not set");
-		helpMessages
-				.put("host <host>",
-						"Sets the Docker host to <host>; this value is only used if DOCKER_HOST environment variable is not set");
-		helpMessages
-				.put("run <image> (name | amount)",
-						"Creates and runs a container with image <image> and name (name) or (amount) number of containers");
+		helpMessages.put("help (page | command)",
+				"Brings up page number (page) of this help list or help specifically relating to command (command); if neither is specified, this command will show page 1 of regular help");
+		helpMessages.put("ps [options]", "Lists all of your containers and some important information about them");
+		helpMessages.put("path <path>",
+				"Sets the Docker path to <path>; this value is only used if DOCKER_CERT_PATH environment variable is not set");
+		helpMessages.put("host <host>",
+				"Sets the Docker host to <host>; this value is only used if DOCKER_HOST environment variable is not set");
+		helpMessages.put("run <image> (name | amount)",
+				"Creates and runs a container with image <image> and name (name) or (amount) number of containers");
 		helpMessages.put("kill <name>", "Kills container <name>");
 		helpMessages.put("kill_all", "Kills all currently running containers");
 		helpMessages.put("restart <name>", "Restarts container <name>");
@@ -155,68 +117,24 @@ public class MainCommand implements ICommand {
 		helpMessages.put("rm_all", "Removes all containers");
 		helpMessages.put("stop <name>", "Stops container <name>");
 		helpMessages.put("start <name>", "Starts container <name>");
-		helpMessages.put("images",
-				"Lists all of your currently installed images");
+		helpMessages.put("images", "Lists all of your currently installed images");
 		helpMessages.put("rmi <name>", "Removes image <name>");
 		helpMessages.put("rmi_all", "Removes all images");
-		helpMessages
-				.put("set_start_pos",
-						"Sets the start position of container building to the sender's current position");
-		helpMessages.put("rm_stopped",
-				"Removes all currently stopped containers");
-		helpMessages.put("teleport | tp <name>",
-				"Teleports to the box container with the name <name>");
-		helpMessages
-				.put("heat_map <cpu | memory>",
-						"Shows a list of the top 5 containers that use the most <cpu> or <memory>");
-		helpMessages.put("get_host_and_path | get_path_and_host",
-				"Returns the Docker host and cert path");
-		helpMessages.put("poll_rate <rate>",
-				"Sets the poll rate to <rate> seconds");
+		helpMessages.put("set_start_pos",
+				"Sets the start position of container building to the sender's current position");
+		helpMessages.put("rm_stopped", "Removes all currently stopped containers");
+		helpMessages.put("teleport | tp <name>", "Teleports to the box container with the name <name>");
+		helpMessages.put("heat_map <cpu | memory>",
+				"Shows a list of the top 5 containers that use the most <cpu> or <memory>");
+		helpMessages.put("get_host_and_path | get_path_and_host", "Returns the Docker host and cert path");
+		helpMessages.put("poll_rate <rate>", "Sets the poll rate to <rate> seconds");
 
-		specificHelpMessages
-				.put("ps",
-						new String[] { "ps [options]",
-								"Does not show stopped containers by default",
-								"[options]: \"-a\" to show all containers, including stopped ones" });
-		specificHelpMessages
-				.put("heat_map",
-						new String[] {
-								"heat_map <cpu | memory>",
-								"Shows in the format of (container name) - (image) - (usage)",
-								"If there are multiple containers with the same usage, the container name will say \"and (number) others\"",
-								"If there are multiple containers with the same usage, the image refers to the one whose name is shown in the (container name)" });
-
-		byteSuffixNumbers.put(0, "B");
-		byteSuffixNumbers.put(1, "KB");
-		byteSuffixNumbers.put(2, "MB");
-		byteSuffixNumbers.put(3, "GB");
-	}
-
-	public static void readConfigProperties() {
-		certPathProperty = Mobycraft.config
-				.get("files",
-						"docker-cert-path",
-						"File path",
-						"The directory path of your Docker certificate (set using /docker path <path>); only used if DOCKER_CERT_PATH environment variable is not set");
-		dockerHostProperty = Mobycraft.config
-				.get("files",
-						"docker-host",
-						"Docker host IP",
-						"The IP of your Docker host (set using /docker host <host>); only used if DOCKER_HOST environment variable is not set");
-		startPosProperty = Mobycraft.config
-				.get("container-building",
-						"start-pos",
-						"0, 0, 0",
-						"The position - x, y, z - to start building containers at (set using /docker start_pos");
-		pollRateProperty = Mobycraft.config
-				.get("container-building",
-						"poll-rate",
-						"2",
-						"The rate in seconds at which the containers will update (set using /docker poll_rate <rate in seconds>)");
-		maxCount = (int) Math.floor((Float.parseFloat(pollRateProperty
-				.getString()) * 50));
-		System.out.println(maxCount);
+		specificHelpMessages.put("ps", new String[] { "ps [options]", "Does not show stopped containers by default",
+				"[options]: \"-a\" to show all containers, including stopped ones" });
+		specificHelpMessages.put("heat_map", new String[] { "heat_map <cpu | memory>",
+				"Shows in the format of (container name) - (image) - (usage)",
+				"If there are multiple containers with the same usage, the container name will say \"and (number) others\"",
+				"If there are multiple containers with the same usage, the image refers to the one whose name is shown in the (container name)" });
 	}
 
 	@Override
@@ -251,8 +169,7 @@ public class MainCommand implements ICommand {
 		}
 
 		if (!commandNumbers.containsKey(command)) {
-			sendErrorMessage("\"" + command
-					+ "\" is not a valid command! Use /docker help for help.");
+			sendErrorMessage("\"" + command + "\" is not a valid command! Use /docker help for help.");
 			return;
 		}
 
@@ -260,87 +177,85 @@ public class MainCommand implements ICommand {
 
 		BlockPos position = sender.getPosition();
 
-        MobycraftDockerFactory factory = MobycraftDockerFactory.getInstance();
-        MobycraftCommands commands = factory.getMobycraftCommands();
+		MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
 
 		try {
 			switch (commandNumber) {
 			case 0:
-				commands.help();
+				factory.getBasicCommands().help();
 				break;
 			case 1:
-				commands.ps();
+				factory.getBasicCommands().ps();
 				break;
 			case 2:
-				commands.path();
+				factory.getConfigurationCommands().setPath();
 				break;
 			case 3:
-				switchState(arg1);
+				factory.getLifecycleCommands().switchState(builder, arg1);
 				break;
 			case 4:
-				removeStopped();
+				factory.getLifecycleCommands().removeStopped();
 				break;
 			case 5:
-				run();
+				factory.getLifecycleCommands().run();
 				break;
 			case 6:
-				killAll();
+				factory.getLifecycleCommands().killAll();
 				break;
 			case 7:
-				kill();
+				factory.getLifecycleCommands().kill();
 				break;
 			case 8:
-				restart();
+				factory.getLifecycleCommands().restart();
 				break;
 			case 9:
-				remove();
+				factory.getLifecycleCommands().remove();
 				break;
 			case 10:
-				removeAll();
+				factory.getLifecycleCommands().removeAll();
 				break;
 			case 11:
-				stop();
+				factory.getLifecycleCommands().stop();
 				break;
 			case 12:
-				start();
+				factory.getLifecycleCommands().start();
 				break;
 			case 13:
-				images();
+				factory.getImageCommands().images();
 				break;
 			case 14:
-				removeImage();
+				factory.getImageCommands().removeImage();
 				break;
 			case 15:
-				removeAllImages();
+				factory.getImageCommands().removeAllImages();
 				break;
 			case 16:
-				setStartPos();
+				factory.getConfigurationCommands().setStartPos();
 				break;
 			case 17:
-				showDetailedInfo();
+				factory.getBasicCommands().showDetailedInfo();
 				break;
 			case 18:
-				teleport();
+				factory.getBuildCommands().teleport();
 				break;
 			case 19:
-				heatMap();
+				factory.getListCommands().heatMap();
 				break;
 			case 20:
-				host();
+				factory.getConfigurationCommands().setHost();
 				break;
 			case 21:
-				getHostAndPath();
+				factory.getConfigurationCommands().getHostAndPath();
 				break;
 			case 22:
-				pollRate();
+				factory.getConfigurationCommands().setPollRate();
 			}
 		} catch (Exception exception) {
 			if (exception instanceof UnsupportedSchemeException) {
-				sendErrorMessage("Invalid Docker host/path! Set the host by using /docker host <host> ; set the path by using /docker path <path>");
+				sendErrorMessage(
+						"Invalid Docker host/path! Set the host by using /docker host <host> ; set the path by using /docker path <path>");
 			}
-			return;
 		}
-
 	}
 
 	@Override
@@ -359,131 +274,26 @@ public class MainCommand implements ICommand {
 	}
 
 	@Override
-	public List<String> addTabCompletionOptions(ICommandSender sender,
-			String[] args, BlockPos pos) {
-		return asSortedList(commandNumbers.keySet());
+	public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
+		return Utils.asSortedList(commandNumbers.keySet());
 	}
 
 	public static void sendHelpMessage(String command, String helpMessage) {
-		sendMessage(EnumChatFormatting.DARK_GREEN + "/docker " + command
-				+ " - " + EnumChatFormatting.GOLD + helpMessage);
+		sendMessage(
+				EnumChatFormatting.DARK_GREEN + "/docker " + command + " - " + EnumChatFormatting.GOLD + helpMessage);
 	}
 
 	public static DockerClient getDockerClient() {
-		DockerClient dockerClient;
-
-		if (!refresh) {
-			refreshHostAndPath();
-			refresh = true;
-		}
-
+//		MobycraftCommandsFactory.getInstance().getBuildCommands().refreshHostAndPath();
+		
+		ConfigProperties configProperties = MobycraftCommandsFactory.getInstance().getConfigurationCommands().getConfigProperties();
+		
 		DockerClientConfig dockerConfig = DockerClientConfig
-				.createDefaultConfigBuilder().withUri(dockerHost)
-				.withDockerCertPath(certPath).build();
-		dockerClient = DockerClientBuilder.getInstance(dockerConfig).build();
+				.createDefaultConfigBuilder()
+				.withUri(configProperties.getDockerHostProperty().getString())
+				.withDockerCertPath(configProperties.getCertPathProperty().getString()).build();
 
-		return dockerClient;
-	}
-
-	/**
-	 * Refreshes the Docker host and cert path
-	 */
-	private static void refreshHostAndPath() {
-		dockerHost = System.getProperty("DOCKER_HOST");
-		if (dockerHost == null) {
-			sendFeedbackMessage("The DOCKER_HOST environment variable has not been set");
-
-			if (dockerHostProperty.isDefault()) {
-				dockerHost = "192.168.99.100:2376";
-				sendConfirmMessage("Using default value of \"" + dockerHost
-						+ "\"");
-				sendConfirmMessage("Use /docker host <host> to override this value");
-			} else {
-				dockerHost = dockerHostProperty.getString();
-				sendConfirmMessage("Using config value of \""
-						+ dockerHostProperty.getString() + "\"");
-			}
-		} else {
-			dockerHost = dockerHost.substring(6, dockerHost.length());
-			sendConfirmMessage("Using DOCKER_HOST value of \"" + dockerHost
-					+ "\"");
-		}
-		dockerHost = "https://" + dockerHost;
-
-		certPath = System.getProperty("DOCKER_CERT_PATH");
-		if (certPath == null) {
-			sendFeedbackMessage("The DOCKER_CERT_PATH environment variable has not been set");
-
-			if (certPathProperty.isDefault()) {
-				certPath = System.getProperty("user.home")
-						+ "/.docker/machine/machines/default";
-				sendConfirmMessage("Using default value of \"" + certPath
-						+ "\"");
-				sendConfirmMessage("Use /docker path <path> to override this value");
-			} else {
-				certPath = certPathProperty.getString();
-				sendConfirmMessage("Using config value of \"" + certPath + "\"");
-			}
-		} else {
-			sendConfirmMessage("Using DOCKER_CERT_PATH value of \"" + certPath
-					+ "\"");
-		}
-	}
-
-	public static void switchState(String containerID) {
-		refreshContainerIDMap();
-
-		// If there is no container with the ID, return
-		if (getBoxContainerWithID(containerID) == null) {
-			return;
-		}
-
-		// New BoxContainer variable called boxContainer to store the container
-		BoxContainer boxContainer = getBoxContainerWithID(containerID);
-
-		boxContainer.setState(!boxContainer.getState());
-
-		Block containerBlock;
-		Block prevContainerBlock;
-
-		// If the container is now on (previously off):
-		if (boxContainer.getState()) {
-			containerBlock = Blocks.iron_block;
-			prevContainerBlock = Blocks.redstone_block;
-			getDockerClient().startContainerCmd(boxContainer.getID()).exec();
-		}
-		// Otherwise, if the container is now off (previously on):
-		else {
-			containerBlock = Blocks.redstone_block;
-			prevContainerBlock = Blocks.iron_block;
-			getDockerClient().stopContainerCmd(boxContainer.getID()).exec();
-		}
-
-		builder.replace(boxContainer.getWorld(), boxContainer.getPosition()
-				.add(2, 0, 1), boxContainer.getPosition().add(-2, 0, 7),
-				prevContainerBlock, containerBlock);
-
-		builder.replace(boxContainer.getWorld(), boxContainer.getPosition()
-				.add(2, 4, 1), boxContainer.getPosition().add(-2, 4, 7),
-				prevContainerBlock, containerBlock);
-	}
-
-	public static boolean checkIfArgIsNull(int argNumber) {
-		try {
-			if (args[argNumber].equals(null)) {
-				return true;
-			}
-		} catch (ArrayIndexOutOfBoundsException e) {
-			return true;
-		}
-		return false;
-	}
-
-	public static BlockPos getStartPos() {
-		String[] posStrings = startPosProperty.getString().split(", ");
-		return new BlockPos(Integer.parseInt(posStrings[0]),
-				Integer.parseInt(posStrings[1]),
-				Integer.parseInt(posStrings[2]));
+		return DockerClientBuilder.getInstance(dockerConfig).build();
 	}
 
 	/*
@@ -496,6 +306,8 @@ public class MainCommand implements ICommand {
 	 */
 	@SubscribeEvent
 	public void onTick(PlayerTickEvent event) {
+		MobycraftBuildContainerCommands buildCommands = MobycraftCommandsFactory.getInstance().getBuildCommands();
+
 		if (event.player.getEntityWorld().isRemote) {
 			return;
 		}
@@ -504,106 +316,25 @@ public class MainCommand implements ICommand {
 		if (count >= maxCount) {
 			sender = event.player;
 			if (boxContainers == null) {
-				refreshAndBuildContainers();
+				buildCommands.refreshAndBuildContainers();
 			} else {
-				updateContainers(true);
+				buildCommands.updateContainers(true);
 			}
 			count = 0;
 		}
 	}
 
-	public static void updateContainers(boolean checkForEqual) {
-		refreshContainerIDMap();
-
-		List<Container> containers = getAll();
-		List<BoxContainer> newContainers = builder.containerPanel(containers,
-				getStartPos(), sender.getEntityWorld());
-
-		if (boxContainers.equals(newContainers) && checkForEqual) {
-			return;
-		}
-
-		int start = 0;
-
-		if (checkForEqual) {
-			findDifferences: for (; start < boxContainers.size(); start++) {
-				if (start == newContainers.size()) {
-					start--;
-					break findDifferences;
-				}
-				if (!boxContainers.get(start).equals(newContainers.get(start))) {
-					break findDifferences;
-				}
-			}
-
-			start -= start % 10;
-			start--;
-
-			if (start < 0) {
-				start = 0;
-			}
-		}
-
-		List<BoxContainer> containersToReplace = new ArrayList<BoxContainer>();
-		containersToReplace = boxContainers
-				.subList(start, boxContainers.size());
-
-		for (int i = 0; i < containersToReplace.size(); i++) {
-			builder.airContainer(sender.getEntityWorld(), containersToReplace
-					.get(i).getPosition());
-		}
-
-		List<BoxContainer> newContainersToBuild = new ArrayList<BoxContainer>();
-		newContainersToBuild = builder.containerPanel(getAll(),
-				getStartPos(), sender.getEntityWorld());
-		newContainersToBuild = newContainersToBuild.subList(start,
-				newContainersToBuild.size());
-		buildContainersFromList(newContainersToBuild);
-
-		boxContainers = newContainers;
-
-		for (BoxContainer container : boxContainers) {
-			if (isStopped(container.getName())) {
-				setContainerAppearance(container, false);
-				container.setState(false);
-			} else {
-				container.setState(true);
-			}
-		}
-	}
-
-	public static String imageSizeConversion(double bytes) {
-		int suffixNumber = 0;
-
-		/*
-		 * Docker seems to convert bytes using 1000 instead of 1024
-		 */
-		while (bytes / 1000 > 1) {
-			bytes /= 1000;
-			suffixNumber++;
-		}
-
-		NumberFormat formatter = new DecimalFormat("#0.0");
-		String byteString = formatter.format(bytes) + " "
-				+ byteSuffixNumbers.get(suffixNumber);
-		if (byteString.contains(".0")) {
-			byteString = byteString.replace(".0", "");
-		}
-
-		return byteString;
-	}
-
 	@SubscribeEvent
 	public void containerWand(PlayerInteractEvent event) {
+		MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
+
 		EntityPlayer player = event.entityPlayer;
 
-		if (!event.action.equals(Action.RIGHT_CLICK_BLOCK)
-				&& !event.action.equals(Action.LEFT_CLICK_BLOCK)) {
+		if (!event.action.equals(Action.RIGHT_CLICK_BLOCK) && !event.action.equals(Action.LEFT_CLICK_BLOCK)) {
 			return;
 		}
 
-		if (player.getHeldItem() == null
-				|| player.getHeldItem().getItem() != Mobycraft.container_wand) {
+		if (player.getHeldItem() == null || player.getHeldItem().getItem() != Mobycraft.container_wand) {
 			return;
 		}
 
@@ -622,32 +353,20 @@ public class MainCommand implements ICommand {
 			return;
 		}
 
-		String name = sign.signText[1].getUnformattedText().concat(
-				sign.signText[2].getUnformattedText().concat(
-						sign.signText[3].getUnformattedText()));
+		String name = sign.signText[1].getUnformattedText()
+				.concat(sign.signText[2].getUnformattedText().concat(sign.signText[3].getUnformattedText()));
 
 		System.out.println(name);
 
-		if (getWithName(name) == null) {
+		if (factory.getListCommands().getWithName(name) == null) {
 			return;
 		}
 
-		Container container = getWithName(name);
-		getDockerClient().removeContainerCmd(container.getId()).withForce()
-				.exec();
+		Container container = factory.getListCommands().getWithName(name);
+		getDockerClient().removeContainerCmd(container.getId()).withForce().exec();
 		sendConfirmMessage("Removed container with name \"" + name + "\"");
 
-		updateContainers(false);
+		factory.getBuildCommands().updateContainers(false);
 	}
 
-	private void getHostAndPath() {
-		if (dockerHost == null || certPath == null) {
-			refreshHostAndPath();
-		}
-
-		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
-				+ "Docker host: " + EnumChatFormatting.RESET + dockerHost);
-		sendMessage(EnumChatFormatting.GOLD + "" + EnumChatFormatting.BOLD
-				+ "Docker cert path: " + EnumChatFormatting.RESET + certPath);
-	}
 }

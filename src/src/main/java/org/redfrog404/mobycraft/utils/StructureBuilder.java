@@ -1,12 +1,9 @@
 package org.redfrog404.mobycraft.utils;
 
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getContainers;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getFromAllWithName;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.isStopped;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.main.Mobycraft;
 
 import net.minecraft.block.Block;
@@ -215,7 +212,7 @@ public class StructureBuilder {
 		}
 
 		for (BoxContainer container : boxContainers) {
-			if (isStopped(container.getName())) {
+			if (MobycraftCommandsFactory.getInstance().getListCommands().isStopped(container.getName())) {
 				container.setState(false);
 			}
 		}

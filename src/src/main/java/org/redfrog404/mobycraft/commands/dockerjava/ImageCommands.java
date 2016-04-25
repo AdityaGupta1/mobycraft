@@ -1,9 +1,8 @@
 package org.redfrog404.mobycraft.commands.dockerjava;
 
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.checkIfArgIsNull;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.args;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.getDockerClient;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.imageSizeConversion;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendBarMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
@@ -12,13 +11,15 @@ import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
 import java.util.List;
 
+import org.redfrog404.mobycraft.api.MobycraftImageCommands;
+
 import net.minecraft.util.EnumChatFormatting;
 
 import com.github.dockerjava.api.model.Image;
 
-public class ImageCommands {
+public class ImageCommands implements MobycraftImageCommands {
 	
-	public static void images() {
+	public void images() {
 		List<Image> images = getDockerClient().listImagesCmd().exec();
 
 		if (images.size() == 0) {
@@ -48,12 +49,12 @@ public class ImageCommands {
 			message += EnumChatFormatting.RESET + ", "
 					+ EnumChatFormatting.GOLD + tag + EnumChatFormatting.RESET
 					+ ", " + EnumChatFormatting.GREEN
-					+ imageSizeConversion(image.getSize());
+					+ Utils.imageSizeConversion(image.getSize());
 			sendMessage(message);
 		}
 	}
 
-	public static void removeAllImages() {
+	public void removeAllImages() {
 		sendFeedbackMessage("Working on it...");
 		if (getImages().size() < 1) {
 			sendFeedbackMessage("No images currently installed.");
@@ -65,8 +66,8 @@ public class ImageCommands {
 		sendConfirmMessage("Removed all images.");
 	}
 
-	public static void removeImage() {
-		if (checkIfArgIsNull(0)) {
+	public void removeImage() {
+		if (Utils.checkIfArgIsNull(args, 0)) {
 			sendErrorMessage("Image name not specified! Command is used as /docker rmi <name> .");
 			return;
 		}
@@ -80,11 +81,11 @@ public class ImageCommands {
 		}
 	}
 
-	public static List<Image> getImages() {
+	public List<Image> getImages() {
 		return getDockerClient().listImagesCmd().exec();
 	}
 
-	public static Image getImageWithName(String name) {
+	public Image getImageWithName(String name) {
 		for (Image image : getImages()) {
 			if (image.getRepoTags()[0].split(":")[0].equals(name)) {
 				return image;

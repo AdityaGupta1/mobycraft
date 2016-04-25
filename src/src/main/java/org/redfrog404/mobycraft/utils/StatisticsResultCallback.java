@@ -1,12 +1,5 @@
 package org.redfrog404.mobycraft.utils;
 
-import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.printBasicContainerInformation;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getAll;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getBoxContainerWithID;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getContainers;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getFromAllWithName;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getStopped;
-import static org.redfrog404.mobycraft.commands.dockerjava.ContainerListCommands.getWithName;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
@@ -14,6 +7,8 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedHashMap;
+
+import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 
 import net.minecraft.util.EnumChatFormatting;
 
@@ -34,8 +29,10 @@ public class StatisticsResultCallback extends
 
 	@Override
 	public void onNext(Statistics stats) {
-		BoxContainer boxContainer = getBoxContainerWithID(containerID);
-		Container container = getFromAllWithName(boxContainer.getName());
+		MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
+		
+		BoxContainer boxContainer = factory.getListCommands().getBoxContainerWithID(containerID);
+		Container container = factory.getListCommands().getFromAllWithName(boxContainer.getName());
 
 		NumberFormat formatter = new DecimalFormat("#0.00");
 
@@ -59,7 +56,7 @@ public class StatisticsResultCallback extends
 		boxContainer.setCpuUsage(cpuUsage);
 
 		if (sendMessages) {
-			printBasicContainerInformation(boxContainer, container);
+			factory.getBasicCommands().printBasicContainerInformation(boxContainer, container);
 			sendMessage(EnumChatFormatting.RED + "" + EnumChatFormatting.BOLD
 					+ "Memory Usage: " + EnumChatFormatting.RESET + memoryUsage
 					+ "%");
