@@ -21,6 +21,7 @@ src/src_Client.launch
 src/src_Server.launch
 libraries/
 forge-*.txt
+docker-compose.yml
 
 # eclipse
 bin
