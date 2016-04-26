@@ -21,6 +21,7 @@ import net.minecraftforge.common.config.Property;
 
 import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
+import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.utils.BoxContainer;
 
 import com.github.dockerjava.api.model.Container;
@@ -140,9 +141,15 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 		factory.getListCommands().refreshContainerIDMap();
 		
 		Property startPosProperty = factory.getConfigurationCommands().getConfigProperties().getStartPosProperty();
+		
+		System.out.println("------------------------------------------------------------");
+		System.out.println("Default value:" + startPosProperty.getDefault());
+		System.out.println("Current value:" + startPosProperty.getString());
+		System.out.println("------------------------------------------------------------");
 
 		if (startPosProperty.isDefault()) {
-			startPosProperty.set(sender.getPosition().getX() + ", " + sender.getPosition().getY() + ", " + sender.getPosition().getZ());
+			startPosProperty.setValue(sender.getPosition().getX() + ", " + sender.getPosition().getY() + ", " + sender.getPosition().getZ());
+			Mobycraft.config.save();
 		}
 
 		List<Container> containers = factory.getListCommands().getAll();

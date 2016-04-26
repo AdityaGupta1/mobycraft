@@ -134,7 +134,7 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 	}
 	
 	public void run() throws InterruptedException {
-		if (args.length < 2) {
+		if (args.length < 1) {
 			sendErrorMessage("No arguments specified! Command is used as /docker run <image> (name | amount) .");
 			return;
 		}
