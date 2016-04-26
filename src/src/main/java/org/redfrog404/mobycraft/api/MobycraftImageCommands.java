@@ -7,13 +7,11 @@ import com.github.dockerjava.api.model.Image;
 public interface MobycraftImageCommands {
 	public void images();
 
-	public void removeAllImages();
-
-	public void removeImage();
+	public Image getImageWithName(String name);
 
 	public List<Image> getImages() ;
 
-	public Image getImageWithName(String name);
+	public void removeImage();
 
-
+	public void removeAllImages();
 }

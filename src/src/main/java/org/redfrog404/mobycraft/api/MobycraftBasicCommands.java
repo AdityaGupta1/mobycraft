@@ -11,5 +11,5 @@ public interface MobycraftBasicCommands {
 	public void help();
 	public void ps();
 	public void showDetailedInfo() throws InterruptedException;
-	public void printBasicContainerInformation(BoxContainer boxContainer, Container container);
+	public void printContainerInfo(BoxContainer boxContainer, Container container);
 }

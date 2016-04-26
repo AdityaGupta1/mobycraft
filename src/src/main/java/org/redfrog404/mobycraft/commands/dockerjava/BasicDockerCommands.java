@@ -126,7 +126,7 @@ public class BasicDockerCommands implements MobycraftBasicCommands {
 		if (showAll) {
 			containers = MobycraftCommandsFactory.getInstance().getListCommands().getAll();
 		} else {
-			containers = MobycraftCommandsFactory.getInstance().getListCommands().getContainers();
+			containers = MobycraftCommandsFactory.getInstance().getListCommands().getStarted();
 		}
 
 		if (containers.size() == 0) {
@@ -199,14 +199,14 @@ public class BasicDockerCommands implements MobycraftBasicCommands {
 		if (listCommands.isStopped(listCommands.getBoxContainerWithID(arg1).getName())) {
 			BoxContainer boxContainer = listCommands.getBoxContainerWithID(arg1);
 			Container container = listCommands.getFromAllWithName(boxContainer.getName());
-			printBasicContainerInformation(boxContainer, container);
+			printContainerInfo(boxContainer, container);
 			return;
 		}
 
 		execStatsCommand(arg1, true);
 	}
 
-	public void printBasicContainerInformation(
+	public void printContainerInfo(
 			BoxContainer boxContainer, Container container) {
 		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
 				+ "=========== Container Information ===========");

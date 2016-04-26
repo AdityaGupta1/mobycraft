@@ -48,7 +48,7 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 	}
 
 	public void refreshRunning() {
-		List<Container> containers = getContainers();
+		List<Container> containers = getStarted();
 		boxContainers = builder.containerPanel(containers, 
 				MobycraftCommandsFactory.getInstance().getConfigurationCommands().getStartPos(),
 				sender.getEntityWorld());
@@ -62,7 +62,7 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 		}
 	}
 
-	public List<Container> getContainers() {
+	public List<Container> getStarted() {
 		return getDockerClient().listContainersCmd().exec();
 	}
 
@@ -79,7 +79,7 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 	}
 
 	public Container getWithName(String name) {
-		for (Container container : getContainers()) {
+		for (Container container : getStarted()) {
 			if (container.getNames()[0].equals(name)) {
 				return container;
 			}
@@ -218,7 +218,7 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 			finishedUsages.add(usage);
 		}
 
-		int notIncluded = getContainers().size();
+		int notIncluded = getStarted().size();
 		notIncluded -= maxNumber;
 
 		for (Double usage : finishedUsages) {

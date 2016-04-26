@@ -123,11 +123,11 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 	
 	public void killAll() {
 		sendFeedbackMessage("Working on it...");
-		if (MobycraftCommandsFactory.getInstance().getListCommands().getContainers().size() < 1) {
+		if (MobycraftCommandsFactory.getInstance().getListCommands().getStarted().size() < 1) {
 			sendFeedbackMessage("No containers currently running.");
 			return;
 		}
-		for (Container container : MobycraftCommandsFactory.getInstance().getListCommands().getContainers()) {
+		for (Container container : MobycraftCommandsFactory.getInstance().getListCommands().getStarted()) {
 			getDockerClient().killContainerCmd(container.getId()).exec();
 		}
 		sendConfirmMessage("Killed all containers.");
@@ -157,7 +157,7 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 					.createContainerCmd(arg1).exec();
 			getDockerClient().startContainerCmd(response.getId()).exec();
 			String name = "";
-			for (Container container : MobycraftCommandsFactory.getInstance().getListCommands().getContainers()) {
+			for (Container container : MobycraftCommandsFactory.getInstance().getListCommands().getStarted()) {
 				if (container.getId().equals(response.getId())) {
 					name = container.getNames()[0];
 				}
@@ -179,7 +179,7 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 						.createContainerCmd(arg1).exec();
 				getDockerClient().startContainerCmd(response.getId()).exec();
 				String name = "";
-				for (Container container : MobycraftCommandsFactory.getInstance().getListCommands().getContainers()) {
+				for (Container container : MobycraftCommandsFactory.getInstance().getListCommands().getStarted()) {
 					if (container.getId().equals(response.getId())) {
 						name = container.getNames()[0];
 						names.add(name);

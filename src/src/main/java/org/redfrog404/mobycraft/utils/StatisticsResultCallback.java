@@ -56,7 +56,7 @@ public class StatisticsResultCallback extends
 		boxContainer.setCpuUsage(cpuUsage);
 
 		if (sendMessages) {
-			factory.getBasicCommands().printBasicContainerInformation(boxContainer, container);
+			factory.getBasicCommands().printContainerInfo(boxContainer, container);
 			sendMessage(EnumChatFormatting.RED + "" + EnumChatFormatting.BOLD
 					+ "Memory Usage: " + EnumChatFormatting.RESET + memoryUsage
 					+ "%");

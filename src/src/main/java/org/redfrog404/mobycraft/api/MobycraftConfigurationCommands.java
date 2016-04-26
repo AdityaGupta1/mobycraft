@@ -11,7 +11,5 @@ public interface MobycraftConfigurationCommands {
 	public void setStartPos();
 	public BlockPos getStartPos();
 	public void getHostAndPath();
-//	public void setDefaultHostAndPath();
-	
 	public ConfigProperties getConfigProperties();
 }
