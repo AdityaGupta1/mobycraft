@@ -1,6 +1,6 @@
 package org.redfrog404.mobycraft.api;
 
-import org.redfrog404.mobycraft.utils.StructureBuilder;
+import org.redfrog404.mobycraft.commands.dockerjava.StructureBuilder;
 
 public interface MobycraftContainerLifecycleCommands {
 	public void start();

@@ -67,16 +67,6 @@ public class BoxContainer {
 		return world;
 	}
 
-	public Container getContainer(List<Container> containers) {
-		for (Container container : containers) {
-			if (container.getId().equals(ID)) {
-				return container;
-			}
-		}
-
-		return null;
-	}
-
 	@Override
 	public String toString() {
 		return "[\"" + this.getName() + "\", \"" + this.getID() + "\""

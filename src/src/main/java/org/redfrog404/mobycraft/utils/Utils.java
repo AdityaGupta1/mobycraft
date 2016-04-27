@@ -1,13 +1,14 @@
-package org.redfrog404.mobycraft.commands.dockerjava;
+package org.redfrog404.mobycraft.utils;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import net.minecraft.util.Vec3i;
 
 public class Utils {
 
@@ -21,8 +22,7 @@ public class Utils {
 		byteSuffixNumbers.put(3, "GB");
 	}
 
-
-	static <T extends Comparable<? super T>> List<T> asSortedList(
+	public static <T extends Comparable<? super T>> List<T> asSortedList(
 			Collection<T> c) {
 		List<T> list = new ArrayList<T>(c);
 		java.util.Collections.sort(list);

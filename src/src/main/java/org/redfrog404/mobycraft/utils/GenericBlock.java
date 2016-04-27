@@ -27,5 +27,4 @@ public class GenericBlock extends Block {
 		this.setHarvestLevel(tool, harvestLevel);
 		this.setStepSound(sound);
 	}
-
 }

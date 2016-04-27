@@ -7,6 +7,7 @@ import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.builder;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,17 +24,15 @@ import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.utils.BoxContainer;
+import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.Event;
+import com.github.dockerjava.core.command.EventsResultCallback;
 
 public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 
-	// ConfigProperties configProperties;
-
-	public BuildContainerCommands() {
-		// configProperties =
-		// MobycraftCommandsFactory.getInstance().getConfigurationCommands().getConfigProperties();
-	}
+	MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
 
 	@Override
 	public void buildContainers() {
@@ -135,20 +134,15 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 
 	@Override
 	public void updateContainers(boolean checkForEqual) {
-		MobycraftCommandsFactory factory = MobycraftCommandsFactory
-				.getInstance();
-
 		factory.getListCommands().refreshContainerIDMap();
-		
-		Property startPosProperty = factory.getConfigurationCommands().getConfigProperties().getStartPosProperty();
-		
-		System.out.println("------------------------------------------------------------");
-		System.out.println("Default value:" + startPosProperty.getDefault());
-		System.out.println("Current value:" + startPosProperty.getString());
-		System.out.println("------------------------------------------------------------");
+
+		Property startPosProperty = factory.getConfigurationCommands()
+				.getConfigProperties().getStartPosProperty();
 
 		if (startPosProperty.isDefault()) {
-			startPosProperty.setValue(sender.getPosition().getX() + ", " + sender.getPosition().getY() + ", " + sender.getPosition().getZ());
+			startPosProperty.setValue(sender.getPosition().getX() + ", "
+					+ sender.getPosition().getY() + ", "
+					+ sender.getPosition().getZ());
 			Mobycraft.config.save();
 		}
 
@@ -186,9 +180,8 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 		containersToReplace = boxContainers
 				.subList(start, boxContainers.size());
 
-		for (int i = 0; i < containersToReplace.size(); i++) {
-			builder.airContainer(sender.getEntityWorld(), containersToReplace
-					.get(i).getPosition());
+		for (BoxContainer container : containersToReplace) {
+			builder.airContainer(container.getWorld(), container.getPosition());
 		}
 
 		List<BoxContainer> newContainersToBuild = new ArrayList<BoxContainer>();
@@ -202,8 +195,14 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 
 		boxContainers = newContainers;
 
+		List<String> stoppedContainerIDs = new ArrayList<String>();
+
+		for (Container container : factory.getListCommands().getStopped()) {
+			stoppedContainerIDs.add(container.getId());
+		}
+
 		for (BoxContainer container : boxContainers) {
-			if (factory.getListCommands().isStopped(container.getName())) {
+			if (stoppedContainerIDs.contains(container.getID())) {
 				factory.getBuildCommands().setContainerAppearance(container,
 						false);
 				container.setState(false);

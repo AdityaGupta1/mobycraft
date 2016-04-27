@@ -9,7 +9,6 @@ import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.helpMessa
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sendHelpMessage;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendBarMessage;
-import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
@@ -26,9 +25,8 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
-import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.utils.BoxContainer;
-import org.redfrog404.mobycraft.utils.StatisticsResultCallback;
+import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
 

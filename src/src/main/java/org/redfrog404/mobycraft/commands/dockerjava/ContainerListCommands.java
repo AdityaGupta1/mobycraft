@@ -1,7 +1,6 @@
 package org.redfrog404.mobycraft.commands.dockerjava;
 
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.args;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.boxContainers;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.builder;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.containerIDMap;
@@ -20,10 +19,10 @@ import java.util.Map;
 
 import net.minecraft.util.EnumChatFormatting;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.utils.BoxContainer;
+import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
 import com.google.common.collect.Lists;

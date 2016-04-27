@@ -12,7 +12,6 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class GenericItem extends Item {
 
-
 	public GenericItem(String name, CreativeTabs tab) {
 		super();
 		this.setUnlocalizedName(name);
