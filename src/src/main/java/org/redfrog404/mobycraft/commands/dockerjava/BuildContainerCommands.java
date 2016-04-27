@@ -148,8 +148,8 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 		}
 
 		List<Container> containers = factory.getListCommands().getAll();
-		List<BoxContainer> newContainers = containerPanel(containers,
-				factory.getConfigurationCommands().getStartPos(),
+		List<BoxContainer> newContainers = containerPanel(containers, factory
+				.getConfigurationCommands().getStartPos(),
 				sender.getEntityWorld());
 
 		if (boxContainers.equals(newContainers) && checkForEqual) {
@@ -196,25 +196,16 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 
 		boxContainers = newContainers;
 
-		List<String> stoppedContainerIDs = new ArrayList<String>();
-
-		for (Container container : factory.getListCommands().getStopped()) {
-			stoppedContainerIDs.add(container.getId());
-		}
-
 		for (BoxContainer container : boxContainers) {
-			if (stoppedContainerIDs.contains(container.getID())) {
+			if (!container.getState()) {
 				factory.getBuildCommands().setContainerAppearance(container,
 						false);
-				container.setState(false);
-			} else {
-				container.setState(true);
 			}
 		}
 	}
-	
-	private List<BoxContainer> containerColumn(
-			List<Container> containers, int index, BlockPos pos, World world) {
+
+	private List<BoxContainer> containerColumn(List<Container> containers,
+			int index, BlockPos pos, World world) {
 
 		List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
 
@@ -244,8 +235,14 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 			pos = pos.add(6, 0, 0);
 		}
 
+		List<String> stoppedContainerIDs = new ArrayList<String>();
+
+		for (Container container : factory.getListCommands().getStopped()) {
+			stoppedContainerIDs.add(container.getId());
+		}
+
 		for (BoxContainer container : boxContainers) {
-			if (MobycraftCommandsFactory.getInstance().getListCommands().isStopped(container.getName())) {
+			if (stoppedContainerIDs.contains(container.getID())) {
 				container.setState(false);
 			}
 		}
