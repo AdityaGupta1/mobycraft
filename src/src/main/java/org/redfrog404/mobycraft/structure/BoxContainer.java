@@ -1,4 +1,4 @@
-package org.redfrog404.mobycraft.utils;
+package org.redfrog404.mobycraft.structure;
 
 import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.execStatsCommand;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;

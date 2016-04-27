@@ -19,7 +19,8 @@ import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
 import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.main.Mobycraft;
-import org.redfrog404.mobycraft.utils.BoxContainer;
+import org.redfrog404.mobycraft.structure.BoxContainer;
+import org.redfrog404.mobycraft.structure.StructureBuilder;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.DockerClient;

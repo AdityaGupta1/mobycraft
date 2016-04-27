@@ -9,7 +9,7 @@ import java.text.NumberFormat;
 import java.util.LinkedHashMap;
 
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
-import org.redfrog404.mobycraft.utils.BoxContainer;
+import org.redfrog404.mobycraft.structure.BoxContainer;
 
 import net.minecraft.util.EnumChatFormatting;
 

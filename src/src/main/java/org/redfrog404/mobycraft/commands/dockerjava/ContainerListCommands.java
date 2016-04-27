@@ -21,7 +21,7 @@ import net.minecraft.util.EnumChatFormatting;
 
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
-import org.redfrog404.mobycraft.utils.BoxContainer;
+import org.redfrog404.mobycraft.structure.BoxContainer;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
@@ -29,9 +29,11 @@ import com.google.common.collect.Lists;
 
 public class ContainerListCommands implements MobycraftContainerListCommands {
 
+	MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
+	
 	public void refresh() {
 		List<Container> containers = getAll();
-		boxContainers = builder.containerPanel(containers, 
+		boxContainers = factory.getBuildCommands().containerPanel(containers, 
 				MobycraftCommandsFactory.getInstance().getConfigurationCommands().getStartPos(),
 				sender.getEntityWorld());
 		List<String> stoppedContainerNames = new ArrayList<String>();
@@ -48,7 +50,7 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 
 	public void refreshRunning() {
 		List<Container> containers = getStarted();
-		boxContainers = builder.containerPanel(containers, 
+		boxContainers = factory.getBuildCommands().containerPanel(containers, 
 				MobycraftCommandsFactory.getInstance().getConfigurationCommands().getStartPos(),
 				sender.getEntityWorld());
 		refreshContainerIDMap();

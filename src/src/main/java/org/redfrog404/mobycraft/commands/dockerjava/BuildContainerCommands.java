@@ -18,12 +18,13 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
+import net.minecraft.world.World;
 import net.minecraftforge.common.config.Property;
 
 import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.main.Mobycraft;
-import org.redfrog404.mobycraft.utils.BoxContainer;
+import org.redfrog404.mobycraft.structure.BoxContainer;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
@@ -147,7 +148,7 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 		}
 
 		List<Container> containers = factory.getListCommands().getAll();
-		List<BoxContainer> newContainers = builder.containerPanel(containers,
+		List<BoxContainer> newContainers = containerPanel(containers,
 				factory.getConfigurationCommands().getStartPos(),
 				sender.getEntityWorld());
 
@@ -185,7 +186,7 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 		}
 
 		List<BoxContainer> newContainersToBuild = new ArrayList<BoxContainer>();
-		newContainersToBuild = builder.containerPanel(factory.getListCommands()
+		newContainersToBuild = containerPanel(factory.getListCommands()
 				.getAll(), factory.getConfigurationCommands().getStartPos(),
 				sender.getEntityWorld());
 		newContainersToBuild = newContainersToBuild.subList(start,
@@ -210,5 +211,45 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 				container.setState(true);
 			}
 		}
+	}
+	
+	private List<BoxContainer> containerColumn(
+			List<Container> containers, int index, BlockPos pos, World world) {
+
+		List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
+
+		int endIndex = 10;
+
+		if (containers.size() - (index * 10) < 10) {
+			endIndex = containers.size() - index * 10;
+		}
+
+		for (int i = index * 10; i < (index * 10) + endIndex; i++) {
+			Container container = containers.get(i);
+			boxContainers.add(new BoxContainer(pos, container.getId(),
+					container.getNames()[0], container.getImage(), world));
+			pos = pos.add(0, 6, 0);
+		}
+
+		return boxContainers;
+	}
+
+	public List<BoxContainer> containerPanel(List<Container> containers,
+			BlockPos pos, World world) {
+		List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
+
+		int lastIndex = (containers.size() - (containers.size() % 10)) / 10;
+		for (int i = 0; i <= lastIndex; i++) {
+			boxContainers.addAll(containerColumn(containers, i, pos, world));
+			pos = pos.add(6, 0, 0);
+		}
+
+		for (BoxContainer container : boxContainers) {
+			if (MobycraftCommandsFactory.getInstance().getListCommands().isStopped(container.getName())) {
+				container.setState(false);
+			}
+		}
+
+		return boxContainers;
 	}
 }

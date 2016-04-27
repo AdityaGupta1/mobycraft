@@ -1,7 +1,7 @@
 package org.redfrog404.mobycraft.api;
 
 import org.redfrog404.mobycraft.commands.dockerjava.ConfigProperties;
-import org.redfrog404.mobycraft.utils.BoxContainer;
+import org.redfrog404.mobycraft.structure.BoxContainer;
 
 import com.github.dockerjava.api.model.Container;
 
