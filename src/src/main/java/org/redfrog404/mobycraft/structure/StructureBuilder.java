@@ -1,9 +1,8 @@
-package org.redfrog404.mobycraft.utils;
+package org.redfrog404.mobycraft.structure;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.main.Mobycraft;
 
 import net.minecraft.block.Block;
@@ -16,8 +15,6 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.Vec3i;
 import net.minecraft.world.World;
-
-import com.github.dockerjava.api.model.Container;
 
 public class StructureBuilder {
 
@@ -178,46 +175,6 @@ public class StructureBuilder {
 	private static int[] switchNumbers(int num1, int num2) {
 		int[] ints = { num2, num1 };
 		return ints;
-	}
-
-	private static List<BoxContainer> containerColumn(
-			List<Container> containers, int index, BlockPos pos, World world) {
-
-		List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
-
-		int endIndex = 10;
-
-		if (containers.size() - (index * 10) < 10) {
-			endIndex = containers.size() - index * 10;
-		}
-
-		for (int i = index * 10; i < (index * 10) + endIndex; i++) {
-			Container container = containers.get(i);
-			boxContainers.add(new BoxContainer(pos, container.getId(),
-					container.getNames()[0], container.getImage(), world));
-			pos = pos.add(0, 6, 0);
-		}
-
-		return boxContainers;
-	}
-
-	public static List<BoxContainer> containerPanel(List<Container> containers,
-			BlockPos pos, World world) {
-		List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
-
-		int lastIndex = (containers.size() - (containers.size() % 10)) / 10;
-		for (int i = 0; i <= lastIndex; i++) {
-			boxContainers.addAll(containerColumn(containers, i, pos, world));
-			pos = pos.add(6, 0, 0);
-		}
-
-		for (BoxContainer container : boxContainers) {
-			if (MobycraftCommandsFactory.getInstance().getListCommands().isStopped(container.getName())) {
-				container.setState(false);
-			}
-		}
-
-		return boxContainers;
 	}
 
 	public static void replace(World world, BlockPos start, BlockPos end,

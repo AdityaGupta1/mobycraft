@@ -12,8 +12,9 @@ import java.util.ArrayList;
 import org.apache.commons.lang.math.NumberUtils;
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.api.MobycraftContainerLifecycleCommands;
-import org.redfrog404.mobycraft.utils.BoxContainer;
-import org.redfrog404.mobycraft.utils.StructureBuilder;
+import org.redfrog404.mobycraft.structure.BoxContainer;
+import org.redfrog404.mobycraft.structure.StructureBuilder;
+import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.DockerClientException;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -123,18 +124,18 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 	
 	public void killAll() {
 		sendFeedbackMessage("Working on it...");
-		if (MobycraftCommandsFactory.getInstance().getListCommands().getContainers().size() < 1) {
+		if (MobycraftCommandsFactory.getInstance().getListCommands().getStarted().size() < 1) {
 			sendFeedbackMessage("No containers currently running.");
 			return;
 		}
-		for (Container container : MobycraftCommandsFactory.getInstance().getListCommands().getContainers()) {
+		for (Container container : MobycraftCommandsFactory.getInstance().getListCommands().getStarted()) {
 			getDockerClient().killContainerCmd(container.getId()).exec();
 		}
 		sendConfirmMessage("Killed all containers.");
 	}
 	
 	public void run() throws InterruptedException {
-		if (args.length < 2) {
+		if (args.length < 1) {
 			sendErrorMessage("No arguments specified! Command is used as /docker run <image> (name | amount) .");
 			return;
 		}
@@ -157,7 +158,7 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 					.createContainerCmd(arg1).exec();
 			getDockerClient().startContainerCmd(response.getId()).exec();
 			String name = "";
-			for (Container container : MobycraftCommandsFactory.getInstance().getListCommands().getContainers()) {
+			for (Container container : MobycraftCommandsFactory.getInstance().getListCommands().getStarted()) {
 				if (container.getId().equals(response.getId())) {
 					name = container.getNames()[0];
 				}
@@ -179,7 +180,7 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 						.createContainerCmd(arg1).exec();
 				getDockerClient().startContainerCmd(response.getId()).exec();
 				String name = "";
-				for (Container container : MobycraftCommandsFactory.getInstance().getListCommands().getContainers()) {
+				for (Container container : MobycraftCommandsFactory.getInstance().getListCommands().getStarted()) {
 					if (container.getId().equals(response.getId())) {
 						name = container.getNames()[0];
 						names.add(name);

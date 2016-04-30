@@ -1,4 +1,4 @@
-package org.redfrog404.mobycraft.utils;
+package org.redfrog404.mobycraft.structure;
 
 import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.execStatsCommand;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
@@ -65,16 +65,6 @@ public class BoxContainer {
 
 	public World getWorld() {
 		return world;
-	}
-
-	public Container getContainer(List<Container> containers) {
-		for (Container container : containers) {
-			if (container.getId().equals(ID)) {
-				return container;
-			}
-		}
-
-		return null;
 	}
 
 	@Override

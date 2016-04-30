@@ -9,7 +9,6 @@ import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.helpMessa
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sendHelpMessage;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendBarMessage;
-import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
@@ -26,9 +25,8 @@ import org.apache.commons.lang.math.NumberUtils;
 import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
-import org.redfrog404.mobycraft.main.Mobycraft;
-import org.redfrog404.mobycraft.utils.BoxContainer;
-import org.redfrog404.mobycraft.utils.StatisticsResultCallback;
+import org.redfrog404.mobycraft.structure.BoxContainer;
+import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
 
@@ -126,7 +124,7 @@ public class BasicDockerCommands implements MobycraftBasicCommands {
 		if (showAll) {
 			containers = MobycraftCommandsFactory.getInstance().getListCommands().getAll();
 		} else {
-			containers = MobycraftCommandsFactory.getInstance().getListCommands().getContainers();
+			containers = MobycraftCommandsFactory.getInstance().getListCommands().getStarted();
 		}
 
 		if (containers.size() == 0) {
@@ -199,14 +197,14 @@ public class BasicDockerCommands implements MobycraftBasicCommands {
 		if (listCommands.isStopped(listCommands.getBoxContainerWithID(arg1).getName())) {
 			BoxContainer boxContainer = listCommands.getBoxContainerWithID(arg1);
 			Container container = listCommands.getFromAllWithName(boxContainer.getName());
-			printBasicContainerInformation(boxContainer, container);
+			printContainerInfo(boxContainer, container);
 			return;
 		}
 
 		execStatsCommand(arg1, true);
 	}
 
-	public void printBasicContainerInformation(
+	public void printContainerInfo(
 			BoxContainer boxContainer, Container container) {
 		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
 				+ "=========== Container Information ===========");

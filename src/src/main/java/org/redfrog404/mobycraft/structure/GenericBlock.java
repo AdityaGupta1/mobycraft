@@ -1,4 +1,4 @@
-package org.redfrog404.mobycraft.utils;
+package org.redfrog404.mobycraft.structure;
 
 import java.util.Random;
 
@@ -27,5 +27,4 @@ public class GenericBlock extends Block {
 		this.setHarvestLevel(tool, harvestLevel);
 		this.setStepSound(sound);
 	}
-
 }

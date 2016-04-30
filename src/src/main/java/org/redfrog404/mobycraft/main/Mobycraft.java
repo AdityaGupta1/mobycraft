@@ -32,8 +32,8 @@ import org.redfrog404.mobycraft.commands.dockerjava.MainCommand;
 import org.redfrog404.mobycraft.dimension.DimensionRegistry;
 import org.redfrog404.mobycraft.entity.EntityMoby;
 import org.redfrog404.mobycraft.entity.RenderMoby;
-import org.redfrog404.mobycraft.utils.GenericBlock;
-import org.redfrog404.mobycraft.utils.GenericItem;
+import org.redfrog404.mobycraft.structure.GenericBlock;
+import org.redfrog404.mobycraft.structure.GenericItem;
 
 @Mod(modid = Mobycraft.MODID, version = Mobycraft.VERSION)
 public final class Mobycraft {

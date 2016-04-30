@@ -1,4 +1,4 @@
-package org.redfrog404.mobycraft.utils;
+package org.redfrog404.mobycraft.commands.dockerjava;
 
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
@@ -9,6 +9,7 @@ import java.text.NumberFormat;
 import java.util.LinkedHashMap;
 
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
+import org.redfrog404.mobycraft.structure.BoxContainer;
 
 import net.minecraft.util.EnumChatFormatting;
 
@@ -56,7 +57,7 @@ public class StatisticsResultCallback extends
 		boxContainer.setCpuUsage(cpuUsage);
 
 		if (sendMessages) {
-			factory.getBasicCommands().printBasicContainerInformation(boxContainer, container);
+			factory.getBasicCommands().printContainerInfo(boxContainer, container);
 			sendMessage(EnumChatFormatting.RED + "" + EnumChatFormatting.BOLD
 					+ "Memory Usage: " + EnumChatFormatting.RESET + memoryUsage
 					+ "%");

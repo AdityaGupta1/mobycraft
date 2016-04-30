@@ -5,11 +5,9 @@ import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.args;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.boxContainers;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.builder;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
-import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
-import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
-import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,23 +18,23 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.world.World;
+import net.minecraftforge.common.config.Property;
 
 import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.main.Mobycraft;
-import org.redfrog404.mobycraft.utils.BoxContainer;
+import org.redfrog404.mobycraft.structure.BoxContainer;
+import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
+import com.github.dockerjava.api.model.Event;
+import com.github.dockerjava.core.command.EventsResultCallback;
 
 public class BuildContainerCommands implements MobycraftBuildContainerCommands {
-	
-//	ConfigProperties configProperties;
-	
-	public BuildContainerCommands() {
-//		configProperties = MobycraftCommandsFactory.getInstance().getConfigurationCommands().getConfigProperties();
-	}
-	
+
+	MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
+
 	@Override
 	public void buildContainers() {
 		buildContainersFromList(boxContainers);
@@ -65,8 +63,7 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 	}
 
 	@Override
-	public void setContainerAppearance(BoxContainer container,
-			boolean state) {
+	public void setContainerAppearance(BoxContainer container, boolean state) {
 		Block containerBlock;
 		Block prevContainerBlock;
 
@@ -106,19 +103,22 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 			return;
 		}
 
-		Container container = MobycraftCommandsFactory.getInstance().getListCommands().getFromAllWithName("/" + arg1);
+		Container container = MobycraftCommandsFactory.getInstance()
+				.getListCommands().getFromAllWithName("/" + arg1);
 
 		if (container == null) {
 			sendErrorMessage("No container exists with the name \"" + arg1
 					+ "\"");
 		}
 
-		BoxContainer boxContainer = MobycraftCommandsFactory.getInstance().getListCommands().getBoxContainerWithID(container.getId());
+		BoxContainer boxContainer = MobycraftCommandsFactory.getInstance()
+				.getListCommands().getBoxContainerWithID(container.getId());
 
 		BlockPos pos = boxContainer.getPosition();
 
 		getCommandSenderAsPlayer(sender).playerNetServerHandler
-				.setPlayerLocation(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() - 0.5, 0, 0);
+				.setPlayerLocation(pos.getX() + 0.5, pos.getY() + 0.5,
+						pos.getZ() - 0.5, 0, 0);
 	}
 
 	@Override
@@ -132,16 +132,25 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 					new Object[0]);
 		}
 	}
-	
+
 	@Override
 	public void updateContainers(boolean checkForEqual) {
-		MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
-		
 		factory.getListCommands().refreshContainerIDMap();
 
+		Property startPosProperty = factory.getConfigurationCommands()
+				.getConfigProperties().getStartPosProperty();
+
+		if (startPosProperty.isDefault()) {
+			startPosProperty.setValue(sender.getPosition().getX() + ", "
+					+ sender.getPosition().getY() + ", "
+					+ sender.getPosition().getZ());
+			Mobycraft.config.save();
+		}
+
 		List<Container> containers = factory.getListCommands().getAll();
-		List<BoxContainer> newContainers = builder.containerPanel(containers,
-				factory.getConfigurationCommands().getStartPos(), sender.getEntityWorld());
+		List<BoxContainer> newContainers = containerPanel(containers, factory
+				.getConfigurationCommands().getStartPos(),
+				sender.getEntityWorld());
 
 		if (boxContainers.equals(newContainers) && checkForEqual) {
 			return;
@@ -172,27 +181,72 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 		containersToReplace = boxContainers
 				.subList(start, boxContainers.size());
 
-		for (int i = 0; i < containersToReplace.size(); i++) {
-			builder.airContainer(sender.getEntityWorld(), containersToReplace
-					.get(i).getPosition());
+		for (BoxContainer container : containersToReplace) {
+			builder.airContainer(container.getWorld(), container.getPosition());
 		}
 
 		List<BoxContainer> newContainersToBuild = new ArrayList<BoxContainer>();
-		newContainersToBuild = builder.containerPanel(factory.getListCommands().getAll(),
-				factory.getConfigurationCommands().getStartPos(), sender.getEntityWorld());
+		newContainersToBuild = containerPanel(factory.getListCommands()
+				.getAll(), factory.getConfigurationCommands().getStartPos(),
+				sender.getEntityWorld());
 		newContainersToBuild = newContainersToBuild.subList(start,
 				newContainersToBuild.size());
-		factory.getBuildCommands().buildContainersFromList(newContainersToBuild);
+		factory.getBuildCommands()
+				.buildContainersFromList(newContainersToBuild);
 
 		boxContainers = newContainers;
 
 		for (BoxContainer container : boxContainers) {
-			if (factory.getListCommands().isStopped(container.getName())) {
-				factory.getBuildCommands().setContainerAppearance(container, false);
-				container.setState(false);
-			} else {
-				container.setState(true);
+			if (!container.getState()) {
+				factory.getBuildCommands().setContainerAppearance(container,
+						false);
 			}
 		}
+	}
+
+	private List<BoxContainer> containerColumn(List<Container> containers,
+			int index, BlockPos pos, World world) {
+
+		List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
+
+		int endIndex = 10;
+
+		if (containers.size() - (index * 10) < 10) {
+			endIndex = containers.size() - index * 10;
+		}
+
+		for (int i = index * 10; i < (index * 10) + endIndex; i++) {
+			Container container = containers.get(i);
+			boxContainers.add(new BoxContainer(pos, container.getId(),
+					container.getNames()[0], container.getImage(), world));
+			pos = pos.add(0, 6, 0);
+		}
+
+		return boxContainers;
+	}
+
+	public List<BoxContainer> containerPanel(List<Container> containers,
+			BlockPos pos, World world) {
+		List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
+
+		int lastIndex = (containers.size() - (containers.size() % 10)) / 10;
+		for (int i = 0; i <= lastIndex; i++) {
+			boxContainers.addAll(containerColumn(containers, i, pos, world));
+			pos = pos.add(6, 0, 0);
+		}
+
+		List<String> stoppedContainerIDs = new ArrayList<String>();
+
+		for (Container container : factory.getListCommands().getStopped()) {
+			stoppedContainerIDs.add(container.getId());
+		}
+
+		for (BoxContainer container : boxContainers) {
+			if (stoppedContainerIDs.contains(container.getID())) {
+				container.setState(false);
+			}
+		}
+
+		return boxContainers;
 	}
 }

@@ -1,4 +1,4 @@
-package org.redfrog404.mobycraft.utils;
+package org.redfrog404.mobycraft.structure;
 
 import java.util.List;
 
@@ -11,7 +11,6 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class GenericItem extends Item {
-
 
 	public GenericItem(String name, CreativeTabs tab) {
 		super();

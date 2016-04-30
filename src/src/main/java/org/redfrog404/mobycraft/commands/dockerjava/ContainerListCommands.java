@@ -1,7 +1,6 @@
 package org.redfrog404.mobycraft.commands.dockerjava;
 
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.args;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.boxContainers;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.builder;
 import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.containerIDMap;
@@ -20,19 +19,21 @@ import java.util.Map;
 
 import net.minecraft.util.EnumChatFormatting;
 
-import org.apache.commons.lang.math.NumberUtils;
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
-import org.redfrog404.mobycraft.utils.BoxContainer;
+import org.redfrog404.mobycraft.structure.BoxContainer;
+import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
 import com.google.common.collect.Lists;
 
 public class ContainerListCommands implements MobycraftContainerListCommands {
 
+	MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
+	
 	public void refresh() {
 		List<Container> containers = getAll();
-		boxContainers = builder.containerPanel(containers, 
+		boxContainers = factory.getBuildCommands().containerPanel(containers, 
 				MobycraftCommandsFactory.getInstance().getConfigurationCommands().getStartPos(),
 				sender.getEntityWorld());
 		List<String> stoppedContainerNames = new ArrayList<String>();
@@ -48,8 +49,8 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 	}
 
 	public void refreshRunning() {
-		List<Container> containers = getContainers();
-		boxContainers = builder.containerPanel(containers, 
+		List<Container> containers = getStarted();
+		boxContainers = factory.getBuildCommands().containerPanel(containers, 
 				MobycraftCommandsFactory.getInstance().getConfigurationCommands().getStartPos(),
 				sender.getEntityWorld());
 		refreshContainerIDMap();
@@ -62,7 +63,7 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 		}
 	}
 
-	public List<Container> getContainers() {
+	public List<Container> getStarted() {
 		return getDockerClient().listContainersCmd().exec();
 	}
 
@@ -79,7 +80,7 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 	}
 
 	public Container getWithName(String name) {
-		for (Container container : getContainers()) {
+		for (Container container : getStarted()) {
 			if (container.getNames()[0].equals(name)) {
 				return container;
 			}
@@ -218,7 +219,7 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 			finishedUsages.add(usage);
 		}
 
-		int notIncluded = getContainers().size();
+		int notIncluded = getStarted().size();
 		notIncluded -= maxNumber;
 
 		for (Double usage : finishedUsages) {
