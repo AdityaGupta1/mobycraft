@@ -3,6 +3,7 @@ package org.redfrog404.mobycraft.entity;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 
 import java.util.Calendar;
+import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.command.ICommandSender;
@@ -19,6 +20,7 @@ import net.minecraft.world.World;
 
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.main.Mobycraft;
+import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
 
@@ -28,13 +30,16 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 
 	/** Value to set chaosCountdown to after a container is removed. */
 	private int maxChaosCountdown = 50;
-	
+
 	/** Time in ticks before another container can be removed by the monkey. */
 	private int chaosCountdown = maxChaosCountdown;
-	
-	/** The maximum distance that can be between the monkey and the player before the monkey is teleported to the player. */
+
+	/**
+	 * The maximum distance that can be between the monkey and the player before
+	 * the monkey is teleported to the player.
+	 */
 	private int maxDistance = 25;
-	
+
 	MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
 
 	public EntityChaosMonkey(World worldIn) {
@@ -108,49 +113,65 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	public void onUpdate() {
 		super.onUpdate();
 		this.motionY *= 0.6000000238418579D;
-		
+
 		if (chaosCountdown > 0) {
 			chaosCountdown--;
 			return;
 		}
-		
-		ICommandSender sender = Mobycraft.getMainCommand().sender;
-		if (sender != null) {
-			BlockPos senderPos = sender.getPosition();
-			if (Math.sqrt(this.getDistanceSq(senderPos)) > maxDistance) {
-				this.setLocationAndAngles(senderPos.getX(), senderPos.getY(), senderPos.getZ(), 0, 0);
-			}
+
+		BlockPos pos = this.getPosition();
+		BlockPos minPos = factory.getBuildCommands().getMinPos();
+		BlockPos maxPos = factory.getBuildCommands().getMaxPos();
+		Random RNG = this.getRNG();
+
+		int x = pos.getX();
+		int y = pos.getY();
+		int z = pos.getZ();
+		int minX = minPos.getX();
+		int minY = minPos.getY();
+		int minZ = minPos.getZ();
+		int maxX = maxPos.getX();
+		int maxY = maxPos.getY();
+		int maxZ = maxPos.getZ();
+
+		if (x < minX || y < minY || z < minZ || x > maxX || y > maxY
+				|| z > maxZ) {
+			this.setLocationAndAngles(Utils.negativeNextInt(minX, maxX),
+					Utils.negativeNextInt(minY, maxY), minZ + 8, 0, 0);
 		}
-		
+
 		World world = this.worldObj;
 		if (world.getTileEntity(this.getPosition()) == null) {
 			return;
 		}
-		
+
 		TileEntity entity = world.getTileEntity(this.getPosition());
 		if (!(entity instanceof TileEntitySign)) {
 			return;
 		}
-		
+
 		TileEntitySign sign = (TileEntitySign) entity;
-		
+
 		if (!sign.signText[0].getUnformattedText().contains("Name:")) {
 			return;
 		}
 
-		String name = sign.signText[1].getUnformattedText()
-				.concat(sign.signText[2].getUnformattedText().concat(sign.signText[3].getUnformattedText()));
+		String name = sign.signText[1].getUnformattedText().concat(
+				sign.signText[2].getUnformattedText().concat(
+						sign.signText[3].getUnformattedText()));
 
 		if (factory.getListCommands().getWithName(name) == null) {
 			return;
 		}
 
 		Container container = factory.getListCommands().getWithName(name);
-		Mobycraft.getMainCommand().getDockerClient().removeContainerCmd(container.getId()).withForce().exec();
+		Mobycraft.getMainCommand().getDockerClient()
+				.removeContainerCmd(container.getId()).withForce().exec();
 		if (!world.isRemote) {
-			sendErrorMessage("Oh no! The Chaos Monkey has destroyed the container \"" + name + "\"!");
+			sendErrorMessage("Oh no! The Chaos Monkey has destroyed the container \""
+					+ name + "\"!");
 		}
-		
+
 		chaosCountdown = maxChaosCountdown;
 
 		factory.getBuildCommands().updateContainers(false);

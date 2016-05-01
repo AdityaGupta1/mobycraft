@@ -34,4 +34,8 @@ public interface MobycraftBuildContainerCommands {
 	
 	public List<BoxContainer> containerPanel(List<Container> containers,
 			BlockPos pos, World world);
+	
+	public BlockPos getMinPos();
+	
+	public BlockPos getMaxPos();
 }

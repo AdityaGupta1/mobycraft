@@ -52,7 +52,7 @@ public class MainCommand implements ICommand {
 	// Help messages that are shown when /docker help is used
 	static Map<String, String> helpMessages = new HashMap<String, String>();
 	// Current box containers
-	static List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
+	public static List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
 	// Containers container's IDs
 	static Map<String, BoxContainer> containerIDMap = new HashMap<String, BoxContainer>();
 

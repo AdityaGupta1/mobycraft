@@ -35,6 +35,9 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 
 	MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
 
+	BlockPos minPos = new BlockPos(0, 0, 0);
+	BlockPos maxPos = new BlockPos(0, 0, 0);
+
 	@Override
 	public void buildContainers() {
 		buildContainersFromList(boxContainers);
@@ -202,6 +205,32 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 						false);
 			}
 		}
+
+		BlockPos startPos = factory.getConfigurationCommands().getStartPos();
+
+		int minX = startPos.getX() - 2;
+		int minY = startPos.getY();
+		int minZ = startPos.getZ() - 10;
+		int maxX;
+		int maxY;
+		int maxZ = startPos.getZ() + 10;
+
+		int containerHeight = 0;
+
+		int size = boxContainers.size();
+		if (size < 10) {
+			containerHeight = size;
+		} else {
+			containerHeight = 10;
+		}
+
+		maxY = startPos.getY() - 1 + (6 * containerHeight);
+
+		int containerLength = ((size - (size % 10)) / 10) + 1;
+		maxX = (minX - 1) + (containerLength * 6);
+
+		minPos = new BlockPos(minX, minY, minZ);
+		maxPos = new BlockPos(maxX, maxY, maxZ);
 	}
 
 	private List<BoxContainer> containerColumn(List<Container> containers,
@@ -248,5 +277,30 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 		}
 
 		return boxContainers;
+	}
+
+	public BlockPos getAverageContainerPosition() {
+		double x = 0;
+		double y = 0;
+		int z = factory.getConfigurationCommands().getStartPos().getZ();
+
+		for (BoxContainer container : boxContainers) {
+			BlockPos containerPos = container.getPosition();
+			x += containerPos.getX();
+			y += containerPos.getY();
+		}
+
+		x /= boxContainers.size();
+		y /= boxContainers.size();
+
+		return new BlockPos(Math.floor(x), Math.floor(y), z);
+	}
+
+	public BlockPos getMinPos() {
+		return minPos;
+	}
+
+	public BlockPos getMaxPos() {
+		return maxPos;
 	}
 }
