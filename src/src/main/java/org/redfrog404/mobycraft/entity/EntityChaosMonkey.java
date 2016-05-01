@@ -109,17 +109,17 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 		super.onUpdate();
 		this.motionY *= 0.6000000238418579D;
 		
+		if (chaosCountdown > 0) {
+			chaosCountdown--;
+			return;
+		}
+		
 		ICommandSender sender = Mobycraft.getMainCommand().sender;
 		if (sender != null) {
 			BlockPos senderPos = sender.getPosition();
 			if (Math.sqrt(this.getDistanceSq(senderPos)) > maxDistance) {
 				this.setLocationAndAngles(senderPos.getX(), senderPos.getY(), senderPos.getZ(), 0, 0);
 			}
-		}
-		
-		if (chaosCountdown > 0) {
-			chaosCountdown--;
-			return;
 		}
 		
 		World world = this.worldObj;
@@ -150,10 +150,10 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 		if (!world.isRemote) {
 			sendErrorMessage("Oh no! The Chaos Monkey has destroyed the container \"" + name + "\"!");
 		}
-
-		factory.getBuildCommands().updateContainers(false);
 		
 		chaosCountdown = maxChaosCountdown;
+
+		factory.getBuildCommands().updateContainers(false);
 	}
 
 	protected void updateAITasks() {
