@@ -44,8 +44,13 @@ public class ConfigurationCommands implements MobycraftConfigurationCommands {
 			sendErrorMessage("Docker host is not specified! Command is used as /docker host <host> .");
 			return;
 		}
+		
+		if (arg1.substring(0, 3).equals("tcp")) {
+			arg1 = arg1.substring(3, arg1.length());
+			arg1 = "https" + arg1;
+		}
 
-		if (!arg1.contains(":")) {
+		if (!String.valueOf(arg1.charAt(arg1.length() - 1)).equals(":") && !String.valueOf(arg1.charAt(arg1.length() - 1)).equals("6")) {
 			arg1 = arg1 + ":2376";
 		}
 
