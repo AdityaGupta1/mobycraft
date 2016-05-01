@@ -26,6 +26,7 @@ import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.structure.BoxContainer;
+import org.redfrog404.mobycraft.utils.MobycraftException;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
@@ -230,7 +231,7 @@ public class BasicDockerCommands implements MobycraftBasicCommands {
 		try {
 			callback.awaitCompletion();
 		} catch (InterruptedException exception) {
-			return;
+			throw new MobycraftException(exception);
 		}
 	}
 	

@@ -21,6 +21,7 @@ import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.structure.BoxContainer;
 import org.redfrog404.mobycraft.structure.StructureBuilder;
+import org.redfrog404.mobycraft.utils.MobycraftException;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.DockerClient;
@@ -286,6 +287,8 @@ public class MainCommand implements ICommand {
 		} catch (Exception exception) {
 			if (exception instanceof UnsupportedSchemeException) {
 				sendErrorMessage("Invalid Docker host/path! Set the host by using /docker host <host> ; set the path by using /docker path <path>");
+			} else {
+				throw new MobycraftException(exception);
 			}
 		}
 		

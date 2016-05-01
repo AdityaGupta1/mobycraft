@@ -1,6 +1,5 @@
 package org.redfrog404.mobycraft.commands.dockerjava;
 
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
 import java.io.IOException;
@@ -8,10 +7,11 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedHashMap;
 
+import net.minecraft.util.EnumChatFormatting;
+
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.structure.BoxContainer;
-
-import net.minecraft.util.EnumChatFormatting;
+import org.redfrog404.mobycraft.utils.MobycraftException;
 
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Statistics;
@@ -67,8 +67,8 @@ public class StatisticsResultCallback extends
 
 		try {
 			super.close();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		} catch (IOException exception) {
+			throw new MobycraftException(exception);
 		}
 	}
 }
