@@ -22,4 +22,6 @@ public interface MobycraftContainerListCommands {
 	public BoxContainer getBoxContainerWithID(String id);
 
 	public void heatMap();
+	
+	public void numberOfContainers();
 }

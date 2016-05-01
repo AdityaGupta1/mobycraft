@@ -30,11 +30,13 @@ import com.google.common.collect.Lists;
 public class ContainerListCommands implements MobycraftContainerListCommands {
 
 	MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
-	
+
 	public void refresh() {
 		List<Container> containers = getAll();
-		boxContainers = factory.getBuildCommands().containerPanel(containers, 
-				MobycraftCommandsFactory.getInstance().getConfigurationCommands().getStartPos(),
+		boxContainers = factory.getBuildCommands().containerPanel(
+				containers,
+				MobycraftCommandsFactory.getInstance()
+						.getConfigurationCommands().getStartPos(),
 				sender.getEntityWorld());
 		List<String> stoppedContainerNames = new ArrayList<String>();
 		for (Container container : getStopped()) {
@@ -50,8 +52,10 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 
 	public void refreshRunning() {
 		List<Container> containers = getStarted();
-		boxContainers = factory.getBuildCommands().containerPanel(containers, 
-				MobycraftCommandsFactory.getInstance().getConfigurationCommands().getStartPos(),
+		boxContainers = factory.getBuildCommands().containerPanel(
+				containers,
+				MobycraftCommandsFactory.getInstance()
+						.getConfigurationCommands().getStartPos(),
 				sender.getEntityWorld());
 		refreshContainerIDMap();
 	}
@@ -239,5 +243,56 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 					+ " containers not included in this heat map");
 		}
 		refresh();
+	}
+
+	public void numberOfContainers() {
+		
+		System.out.println(arg1);
+
+		int filter = 0;
+		
+		try {
+			if (arg1.equals(null)) {
+				sendErrorMessage("Please specify which containers to show (\"all\", \"running\", or \"stopped\")!");
+				return;
+			} else {
+				if (!arg1.equalsIgnoreCase("all")
+						&& !arg1.equalsIgnoreCase("running")
+						&& !arg1.equalsIgnoreCase("stopped")) {
+					sendErrorMessage("\""
+							+ arg1
+							+ "\" is not a valid argument! Only \"all\", \"running\", and \"stopped\" are accepted.");
+					return;
+				} else {
+					if (arg1.equalsIgnoreCase("all")) {
+						filter = 1;
+					} else if (arg1.equalsIgnoreCase("running")) {
+						filter = 2;
+					} else {
+						filter = 3;
+					}
+				}
+			}
+		} catch (NullPointerException exception) {
+			sendErrorMessage("Please specify which containers to show (\"all\", \"running\", or \"stopped\")!");
+			return;
+		}
+
+		int numberOfContainers = 0;
+
+		switch (filter) {
+		case 0:
+			return;
+		case 1:
+			numberOfContainers = getAll().size();
+		case 2:
+			numberOfContainers = getStarted().size();
+		case 3:
+			numberOfContainers = getStopped().size();
+		}
+
+		sendMessage(EnumChatFormatting.GOLD
+				+ "Number of container(s) currently running: "
+				+ EnumChatFormatting.GREEN + numberOfContainers);
 	}
 }

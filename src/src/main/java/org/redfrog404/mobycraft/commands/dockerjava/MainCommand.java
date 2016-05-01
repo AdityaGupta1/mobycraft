@@ -69,11 +69,6 @@ public class MainCommand implements ICommand {
 	public int count = 0;
 	public static int maxCount;
 
-	// static String dockerHost;
-	// static String certPath;
-
-	// ConfigProperties configProperties;
-
 	public MainCommand() {
 
 		this.commandAliases = new ArrayList();
@@ -104,6 +99,7 @@ public class MainCommand implements ICommand {
 		commandNumbers.put("get_host_and_path", 21);
 		commandNumbers.put("get_path_and_host", 21);
 		commandNumbers.put("poll_rate", 22);
+		commandNumbers.put("number_of_containers", 23);
 		
 		updateContainersList.add(4);
 		updateContainersList.add(5);
@@ -154,6 +150,8 @@ public class MainCommand implements ICommand {
 				"Returns the Docker host and cert path");
 		helpMessages.put("poll_rate <rate>",
 				"Sets the poll rate to <rate> seconds");
+		helpMessages.put("number_of_containers (all | running | stopped)",
+				"Shows the number of containers with an optional filter, default is <all>");
 
 		specificHelpMessages
 				.put("ps",
@@ -186,6 +184,7 @@ public class MainCommand implements ICommand {
 
 	@Override
 	public void processCommand(ICommandSender sender, String[] args) {
+		arg1 = null;
 
 		this.sender = sender;
 
@@ -283,6 +282,8 @@ public class MainCommand implements ICommand {
 				break;
 			case 22:
 				factory.getConfigurationCommands().setPollRate();
+			case 23:
+				factory.getListCommands().numberOfContainers();
 			}
 		} catch (Exception exception) {
 			if (exception instanceof UnsupportedSchemeException) {
