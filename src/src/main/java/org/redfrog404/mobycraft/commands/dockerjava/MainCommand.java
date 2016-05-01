@@ -55,6 +55,8 @@ public class MainCommand implements ICommand {
 	public static List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
 	// Containers container's IDs
 	static Map<String, BoxContainer> containerIDMap = new HashMap<String, BoxContainer>();
+	// List of commands after which to update containers
+	static List<Integer> updateContainersList = new ArrayList<Integer>();
 
 	public static ICommandSender sender;
 
@@ -101,6 +103,15 @@ public class MainCommand implements ICommand {
 		commandNumbers.put("get_host_and_path", 21);
 		commandNumbers.put("get_path_and_host", 21);
 		commandNumbers.put("poll_rate", 22);
+		
+		updateContainersList.add(4);
+		updateContainersList.add(5);
+		updateContainersList.add(6);
+		updateContainersList.add(7);
+		updateContainersList.add(9);
+		updateContainersList.add(10);
+		updateContainersList.add(11);
+		updateContainersList.add(12);
 
 		helpMessages
 				.put("help (page | command)",
@@ -276,6 +287,10 @@ public class MainCommand implements ICommand {
 			if (exception instanceof UnsupportedSchemeException) {
 				sendErrorMessage("Invalid Docker host/path! Set the host by using /docker host <host> ; set the path by using /docker path <path>");
 			}
+		}
+		
+		if (updateContainersList.contains(commandNumber)) {
+			factory.getBuildCommands().updateContainers(true);
 		}
 	}
 

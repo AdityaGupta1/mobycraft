@@ -231,6 +231,8 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 
 		minPos = new BlockPos(minX, minY, minZ);
 		maxPos = new BlockPos(maxX, maxY, maxZ);
+		
+		Mobycraft.getMainCommand().count = 0;
 	}
 
 	private List<BoxContainer> containerColumn(List<Container> containers,
