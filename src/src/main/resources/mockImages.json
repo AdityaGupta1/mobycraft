@@ -1,0 +1,71 @@
+[
+  {
+    "Id": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "RepoTags": [
+      "org1/image1:latest"
+    ],
+    "RepoDigests": [],
+    "Parent": "",
+    "Comment": "",
+    "Created": "0",
+    "Container": "1111111111111111111111111111111111111111111111111111111111111111",
+    "ContainerConfig": {
+      "Hostname": "aee9ba801acc",
+      "Domainname": "",
+      "User": "",
+      "AttachStdin": false,
+      "AttachStdout": false,
+      "AttachStderr": false,
+      "Tty": false,
+      "OpenStdin": false,
+      "StdinOnce": false,
+      "Env": [
+        "HOME=/",
+        "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      ],
+      "Cmd": [
+        "/bin/sh",
+        "-c",
+        "#(nop) MAINTAINER user@email.com"
+      ],
+      "Image": "1111111111111111111111111111111111111111111111111111111111111111",
+      "Volumes": null,
+      "WorkingDir": "",
+      "Entrypoint": null,
+      "OnBuild": [],
+      "Labels": null
+    },
+    "DockerVersion": "0.8.1",
+    "Author": "user@email.com",
+    "Config": {
+      "Hostname": "111111111111",
+      "Domainname": "",
+      "User": "",
+      "AttachStdin": false,
+      "AttachStdout": false,
+      "AttachStderr": false,
+      "Tty": false,
+      "OpenStdin": false,
+      "StdinOnce": false,
+      "Env": [
+        "HOME=/",
+        "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      ],
+      "Cmd": null,
+      "Image": "1111111111111111111111111111111111111111111111111111111111111111",
+      "Volumes": null,
+      "WorkingDir": "",
+      "Entrypoint": null,
+      "OnBuild": [],
+      "Labels": null
+    },
+    "Architecture": "amd64",
+    "Os": "linux",
+    "Size": 0,
+    "VirtualSize": 0,
+    "GraphDriver": {
+      "Name": "aufs",
+      "Data": null
+    }
+  }
+]

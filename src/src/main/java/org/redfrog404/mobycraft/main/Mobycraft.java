@@ -2,6 +2,8 @@ package org.redfrog404.mobycraft.main;
 
 import java.io.File;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
@@ -20,15 +22,10 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
-import org.redfrog404.mobycraft.commands.dockerjava.ConfigProperties;
-import org.redfrog404.mobycraft.commands.dockerjava.MainCommand;
+import org.redfrog404.mobycraft.commands.common.MainCommand;
 import org.redfrog404.mobycraft.dimension.DimensionRegistry;
 import org.redfrog404.mobycraft.entity.EntityMoby;
 import org.redfrog404.mobycraft.entity.RenderMoby;
@@ -44,10 +41,11 @@ public final class Mobycraft {
 
 	public static Block docker_block;
 	public static Item container_wand;
+	private static Injector injector;
 
 	ItemModelMesher mesher;
 
-	private static final MainCommand commands = new MainCommand();
+	private MainCommand commands;
 
 	@EventHandler
 	public void registerDockerCommands(FMLServerStartingEvent event) {
@@ -56,6 +54,8 @@ public final class Mobycraft {
 
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
+		injector = Guice.createInjector(new MobyCraftModule());
+
 		mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
 
 		docker_block = new GenericBlock("docker_block", Material.iron, 5.0F, 10.0F, "pickaxe", 1, Block.soundTypeMetal);
@@ -70,6 +70,9 @@ public final class Mobycraft {
 				0x24B8EB, 0x008BB8);
 
 		DimensionRegistry.mainRegistry();
+
+		commands = injector.getInstance(MainCommand.class);
+		commands.loadConfig();
 
 		MinecraftForge.EVENT_BUS.register(commands);
 		FMLCommonHandler.instance().bus().register(commands);
@@ -109,7 +112,7 @@ public final class Mobycraft {
 		RenderingRegistry.registerEntityRenderingHandler(entityClass, render);
 	}
 
-	public static MainCommand getMainCommand() {
-		return commands;
+	public static Injector getInjector() {
+		return injector;
 	}
 }

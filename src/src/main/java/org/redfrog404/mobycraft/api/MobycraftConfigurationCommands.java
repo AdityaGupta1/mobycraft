@@ -1,6 +1,6 @@
 package org.redfrog404.mobycraft.api;
 
-import org.redfrog404.mobycraft.commands.dockerjava.ConfigProperties;
+import org.redfrog404.mobycraft.commands.common.ConfigProperties;
 
 import net.minecraft.util.BlockPos;
 

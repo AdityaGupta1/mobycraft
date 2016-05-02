@@ -1,11 +1,9 @@
 package org.redfrog404.mobycraft.commands.dockerjava;
 
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.boxContainers;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.builder;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.containerIDMap;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.getDockerClient;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.arg1;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.boxContainers;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.containerIDMap;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
@@ -17,24 +15,46 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.core.DockerClientBuilder;
+import com.github.dockerjava.core.DockerClientConfig;
 import net.minecraft.util.EnumChatFormatting;
 
-import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
+import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
+import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
+import org.redfrog404.mobycraft.api.MobycraftConfigurationCommands;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
+import org.redfrog404.mobycraft.commands.common.ConfigProperties;
+import org.redfrog404.mobycraft.commands.common.StatisticsResultCallback;
 import org.redfrog404.mobycraft.structure.BoxContainer;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
 import com.google.common.collect.Lists;
 
+import javax.inject.Inject;
+
 public class ContainerListCommands implements MobycraftContainerListCommands {
 
-	MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
-	
+	private final MobycraftBuildContainerCommands buildCommands;
+	private final MobycraftConfigurationCommands configurationCommands;
+	private final MobycraftContainerListCommands listCommands;
+	private final MobycraftBasicCommands basicCommands;
+	private DockerClient dockerClient;
+
+	@Inject
+	public ContainerListCommands(MobycraftBuildContainerCommands buildCommands, MobycraftConfigurationCommands configurationCommands,
+								 MobycraftContainerListCommands listCommands, MobycraftBasicCommands basicCommands) {
+		this.buildCommands = buildCommands;
+		this.configurationCommands = configurationCommands;
+		this.listCommands = listCommands;
+		this.basicCommands = basicCommands;
+	}
+
 	public void refresh() {
 		List<Container> containers = getAll();
-		boxContainers = factory.getBuildCommands().containerPanel(containers, 
-				MobycraftCommandsFactory.getInstance().getConfigurationCommands().getStartPos(),
+		boxContainers = buildCommands.containerPanel(containers,
+				configurationCommands.getStartPos(),
 				sender.getEntityWorld());
 		List<String> stoppedContainerNames = new ArrayList<String>();
 		for (Container container : getStopped()) {
@@ -50,8 +70,8 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 
 	public void refreshRunning() {
 		List<Container> containers = getStarted();
-		boxContainers = factory.getBuildCommands().containerPanel(containers, 
-				MobycraftCommandsFactory.getInstance().getConfigurationCommands().getStartPos(),
+		boxContainers = buildCommands.containerPanel(containers,
+				configurationCommands.getStartPos(),
 				sender.getEntityWorld());
 		refreshContainerIDMap();
 	}
@@ -239,5 +259,35 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 					+ " containers not included in this heat map");
 		}
 		refresh();
+	}
+
+	private void initDockerClient() {
+		ConfigProperties configProperties = configurationCommands.getConfigProperties();
+
+		DockerClientConfig dockerConfig = DockerClientConfig
+				.createDefaultConfigBuilder()
+				.withUri(configProperties.getDockerHostProperty().getString())
+				.withDockerCertPath(configProperties.getCertPathProperty().getString()).build();
+
+		dockerClient = DockerClientBuilder.getInstance(dockerConfig).build();
+	}
+
+	public DockerClient getDockerClient() {
+		if (dockerClient == null) {
+			initDockerClient();
+		}
+		return dockerClient;
+	}
+
+	public void execStatsCommand(String containerID, boolean sendMessages) {
+		StatisticsResultCallback callback = new StatisticsResultCallback(
+				containerID, sendMessages, listCommands, basicCommands);
+		callback = getDockerClient().statsCmd().withContainerId(containerID)
+				.exec(callback);
+		try {
+			callback.awaitCompletion();
+		} catch (InterruptedException exception) {
+			return;
+		}
 	}
 }

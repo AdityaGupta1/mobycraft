@@ -1,6 +1,5 @@
-package org.redfrog404.mobycraft.commands.dockerjava;
+package org.redfrog404.mobycraft.commands.common;
 
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
 import java.io.IOException;
@@ -8,7 +7,8 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.LinkedHashMap;
 
-import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
+import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
+import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.structure.BoxContainer;
 
 import net.minecraft.util.EnumChatFormatting;
@@ -22,18 +22,22 @@ public class StatisticsResultCallback extends
 
 	boolean sendMessages = true;
 	String containerID = "";
+	private final MobycraftBasicCommands basicCommands;
+	private final MobycraftContainerListCommands listCommands;
 
-	public StatisticsResultCallback(String containerID, boolean sendMessages) {
+	public StatisticsResultCallback(String containerID, boolean sendMessages,
+									MobycraftContainerListCommands listCommands,
+									MobycraftBasicCommands basicCommands) {
 		this.sendMessages = sendMessages;
 		this.containerID = containerID;
+		this.basicCommands = basicCommands;
+		this.listCommands = listCommands;
 	}
 
 	@Override
 	public void onNext(Statistics stats) {
-		MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
-		
-		BoxContainer boxContainer = factory.getListCommands().getBoxContainerWithID(containerID);
-		Container container = factory.getListCommands().getFromAllWithName(boxContainer.getName());
+		BoxContainer boxContainer = listCommands.getBoxContainerWithID(containerID);
+		Container container = listCommands.getFromAllWithName(boxContainer.getName());
 
 		NumberFormat formatter = new DecimalFormat("#0.00");
 
@@ -57,7 +61,7 @@ public class StatisticsResultCallback extends
 		boxContainer.setCpuUsage(cpuUsage);
 
 		if (sendMessages) {
-			factory.getBasicCommands().printContainerInfo(boxContainer, container);
+			basicCommands.printContainerInfo(boxContainer, container);
 			sendMessage(EnumChatFormatting.RED + "" + EnumChatFormatting.BOLD
 					+ "Memory Usage: " + EnumChatFormatting.RESET + memoryUsage
 					+ "%");

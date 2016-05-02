@@ -1,13 +1,12 @@
-package org.redfrog404.mobycraft.commands.dockerjava;
+package org.redfrog404.mobycraft.commands.common;
 
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.args;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.commandNumbers;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.containerIDMap;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.getDockerClient;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.helpMessages;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sendHelpMessage;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.arg1;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.args;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.commandNumbers;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.containerIDMap;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.helpMessages;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.sendHelpMessage;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendBarMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
@@ -23,18 +22,26 @@ import net.minecraft.util.EnumChatFormatting;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
-import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.structure.BoxContainer;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
 
+import javax.inject.Inject;
+
 public class BasicDockerCommands implements MobycraftBasicCommands {
 
 	// Used for help messages specific to a certain command
 	public static Map<String, String[]> specificHelpMessages = new HashMap<String, String[]>();
-	
+
+	private final MobycraftContainerListCommands listCommands;
+
+	@Inject
+	public BasicDockerCommands(MobycraftContainerListCommands listCommands) {
+		this.listCommands = listCommands;
+	}
+
 	public void help() {
 		int size = helpMessages.size();
 		int maxCommandsPerPage = 8;
@@ -122,9 +129,9 @@ public class BasicDockerCommands implements MobycraftBasicCommands {
 		List<Container> containers;
 
 		if (showAll) {
-			containers = MobycraftCommandsFactory.getInstance().getListCommands().getAll();
+			containers = listCommands.getAll();
 		} else {
-			containers = MobycraftCommandsFactory.getInstance().getListCommands().getStarted();
+			containers = listCommands.getStarted();
 		}
 
 		if (containers.size() == 0) {
@@ -163,7 +170,7 @@ public class BasicDockerCommands implements MobycraftBasicCommands {
 
 			String state = "running";
 
-			if (MobycraftCommandsFactory.getInstance().getListCommands().isStopped(container.getNames()[0])) {
+			if (listCommands.isStopped(container.getNames()[0])) {
 				state = "stopped";
 			}
 
@@ -181,12 +188,10 @@ public class BasicDockerCommands implements MobycraftBasicCommands {
 	}
 
 	public void showDetailedInfo() throws InterruptedException {
-		MobycraftContainerListCommands listCommands = MobycraftCommandsFactory.getInstance().getListCommands();
-		
-		MobycraftCommandsFactory.getInstance().getListCommands().refreshContainerIDMap();
+		listCommands.refreshContainerIDMap();
 		System.out.println(containerIDMap);
 
-		if (MobycraftCommandsFactory.getInstance().getListCommands().getBoxContainerWithID(arg1).equals(null)) {
+		if (listCommands.getBoxContainerWithID(arg1).equals(null)) {
 			return;
 		}
 
@@ -201,7 +206,7 @@ public class BasicDockerCommands implements MobycraftBasicCommands {
 			return;
 		}
 
-		execStatsCommand(arg1, true);
+		listCommands.execStatsCommand(arg1, true);
 	}
 
 	public void printContainerInfo(
@@ -219,21 +224,4 @@ public class BasicDockerCommands implements MobycraftBasicCommands {
 				+ EnumChatFormatting.BOLD + "Status: "
 				+ EnumChatFormatting.RESET + container.getStatus());
 	}
-	
-
-
-	public static void execStatsCommand(String containerID, boolean sendMessages) {
-		StatisticsResultCallback callback = new StatisticsResultCallback(
-				containerID, sendMessages);
-		callback = getDockerClient().statsCmd().withContainerId(containerID)
-				.exec(callback);
-		try {
-			callback.awaitCompletion();
-		} catch (InterruptedException exception) {
-			return;
-		}
-	}
-	
-	
-
 }

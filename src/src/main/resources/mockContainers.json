@@ -1,0 +1,38 @@
+
+[
+  {
+    "Id": "12345",
+    "Names": [
+      "/container_12345"
+    ],
+    "Image": "image1",
+    "ImageID": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "Command": "echo hello1",
+    "Created": 1455662451,
+    "Ports": [],
+    "SizeRootFs": 1113554,
+    "Labels": {},
+    "Status": "Up Less than a second",
+    "HostConfig": {
+      "NetworkMode": "default"
+    },
+    "NetworkSettings": {
+      "Networks": {
+        "bridge": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": null,
+          "NetworkID": "",
+          "EndpointID": "1111111111111111111111111111111111111111111111111111111111111111",
+          "Gateway": "172.17.0.1",
+          "IPAddress": "172.17.0.2",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "MacAddress": "01:01:01:01:01:01"
+        }
+      }
+    }
+  }
+]

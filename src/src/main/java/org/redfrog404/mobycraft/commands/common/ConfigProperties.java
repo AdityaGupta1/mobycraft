@@ -1,4 +1,4 @@
-package org.redfrog404.mobycraft.commands.dockerjava;
+package org.redfrog404.mobycraft.commands.common;
 
 import net.minecraftforge.common.config.Property;
 

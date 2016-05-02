@@ -1,15 +1,7 @@
 package org.redfrog404.mobycraft.structure;
 
-import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.execStatsCommand;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.getDockerClient;
-
-import java.util.List;
-
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
-
-import com.github.dockerjava.api.model.Container;
 
 public class BoxContainer {
 
@@ -91,12 +83,12 @@ public class BoxContainer {
 	}
 
 	public double getCpuUsage() {
-		execStatsCommand(this.getID(), false);
+//		execStatsCommand(this.getID(), false);
 		return cpuUsage;
 	}
 
 	public double getMemoryUsage() {
-		execStatsCommand(this.getID(), false);
+//execStatsCommand(this.getID(), false);
 		return memoryUsage;
 	}
 
