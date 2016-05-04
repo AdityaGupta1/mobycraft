@@ -9,9 +9,9 @@ import java.util.LinkedHashMap;
 
 import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
-import org.redfrog404.mobycraft.structure.BoxContainer;
-
 import net.minecraft.util.EnumChatFormatting;
+import org.redfrog404.mobycraft.structure.BoxContainer;
+import org.redfrog404.mobycraft.utils.MobycraftException;
 
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Statistics;
@@ -71,8 +71,8 @@ public class StatisticsResultCallback extends
 
 		try {
 			super.close();
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		} catch (IOException exception) {
+			throw new MobycraftException(exception);
 		}
 	}
 }

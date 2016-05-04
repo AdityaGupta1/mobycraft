@@ -27,4 +27,6 @@ public interface MobycraftContainerListCommands {
 	public void execStatsCommand(String containerID, boolean sendMessages);
 
 	public DockerClient getDockerClient();
+
+	public void numberOfContainers();
 }

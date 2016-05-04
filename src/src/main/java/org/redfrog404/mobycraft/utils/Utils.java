@@ -7,14 +7,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import net.minecraft.util.Vec3i;
+import java.util.Random;
 
 public class Utils {
 
 	// Used for byte conversions
 	static Map<Integer, String> byteSuffixNumbers = new HashMap<Integer, String>();
-	
+
 	static {
 		byteSuffixNumbers.put(0, "B");
 		byteSuffixNumbers.put(1, "KB");
@@ -39,7 +38,7 @@ public class Utils {
 		}
 		return false;
 	}
-	
+
 	public static String imageSizeConversion(double bytes) {
 		int suffixNumber = 0;
 
@@ -59,5 +58,9 @@ public class Utils {
 		}
 
 		return byteString;
+	}
+
+	public static int negativeNextInt(int min, int max) {
+		return new Random().nextInt(max + 1 - min) + min;
 	}
 }

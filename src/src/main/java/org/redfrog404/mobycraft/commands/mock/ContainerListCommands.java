@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Container;
 import com.google.common.io.Resources;
+import net.minecraft.util.EnumChatFormatting;
 import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
 import org.redfrog404.mobycraft.api.MobycraftConfigurationCommands;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
@@ -111,10 +112,10 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 		List<Container> containers = new ArrayList<Container>();
 		try {
 			URL url1 = Resources.getResource("mockContainers.json");
-			String jsonText1  = Resources.toString(url1, StandardCharsets.UTF_8);
-			containers = mapper.readValue(jsonText1, new TypeReference<List<Container>>(){});
-		}
-		catch (IOException ioe) {
+			String jsonText1 = Resources.toString(url1, StandardCharsets.UTF_8);
+			containers = mapper.readValue(jsonText1, new TypeReference<List<Container>>() {
+			});
+		} catch (IOException ioe) {
 			logger.warn("Could not load mockContainers.json");
 		}
 		return containers;
@@ -168,5 +169,12 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 	@Override
 	public DockerClient getDockerClient() {
 		return null;
+	}
+
+	public void numberOfContainers() {
+		sendMessage(EnumChatFormatting.GOLD
+				+ "Number of container(s) currently running: "
+				+ EnumChatFormatting.GREEN + "NOT IMPLEMENTED");
+
 	}
 }
