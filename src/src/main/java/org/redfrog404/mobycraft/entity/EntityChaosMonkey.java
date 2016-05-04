@@ -281,8 +281,8 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	}
 
 	private boolean isDateAroundHalloween(Calendar p_175569_1_) {
-		return (p_175569_1_.get(Calendar.MONTH) + 1 == Calendar.OCTOBER) && (p_175569_1_.get(Calendar.DAY_OF_MONTH) >= 20)
-				|| (p_175569_1_.get(Calendar.MONTH) + 1 == Calendar.NOVEMBER) && (p_175569_1_.get(Calendar.DAY_OF_MONTH) <= 3);
+		return (p_175569_1_.get(Calendar.MONTH) == Calendar.OCTOBER) && (p_175569_1_.get(Calendar.DAY_OF_MONTH) >= 20)
+				|| (p_175569_1_.get(Calendar.MONTH) == Calendar.NOVEMBER) && (p_175569_1_.get(Calendar.DAY_OF_MONTH) <= 3);
 	}
 
 	public float getEyeHeight() {
