@@ -70,7 +70,6 @@ public class EntityMoby extends EntityAnimal
 
     protected void playStepSound(BlockPos pos, Block blockIn)
     {
-        return;
     }
 
     /**

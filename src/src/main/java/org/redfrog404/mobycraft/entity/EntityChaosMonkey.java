@@ -3,10 +3,8 @@ package org.redfrog404.mobycraft.entity;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 
 import java.util.Calendar;
-import java.util.Random;
 
 import net.minecraft.block.Block;
-import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.passive.EntityAmbientCreature;
@@ -19,7 +17,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
-import org.redfrog404.mobycraft.main.Mobycraft;
+import org.redfrog404.mobycraft.commands.dockerjava.MainCommand;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
@@ -40,8 +38,6 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	 */
 	private int maxDistance = 25;
 
-	MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
-
 	public EntityChaosMonkey(World worldIn) {
 		super(worldIn);
 		this.setSize(0.5F, 0.9F);
@@ -49,7 +45,7 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 
 	protected void entityInit() {
 		super.entityInit();
-		this.dataWatcher.addObject(16, new Byte((byte) 0));
+		this.dataWatcher.addObject(16, (byte) 0);
 	}
 
 	/**
@@ -120,9 +116,9 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 		}
 
 		BlockPos pos = this.getPosition();
+		MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
 		BlockPos minPos = factory.getBuildCommands().getMinPos();
 		BlockPos maxPos = factory.getBuildCommands().getMaxPos();
-		Random RNG = this.getRNG();
 
 		int x = pos.getX();
 		int y = pos.getY();
@@ -165,7 +161,7 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 		}
 
 		Container container = factory.getListCommands().getWithName(name);
-		Mobycraft.getMainCommand().getDockerClient()
+		MainCommand.getDockerClient()
 				.removeContainerCmd(container.getId()).withForce().exec();
 		if (!world.isRemote) {
 			sendErrorMessage("Oh no! The Chaos Monkey has destroyed the container \""
@@ -179,9 +175,6 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 
 	protected void updateAITasks() {
 		super.updateAITasks();
-		BlockPos blockpos = new BlockPos(this);
-		BlockPos blockpos1 = blockpos.up();
-
 		{
 			if (this.spawnPosition != null
 					&& (!this.worldObj.isAirBlock(this.spawnPosition) || this.spawnPosition
@@ -242,20 +235,16 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	 * Called when the entity is attacked.
 	 */
 	public boolean attackEntityFrom(DamageSource source, float amount) {
-		if (this.isEntityInvulnerable(source)) {
-			return false;
-		} else {
-			return super.attackEntityFrom(source, amount);
-		}
+		return !this.isEntityInvulnerable(source) && super.attackEntityFrom(source, amount);
 	}
 
 	/**
 	 * (abstract) Protected helper method to read subclass entity data from NBT.
 	 */
-	public void readEntityFromNBT(NBTTagCompound tagCompund) {
-		super.readEntityFromNBT(tagCompund);
+	public void readEntityFromNBT(NBTTagCompound tagCompound) {
+		super.readEntityFromNBT(tagCompound);
 		this.dataWatcher.updateObject(16,
-				Byte.valueOf(tagCompund.getByte("BatFlags")));
+				tagCompound.getByte("BatFlags"));
 	}
 
 	/**
@@ -287,13 +276,13 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 				return false;
 			}
 
-			return i > this.rand.nextInt(j) ? false : super.getCanSpawnHere();
+			return i <= this.rand.nextInt(j) && super.getCanSpawnHere();
 		}
 	}
 
 	private boolean isDateAroundHalloween(Calendar p_175569_1_) {
-		return p_175569_1_.get(2) + 1 == 10 && p_175569_1_.get(5) >= 20
-				|| p_175569_1_.get(2) + 1 == 11 && p_175569_1_.get(5) <= 3;
+		return (p_175569_1_.get(Calendar.MONTH) == Calendar.OCTOBER) && (p_175569_1_.get(Calendar.DAY_OF_MONTH) >= 20)
+				|| (p_175569_1_.get(Calendar.MONTH) == Calendar.NOVEMBER) && (p_175569_1_.get(Calendar.DAY_OF_MONTH) <= 3);
 	}
 
 	public float getEyeHeight() {
