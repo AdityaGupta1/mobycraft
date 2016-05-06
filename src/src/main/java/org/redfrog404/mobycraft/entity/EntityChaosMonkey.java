@@ -27,10 +27,10 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	private BlockPos spawnPosition;
 
 	/** Value to set chaosCountdown to after a container is removed. */
-	private int maxChaosCountdown = 50;
+	private static int maxChaosCountdown = 50;
 
 	/** Time in ticks before another container can be removed by the monkey. */
-	private int chaosCountdown = maxChaosCountdown;
+	private static int chaosCountdown = maxChaosCountdown;
 
 	/**
 	 * The maximum distance that can be between the monkey and the player before
