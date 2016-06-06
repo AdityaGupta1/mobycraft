@@ -1,4 +1,4 @@
-package org.redfrog404.mobycraft.commands.mock;
+package org.redfrog404.mobycraft.commands.titus;
 
 import static org.redfrog404.mobycraft.commands.common.MainCommand.args;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendBarMessage;

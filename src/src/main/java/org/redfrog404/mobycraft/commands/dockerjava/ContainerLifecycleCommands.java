@@ -18,7 +18,7 @@ import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.DockerClientException;
 import com.github.dockerjava.api.command.CreateContainerResponse;
-import com.github.dockerjava.api.model.Container;
+import org.redfrog404.mobycraft.model.Container;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 
 import net.minecraft.block.Block;

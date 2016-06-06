@@ -24,7 +24,7 @@ import org.redfrog404.mobycraft.commands.common.MainCommand;
 import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.utils.Utils;
 
-import com.github.dockerjava.api.model.Container;
+import org.redfrog404.mobycraft.model.Container;
 
 public class EntityChaosMonkey extends EntityAmbientCreature {
 	/** Coordinates of where the monkey spawned. */

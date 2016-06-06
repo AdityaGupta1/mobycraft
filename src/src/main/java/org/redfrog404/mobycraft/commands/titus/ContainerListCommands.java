@@ -1,19 +1,22 @@
-package org.redfrog404.mobycraft.commands.mock;
+package org.redfrog404.mobycraft.commands.titus;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
 import org.redfrog404.mobycraft.model.Container;
-import com.google.common.io.Resources;
+import org.redfrog404.mobycraft.model.Container.ContainerStatus;
 import net.minecraft.util.EnumChatFormatting;
 import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
 import org.redfrog404.mobycraft.api.MobycraftConfigurationCommands;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.structure.BoxContainer;
+import org.redfrog404.mobycraft.commands.titus.model.Job;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.ws.rs.client.*;
+import javax.ws.rs.core.GenericType;
 
 import static org.redfrog404.mobycraft.commands.common.MainCommand.arg1;
 import static org.redfrog404.mobycraft.commands.common.MainCommand.boxContainers;
@@ -21,8 +24,8 @@ import static org.redfrog404.mobycraft.commands.common.MainCommand.containerIDMa
 import static org.redfrog404.mobycraft.commands.common.MainCommand.sender;
 
 import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,13 +81,14 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 	}
 
 	public List<Container> getStopped() {
-		List<Container> containers = getAll();
-		for (Container container : containers) {
-			if (container.getStatusString().toLowerCase().contains("exited")) {
-				containers.add(container);
-			}
-		}
-
+		List<Container> containers = new ArrayList<>();
+//		List<Container> containers = getAll();
+//		for (Container container : containers) {
+//			if (container.getStatus().toLowerCase().contains("exited")) {
+//				containers.add(container);
+//			}
+//		}
+//
 		return containers;
 	}
 
@@ -108,15 +112,33 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 	}
 
 	public List<Container> getAll() {
-		ObjectMapper mapper = new ObjectMapper();
-		List<Container> containers = new ArrayList<Container>();
-		try {
-			URL url1 = Resources.getResource("mockContainers.json");
-			String jsonText1 = Resources.toString(url1, StandardCharsets.UTF_8);
-			containers = mapper.readValue(jsonText1, new TypeReference<List<Container>>() {
-			});
-		} catch (IOException ioe) {
-			logger.warn("Could not load mockContainers.json");
+		Client client = ClientBuilder.newClient().register(FixHeadersClientResponseFilter.class);
+		WebTarget target = client
+				.target("http://TITUSAPIHOST:TITUSPORT")
+//				.target("http://localhost:8000")
+				.path("/v2/jobs")
+//				.path("R.json")
+				.queryParam("taskState", "RUNNING");
+		List<Job> jobs = target.request().get(new GenericType<List<Job>>() {});
+		List<Container> containers = convertJobsToContainers(jobs);
+//		logger.info("jobs = " + jobs);
+
+		return containers;
+	}
+
+	private List<Container> convertJobsToContainers(List<Job> jobs) {
+		List<Container> containers = new ArrayList<>();
+		for (Job job: jobs) {
+			for (Job.Task task : job.getTasks()) {
+				DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+				ZonedDateTime date = ZonedDateTime.parse(task.getStartedAt(), formatter);
+				long startedAtLong = date.toInstant().getEpochSecond() * 1000;
+
+				String names[] = {task.getId()};
+				// TODO: parse the states
+				Container c = new Container(job.getEntryPoint(), startedAtLong, task.getId(), job.getApplicationName(), names, ContainerStatus.RUNNING, "running");
+				containers.add(c);
+			}
 		}
 		return containers;
 	}
@@ -177,4 +199,5 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 				+ EnumChatFormatting.GREEN + "NOT IMPLEMENTED");
 
 	}
+
 }

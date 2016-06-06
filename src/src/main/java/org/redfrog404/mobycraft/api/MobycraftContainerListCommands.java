@@ -5,7 +5,7 @@ import java.util.List;
 import com.github.dockerjava.api.DockerClient;
 import org.redfrog404.mobycraft.structure.BoxContainer;
 
-import com.github.dockerjava.api.model.Container;
+import org.redfrog404.mobycraft.model.Container;
 
 public interface MobycraftContainerListCommands {
 	public List<Container> getStarted();

@@ -9,6 +9,7 @@ import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.api.MobycraftImageCommands;
@@ -16,7 +17,7 @@ import org.redfrog404.mobycraft.utils.Utils;
 
 import net.minecraft.util.EnumChatFormatting;
 
-import com.github.dockerjava.api.model.Image;
+import org.redfrog404.mobycraft.model.Image;
 
 import javax.inject.Inject;
 
@@ -30,7 +31,7 @@ public class ImageCommands implements MobycraftImageCommands {
 	}
 
 	public void images() {
-		List<Image> images = listCommands.getDockerClient().listImagesCmd().exec();
+		List<Image> images = getImages();
 
 		if (images.size() == 0) {
 			sendFeedbackMessage("No images currently installed.");
@@ -91,8 +92,23 @@ public class ImageCommands implements MobycraftImageCommands {
 		}
 	}
 
+	private List<Image> convertImageList(List<com.github.dockerjava.api.model.Image> imagesDC) {
+		List<Image> images = imagesDC.stream()
+				.map(image -> new Image(
+						image.getCreated(),
+						image.getId(),
+						image.getParentId(),
+						image.getRepoTags(),
+						image.getSize(),
+						image.getVirtualSize()
+				))
+				.collect(Collectors.toList());
+		return images;
+	}
+
 	public List<Image> getImages() {
-		return listCommands.getDockerClient().listImagesCmd().exec();
+		List<com.github.dockerjava.api.model.Image> imagesDC = listCommands.getDockerClient().listImagesCmd().exec();
+		return convertImageList(imagesDC);
 	}
 
 	public Image getImageWithName(String name) {

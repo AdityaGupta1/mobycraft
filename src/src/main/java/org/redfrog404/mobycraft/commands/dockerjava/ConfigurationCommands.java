@@ -139,6 +139,7 @@ public class ConfigurationCommands implements MobycraftConfigurationCommands {
 						+ configProperties.getDockerHostProperty().getString() + "\"");
 			}
 		} else {
+			// expecting DOCKER_HOST to have "tcp://"
 			dockerHost = dockerHost.substring(6, dockerHost.length());
 			sendConfirmMessage("Using DOCKER_HOST value of \"" + dockerHost
 					+ "\"");

@@ -20,5 +20,9 @@ public class MobyCraftModule extends AbstractModule {
 //        bind(MobycraftContainerLifecycleCommands.class).to(org.redfrog404.mobycraft.commands.mock.ContainerLifecycleCommands.class);
 //        bind(MobycraftImageCommands.class).to(org.redfrog404.mobycraft.commands.mock.ImageCommands.class);
 
+        // for Titus
+//        bind(MobycraftContainerListCommands.class).to(org.redfrog404.mobycraft.commands.titus.ContainerListCommands.class);
+//        bind(MobycraftContainerLifecycleCommands.class).to(org.redfrog404.mobycraft.commands.titus.ContainerLifecycleCommands.class);
+//        bind(MobycraftImageCommands.class).to(org.redfrog404.mobycraft.commands.titus.ImageCommands.class);
     }
 }

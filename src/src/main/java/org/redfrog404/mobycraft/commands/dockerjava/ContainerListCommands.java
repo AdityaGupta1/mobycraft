@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
@@ -29,7 +30,8 @@ import org.redfrog404.mobycraft.commands.common.StatisticsResultCallback;
 import org.redfrog404.mobycraft.structure.BoxContainer;
 import org.redfrog404.mobycraft.utils.Utils;
 
-import com.github.dockerjava.api.model.Container;
+import org.redfrog404.mobycraft.model.Container;
+import org.redfrog404.mobycraft.model.Container.ContainerStatus;
 import com.google.common.collect.Lists;
 
 import javax.inject.Inject;
@@ -83,20 +85,32 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 		}
 	}
 
+	private List<Container> convertContainerList(List<com.github.dockerjava.api.model.Container> containersDC) {
+		List<Container> containers = containersDC.stream()
+				.map(container -> new Container(
+						container.getCommand(),
+						container.getCreated(),
+						container.getId(),
+						container.getImage(),
+						container.getNames(),
+						ContainerStatus.UNKNOWN,
+						container.getStatus()
+				))
+				.collect(Collectors.toList());
+		return containers;
+	}
+
 	public List<Container> getStarted() {
-		return getDockerClient().listContainersCmd().exec();
+		List<com.github.dockerjava.api.model.Container> containersDC = getDockerClient().listContainersCmd().exec();
+		return convertContainerList(containersDC);
 	}
 
 	public List<Container> getStopped() {
-		List<Container> containers = new ArrayList<Container>();
-		for (Container container : getDockerClient().listContainersCmd()
-				.withShowAll(true).exec()) {
-			if (container.getStatus().toLowerCase().contains("exited")) {
-				containers.add(container);
-			}
-		}
-
-		return containers;
+		List<com.github.dockerjava.api.model.Container> containersDC = getDockerClient().listContainersCmd().withShowAll(true).exec();
+		List<com.github.dockerjava.api.model.Container> exitedContainersDC = containersDC.stream()
+			.filter(container -> container.getStatus().toLowerCase().contains("exited"))
+			.collect(Collectors.toList());
+		return convertContainerList(containersDC);
 	}
 
 	public Container getWithName(String name) {
@@ -119,9 +133,8 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 	}
 
 	public List<Container> getAll() {
-		List<Container> containers = getDockerClient().listContainersCmd()
-				.withShowAll(true).exec();
-		return containers;
+		List<com.github.dockerjava.api.model.Container> containersDC = getDockerClient().listContainersCmd().withShowAll(true).exec();
+		return convertContainerList(containersDC);
 	}
 
 	/*
@@ -142,7 +155,7 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 
 		Container container = getFromAllWithName(containerName);
 
-		if (container.getStatus().toLowerCase().contains("exited")) {
+		if (container.getStatusString().toLowerCase().contains("exited")) {
 			return true;
 		}
 

@@ -27,7 +27,7 @@ import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.structure.BoxContainer;
 import org.redfrog404.mobycraft.utils.Utils;
 
-import com.github.dockerjava.api.model.Container;
+import org.redfrog404.mobycraft.model.Container;
 
 import javax.inject.Inject;
 
@@ -259,6 +259,8 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 		return boxContainers;
 	}
 
+	// this builds the entire set of columns (last one less than 10 high)
+	// you can see it just adds 6 to the x between bcolumns
 	public List<BoxContainer> containerPanel(List<Container> containers,
 			BlockPos pos, World world) {
 		List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();

@@ -21,7 +21,7 @@ import org.redfrog404.mobycraft.utils.MobycraftException;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.model.Container;
+import org.redfrog404.mobycraft.model.Container;
 
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;

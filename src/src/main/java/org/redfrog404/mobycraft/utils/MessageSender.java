@@ -8,7 +8,12 @@ import net.minecraft.util.EnumChatFormatting;
 public class MessageSender {
 	
 	public static void sendMessage(Object message) {
-		sender.addChatMessage(new ChatComponentText(message.toString()));
+		if (sender != null) {
+			sender.addChatMessage(new ChatComponentText(message.toString()));
+		}
+		else {
+			System.out.println(message.toString());
+		}
 	}
 
 	public static void sendErrorMessage(String message) {
