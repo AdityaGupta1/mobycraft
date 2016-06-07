@@ -45,13 +45,10 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 
 	@Override
 	public void buildContainersFromList(List<BoxContainer> containers) {
-		for (BoxContainer boxContainer : containers) {
-			builder.container(sender.getEntityWorld(),
-					boxContainer.getPosition(), Blocks.iron_block,
-					boxContainer.getName(), boxContainer.getImage(),
-					boxContainer.getID());
-			if (!boxContainer.getState()) {
-				setContainerAppearance(boxContainer, false);
+		for (BoxContainer container : containers) {
+			builder.container(container);
+			if (!container.getState()) {
+				setContainerAppearance(container, false);
 			}
 		}
 	}

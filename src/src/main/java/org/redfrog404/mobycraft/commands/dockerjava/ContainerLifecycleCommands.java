@@ -89,7 +89,7 @@ public class ContainerLifecycleCommands implements
 
 	public void removeAll() {
 		sendFeedbackMessage("Working on it...");
-		
+
 		if (MobycraftCommandsFactory.getInstance().getListCommands().getAll()
 				.size() < 1) {
 			sendFeedbackMessage("No containers currently existing.");
@@ -194,6 +194,15 @@ public class ContainerLifecycleCommands implements
 					+ "\" and name \"" + name + "\"");
 		} else if (!NumberUtils.isNumber(args[1])) {
 			// Name
+			for (Container container : MobycraftCommandsFactory.getInstance()
+					.getListCommands().getAll()) {
+				if (args[1].equals(container.getNames()[0])) {
+					sendErrorMessage("The name \""
+							+ args[1]
+							+ "\" is already in use! Remove or rename that container to be able to use that name.");
+					return;
+				}
+			}
 			CreateContainerResponse response = getDockerClient()
 					.createContainerCmd(arg1).withName(args[1]).exec();
 			getDockerClient().startContainerCmd(response.getId()).exec();

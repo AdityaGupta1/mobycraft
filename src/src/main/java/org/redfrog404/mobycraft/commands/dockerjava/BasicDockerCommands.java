@@ -185,7 +185,6 @@ public class BasicDockerCommands implements MobycraftBasicCommands {
 		MobycraftContainerListCommands listCommands = MobycraftCommandsFactory.getInstance().getListCommands();
 		
 		MobycraftCommandsFactory.getInstance().getListCommands().refreshContainerIDMap();
-		System.out.println(containerIDMap);
 
 		if (MobycraftCommandsFactory.getInstance().getListCommands().getBoxContainerWithID(arg1).equals(null)) {
 			return;

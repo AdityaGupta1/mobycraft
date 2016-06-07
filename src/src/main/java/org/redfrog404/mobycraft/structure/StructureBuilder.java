@@ -1,5 +1,8 @@
 package org.redfrog404.mobycraft.structure;
 
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,8 +81,14 @@ public class StructureBuilder {
 				end.add(airEndX, airEndY, airEndZ), Blocks.air);
 	}
 
-	public static void container(World world, BlockPos start, Block material,
-			String containerName, String containerImage, String containerID) {
+	public static void container(BoxContainer container) {
+		BlockPos start = container.getPosition();
+		World world = container.getWorld();
+		String containerName = container.getName();
+		String containerImage = container.getImage();
+		String containerID = container.getID();
+		double memoryUsage = container.getMemoryUsage();
+		double cpuUsage = container.getCpuUsage();
 
 		// Iron room
 		start = start.add(-2, 0, 1);
@@ -140,6 +149,52 @@ public class StructureBuilder {
 		sign.signText[0] = new ChatComponentText(EnumChatFormatting.BOLD
 				+ "Image:");
 		wrapSignText(containerImage, sign);
+
+		// Memory sign
+		world.setBlockState(start.add(1, 2, -1), wallSign);
+		sign = ((TileEntitySign) world.getTileEntity(start.add(1, 2, -1)));
+		sign.signText[1] = new ChatComponentText(EnumChatFormatting.BOLD
+				+ "Memory Usage");
+
+		// CPU sign
+		world.setBlockState(start.add(1, 1, -1), wallSign);
+		sign = ((TileEntitySign) world.getTileEntity(start.add(1, 1, -1)));
+		sign.signText[1] = new ChatComponentText(EnumChatFormatting.BOLD
+				+ "CPU Usage");
+		
+		List<Block> usageScale = new ArrayList<Block>();
+		usageScale.add(Blocks.packed_ice);
+		usageScale.add(Blocks.stone);
+		usageScale.add(Blocks.sand);
+		usageScale.add(Blocks.netherrack);
+		usageScale.add(Blocks.bedrock);
+		
+		sendMessage(memoryUsage);
+		sendMessage(cpuUsage);
+		
+		if (memoryUsage >= 40) {
+			world.setBlockState(start.add(0, 2, 0), usageScale.get(4).getDefaultState());
+		} else if (memoryUsage >= 30) {
+			world.setBlockState(start.add(0, 2, 0), usageScale.get(3).getDefaultState());
+		} else if (memoryUsage >= 20) {
+			world.setBlockState(start.add(0, 2, 0), usageScale.get(2).getDefaultState());
+		} else if (memoryUsage >= 10) {
+			world.setBlockState(start.add(0, 2, 0), usageScale.get(1).getDefaultState());
+		} else {
+			world.setBlockState(start.add(0, 2, 0), usageScale.get(0).getDefaultState());
+		}
+		
+		if (cpuUsage >= 40) {
+			world.setBlockState(start.add(0, 1, 0), usageScale.get(4).getDefaultState());
+		} else if (cpuUsage >= 30) {
+			world.setBlockState(start.add(0, 1, 0), usageScale.get(3).getDefaultState());
+		} else if (cpuUsage >= 20) {
+			world.setBlockState(start.add(0, 1, 0), usageScale.get(2).getDefaultState());
+		} else if (cpuUsage >= 10) {
+			world.setBlockState(start.add(0, 1, 0), usageScale.get(1).getDefaultState());
+		} else {
+			world.setBlockState(start.add(0, 1, 0), usageScale.get(0).getDefaultState());
+		}
 
 		// Glowstone lighting
 		IBlockState glowstone = Blocks.glowstone.getDefaultState();

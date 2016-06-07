@@ -30,10 +30,15 @@ public class StatisticsResultCallback extends
 
 	@Override
 	public void onNext(Statistics stats) {
-		MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
-		
-		BoxContainer boxContainer = factory.getListCommands().getBoxContainerWithID(containerID);
-		Container container = factory.getListCommands().getFromAllWithName(boxContainer.getName());
+		MobycraftCommandsFactory.getInstance().getListCommands().refresh();
+
+		MobycraftCommandsFactory factory = MobycraftCommandsFactory
+				.getInstance();
+
+		BoxContainer boxContainer = factory.getListCommands()
+				.getBoxContainerWithID(containerID);
+		Container container = factory.getListCommands().getFromAllWithName(
+				boxContainer.getName());
 
 		NumberFormat formatter = new DecimalFormat("#0.00");
 
@@ -57,7 +62,8 @@ public class StatisticsResultCallback extends
 		boxContainer.setCpuUsage(cpuUsage);
 
 		if (sendMessages) {
-			factory.getBasicCommands().printContainerInfo(boxContainer, container);
+			factory.getBasicCommands().printContainerInfo(boxContainer,
+					container);
 			sendMessage(EnumChatFormatting.RED + "" + EnumChatFormatting.BOLD
 					+ "Memory Usage: " + EnumChatFormatting.RESET + memoryUsage
 					+ "%");

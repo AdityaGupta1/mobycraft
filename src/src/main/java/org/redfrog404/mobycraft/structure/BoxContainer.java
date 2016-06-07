@@ -91,12 +91,12 @@ public class BoxContainer {
 	}
 
 	public double getCpuUsage() {
-		execStatsCommand(this.getID(), false);
+		execStatsCommand(ID, false);
 		return cpuUsage;
 	}
 
 	public double getMemoryUsage() {
-		execStatsCommand(this.getID(), false);
+		execStatsCommand(ID, false);
 		return memoryUsage;
 	}
 
