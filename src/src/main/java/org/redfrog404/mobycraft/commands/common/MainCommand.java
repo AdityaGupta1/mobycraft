@@ -20,7 +20,6 @@ import org.redfrog404.mobycraft.structure.StructureBuilder;
 import org.redfrog404.mobycraft.utils.MobycraftException;
 import org.redfrog404.mobycraft.utils.Utils;
 
-import com.github.dockerjava.api.DockerClient;
 import org.redfrog404.mobycraft.model.Container;
 
 import net.minecraft.command.ICommand;
@@ -64,8 +63,6 @@ public class MainCommand implements ICommand {
 
 	public int count = 0;
 	public static int maxCount;
-
-	private DockerClient dockerClient;
 
 	Logger logger = LoggerFactory.getLogger(MainCommand.class);
 
@@ -408,7 +405,7 @@ public class MainCommand implements ICommand {
 			return;
 		}
 
-		listCommands.getDockerClient().removeContainerCmd(container.getId()).withForce().exec();
+		lifecycleCommands.removeContainer(container.getId());
 		sendConfirmMessage("Removed container with name \"" + name + "\"");
 
 		buildCommands.updateContainers(false);

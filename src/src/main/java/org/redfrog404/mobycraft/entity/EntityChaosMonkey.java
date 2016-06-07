@@ -19,6 +19,7 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
 import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
+import org.redfrog404.mobycraft.api.MobycraftContainerLifecycleCommands;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.commands.common.MainCommand;
 import org.redfrog404.mobycraft.main.Mobycraft;
@@ -44,6 +45,7 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 
 	private MobycraftBuildContainerCommands buildCommands;
 	private MobycraftContainerListCommands listCommands;
+	private MobycraftContainerLifecycleCommands lifecycleCommands;
 
 	public EntityChaosMonkey(World worldIn) {
 		super(worldIn);
@@ -56,6 +58,7 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 		// as we don't directly control construction of this class
 		buildCommands = Mobycraft.getInjector().getInstance(MobycraftBuildContainerCommands.class);
 		listCommands = Mobycraft.getInjector().getInstance(MobycraftContainerListCommands.class);
+		lifecycleCommands = Mobycraft.getInjector().getInstance(MobycraftContainerLifecycleCommands.class);
 	}
 
 	/**
@@ -171,8 +174,7 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 		}
 
 		Container container = listCommands.getWithName(name);
-		listCommands.getDockerClient()
-				.removeContainerCmd(container.getId()).withForce().exec();
+		lifecycleCommands.removeContainer(container.getId());
 		if (!world.isRemote) {
 			sendErrorMessage("Oh no! The Chaos Monkey has destroyed the container \""
 					+ name + "\"!");

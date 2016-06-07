@@ -2,7 +2,6 @@ package org.redfrog404.mobycraft.commands.mock;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.dockerjava.api.DockerClient;
 import org.redfrog404.mobycraft.model.Container;
 import com.google.common.io.Resources;
 import net.minecraft.util.EnumChatFormatting;
@@ -164,11 +163,6 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 
 	@Override
 	public void execStatsCommand(String containerID, boolean sendMessages) {
-	}
-
-	@Override
-	public DockerClient getDockerClient() {
-		return null;
 	}
 
 	public void numberOfContainers() {

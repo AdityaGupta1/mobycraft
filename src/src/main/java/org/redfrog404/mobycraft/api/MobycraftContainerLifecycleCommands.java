@@ -9,6 +9,7 @@ public interface MobycraftContainerLifecycleCommands {
 	public void restart();
 	public void kill();
 	public void killAll();
+	public void removeContainer(String containerId);
 	public void remove();
 	public void removeStopped();
 	public void removeAll();

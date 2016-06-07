@@ -1,8 +1,5 @@
 package org.redfrog404.mobycraft.commands.titus;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.dockerjava.api.DockerClient;
 import org.redfrog404.mobycraft.model.Container;
 import org.redfrog404.mobycraft.model.Container.ContainerStatus;
 import net.minecraft.util.EnumChatFormatting;
@@ -23,7 +20,6 @@ import static org.redfrog404.mobycraft.commands.common.MainCommand.boxContainers
 import static org.redfrog404.mobycraft.commands.common.MainCommand.containerIDMap;
 import static org.redfrog404.mobycraft.commands.common.MainCommand.sender;
 
-import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -186,11 +182,6 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 
 	@Override
 	public void execStatsCommand(String containerID, boolean sendMessages) {
-	}
-
-	@Override
-	public DockerClient getDockerClient() {
-		return null;
 	}
 
 	public void numberOfContainers() {

@@ -11,6 +11,7 @@ import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.dockerjava.api.DockerClient;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.api.MobycraftImageCommands;
 import org.redfrog404.mobycraft.utils.Utils;
@@ -24,10 +25,13 @@ import javax.inject.Inject;
 public class ImageCommands implements MobycraftImageCommands {
 
 	private final MobycraftContainerListCommands listCommands;
+	private final MobycraftDockerClient mobycraftDockerClient;
 
 	@Inject
-	public ImageCommands(MobycraftContainerListCommands listCommands) {
+	public ImageCommands(MobycraftContainerListCommands listCommands,
+	 	MobycraftDockerClient mobycraftDockerClient) {
 		this.listCommands = listCommands;
+		this.mobycraftDockerClient = mobycraftDockerClient;
 	}
 
 	public void images() {
@@ -72,7 +76,7 @@ public class ImageCommands implements MobycraftImageCommands {
 			return;
 		}
 		for (Image image : getImages()) {
-			listCommands.getDockerClient().removeImageCmd(image.getId()).withForce().exec();
+			mobycraftDockerClient.getDockerClient().removeImageCmd(image.getId()).withForce().exec();
 		}
 		sendConfirmMessage("Removed all images.");
 	}
@@ -84,7 +88,7 @@ public class ImageCommands implements MobycraftImageCommands {
 		}
 
 		try {
-			listCommands.getDockerClient().removeImageCmd(getImageWithName(arg1).getId())
+			mobycraftDockerClient.getDockerClient().removeImageCmd(getImageWithName(arg1).getId())
 					.withForce().exec();
 			sendConfirmMessage("Removed image with name \"" + arg1 + "\"");
 		} catch (NullPointerException exception) {
@@ -107,7 +111,7 @@ public class ImageCommands implements MobycraftImageCommands {
 	}
 
 	public List<Image> getImages() {
-		List<com.github.dockerjava.api.model.Image> imagesDC = listCommands.getDockerClient().listImagesCmd().exec();
+		List<com.github.dockerjava.api.model.Image> imagesDC = mobycraftDockerClient.getDockerClient().listImagesCmd().exec();
 		return convertImageList(imagesDC);
 	}
 

@@ -63,7 +63,16 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 //		}
 		sendConfirmMessage("Not yet implemented");
 	}
-	
+
+	public void removeContainer(String containerId) {
+//		try {
+//			dockerClient.removeContainerCmd(containerId).withForce().exec();
+//		} catch (NullPointerException exception) {
+//			sendErrorMessage("No container exists with the name \"" + arg1 + "\"");
+//		}
+		sendConfirmMessage("Not yet implemented");
+	}
+
 	public void remove() {
 		if (Utils.checkIfArgIsNull(args, 0)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker rm <name> .");
