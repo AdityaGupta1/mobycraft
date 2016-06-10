@@ -186,9 +186,9 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 		for (BoxContainer container : boxContainers) {
 			double usage = 0D;
 			if (arg1.equalsIgnoreCase("cpu")) {
-				usage = container.getCpuUsage();
+				usage = container.getCpuUsage(listCommands);
 			} else {
-				usage = container.getMemoryUsage();
+				usage = container.getMemoryUsage(listCommands);
 			}
 
 			if (usagesMap.containsKey(usage)) {
@@ -288,11 +288,11 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 	}
 
 	public void numberOfContainers() {
-		
+
 		System.out.println(arg1);
 
 		int filter = 0;
-		
+
 		try {
 			if (arg1.equals(null)) {
 				sendErrorMessage("Please specify which containers to show (\"all\", \"running\", or \"stopped\")!");
@@ -320,21 +320,24 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 			return;
 		}
 
-		int numberOfContainers = 0;
-
 		switch (filter) {
 		case 0:
 			return;
 		case 1:
-			numberOfContainers = getAll().size();
+			sendMessage(EnumChatFormatting.GOLD
+					+ "Number of container(s) currently existing: "
+					+ EnumChatFormatting.GREEN + getAll().size());
+			break;
 		case 2:
-			numberOfContainers = getStarted().size();
+			sendMessage(EnumChatFormatting.GOLD
+					+ "Number of container(s) currently running: "
+					+ EnumChatFormatting.GREEN + getStarted().size());
+			break;
 		case 3:
-			numberOfContainers = getStopped().size();
+			sendMessage(EnumChatFormatting.GOLD
+					+ "Number of container(s) currently stopped: "
+					+ EnumChatFormatting.GREEN + getStopped().size());
+			break;
 		}
-
-		sendMessage(EnumChatFormatting.GOLD
-				+ "Number of container(s) currently running: "
-				+ EnumChatFormatting.GREEN + numberOfContainers);
 	}
 }

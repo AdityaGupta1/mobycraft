@@ -36,6 +36,7 @@ public class StatisticsResultCallback extends
 
 	@Override
 	public void onNext(Statistics stats) {
+		listCommands.refresh();
 		BoxContainer boxContainer = listCommands.getBoxContainerWithID(containerID);
 		Container container = listCommands.getFromAllWithName(boxContainer.getName());
 

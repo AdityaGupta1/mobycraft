@@ -1,7 +1,9 @@
 package org.redfrog404.mobycraft.structure;
 
+
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
+import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 
 public class BoxContainer {
 
@@ -82,13 +84,13 @@ public class BoxContainer {
 		memoryUsage = newMemoryUsage;
 	}
 
-	public double getCpuUsage() {
-//		execStatsCommand(this.getID(), false);
+	public double getCpuUsage(MobycraftContainerListCommands listCommands) {
+		listCommands.execStatsCommand(ID, false);
 		return cpuUsage;
 	}
 
-	public double getMemoryUsage() {
-//execStatsCommand(this.getID(), false);
+	public double getMemoryUsage(MobycraftContainerListCommands listCommands) {
+		listCommands.execStatsCommand(ID, false);
 		return memoryUsage;
 	}
 

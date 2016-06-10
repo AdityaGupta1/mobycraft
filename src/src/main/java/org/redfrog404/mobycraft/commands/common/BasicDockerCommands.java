@@ -190,7 +190,6 @@ public class BasicDockerCommands implements MobycraftBasicCommands {
 
 	public void showDetailedInfo() throws InterruptedException {
 		listCommands.refreshContainerIDMap();
-		System.out.println(containerIDMap);
 
 		if (listCommands.getBoxContainerWithID(arg1).equals(null)) {
 			return;

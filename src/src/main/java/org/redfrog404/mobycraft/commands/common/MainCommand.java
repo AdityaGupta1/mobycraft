@@ -167,7 +167,7 @@ public class MainCommand implements ICommand {
 				"Returns the Docker host and cert path");
 		helpMessages.put("poll_rate <rate>",
 				"Sets the poll rate to <rate> seconds");
-		helpMessages.put("number_of_containers (all | running | stopped)",
+		helpMessages.put("number_of_containers <all | running | stopped>",
 				"Shows the number of containers with an optional filter, default is <all>");
 
 		specificHelpMessages

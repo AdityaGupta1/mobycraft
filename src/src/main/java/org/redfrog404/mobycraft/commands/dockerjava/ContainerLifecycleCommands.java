@@ -43,6 +43,8 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 	}
 
 	public void start() {
+		sendFeedbackMessage("Working on it...");
+
 		if (Utils.checkIfArgIsNull(args, 0)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker start <name> .");
 			return;
@@ -58,8 +60,10 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 					+ "\"");
 		}
 	}
-	
+
 	public void stop() {
+		sendFeedbackMessage("Working on it...");
+
 		if (Utils.checkIfArgIsNull(args, 0)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker stop <name> .");
 			return;
@@ -84,6 +88,8 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 	}
 
 	public void remove() {
+		sendFeedbackMessage("Working on it...");
+
 		if (Utils.checkIfArgIsNull(args, 0)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker rm <name> .");
 			return;
@@ -99,9 +105,10 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 					+ "\"");
 		}
 	}
-	
+
 	public void removeAll() {
 		sendFeedbackMessage("Working on it...");
+
 		if (listCommands.getAll().size() < 1) {
 			sendFeedbackMessage("No containers currently existing.");
 			return;
@@ -112,8 +119,10 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 		}
 		sendConfirmMessage("Removed all containers.");
 	}
-	
+
 	public void restart() {
+		sendFeedbackMessage("Working on it...");
+
 		if (Utils.checkIfArgIsNull(args, 0)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker restart <name> .");
 			return;
@@ -128,8 +137,10 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 					+ "\"");
 		}
 	}
-	
+
 	public void kill() {
+		sendFeedbackMessage("Working on it...");
+
 		if (Utils.checkIfArgIsNull(args, 0)) {
 			sendErrorMessage("Container name not specified! Command is used as /docker kill <name> .");
 			return;
@@ -144,8 +155,9 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 					+ "\"");
 		}
 	}
-	
+
 	public void killAll() {
+
 		sendFeedbackMessage("Working on it...");
 		if (listCommands.getStarted().size() < 1) {
 			sendFeedbackMessage("No containers currently running.");
@@ -156,22 +168,23 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 		}
 		sendConfirmMessage("Killed all containers.");
 	}
-	
+
 	public void run() throws InterruptedException {
 		if (args.length < 1) {
 			sendErrorMessage("No arguments specified! Command is used as /docker run <image> (name | amount) .");
 			return;
 		}
-		
+
 		sendFeedbackMessage("Working on it...");
-		
+
 		if (imageCommands.getImageWithName(arg1) == null) {
 			PullImageResultCallback callback = new PullImageResultCallback();
 			mobycraftDockerClient.getDockerClient().pullImageCmd(arg1).withTag("latest").exec(callback);
 			try {
 				callback.awaitCompletion();
 			} catch (DockerClientException exception) {
-				sendErrorMessage("\"" + arg1 + "\" + is not a valid image name!");
+				sendErrorMessage("\"" + arg1
+						+ "\" + is not a valid image name!");
 			}
 		}
 
@@ -190,6 +203,14 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 					+ "\" and name \"" + name + "\"");
 		} else if (!NumberUtils.isNumber(args[1])) {
 			// Name
+			for (Container container : listCommands.getAll()) {
+				if (args[1].equals(container.getNames()[0])) {
+					sendErrorMessage("The name \""
+							+ args[1]
+							+ "\" is already in use! Remove or rename that container to be able to use that name.");
+					return;
+				}
+			}
 			CreateContainerResponse response = mobycraftDockerClient.getDockerClient()
 					.createContainerCmd(arg1).withName(args[1]).exec();
 			mobycraftDockerClient.getDockerClient().startContainerCmd(response.getId()).exec();
@@ -225,7 +246,7 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 					+ "\" and names " + names);
 		}
 	}
-	
+
 	public void removeStopped() {
 		sendFeedbackMessage("Working on it...");
 		if (listCommands.getStopped().size() < 1) {
@@ -238,7 +259,7 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 		}
 		sendConfirmMessage("Removed all stopped containers.");
 	}
-	
+
 	public void switchState(StructureBuilder builder, String containerID) {
 		listCommands.refreshContainerIDMap();
 

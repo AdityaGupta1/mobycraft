@@ -3,10 +3,8 @@ package org.redfrog404.mobycraft.entity;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 
 import java.util.Calendar;
-import java.util.Random;
 
 import net.minecraft.block.Block;
-import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.passive.EntityAmbientCreature;
@@ -32,10 +30,10 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	private BlockPos spawnPosition;
 
 	/** Value to set chaosCountdown to after a container is removed. */
-	private int maxChaosCountdown = 50;
+	private static int maxChaosCountdown = 50;
 
 	/** Time in ticks before another container can be removed by the monkey. */
-	private int chaosCountdown = maxChaosCountdown;
+	private static int chaosCountdown = maxChaosCountdown;
 
 	/**
 	 * The maximum distance that can be between the monkey and the player before
@@ -54,7 +52,7 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 
 	protected void entityInit() {
 		super.entityInit();
-		this.dataWatcher.addObject(16, new Byte((byte) 0));
+		this.dataWatcher.addObject(16, (byte) 0);
 		// as we don't directly control construction of this class
 		buildCommands = Mobycraft.getInjector().getInstance(MobycraftBuildContainerCommands.class);
 		listCommands = Mobycraft.getInjector().getInstance(MobycraftContainerListCommands.class);
@@ -131,7 +129,6 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 		BlockPos pos = this.getPosition();
 		BlockPos minPos = buildCommands.getMinPos();
 		BlockPos maxPos = buildCommands.getMaxPos();
-		Random RNG = this.getRNG();
 
 		int x = pos.getX();
 		int y = pos.getY();
@@ -187,9 +184,6 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 
 	protected void updateAITasks() {
 		super.updateAITasks();
-		BlockPos blockpos = new BlockPos(this);
-		BlockPos blockpos1 = blockpos.up();
-
 		{
 			if (this.spawnPosition != null
 					&& (!this.worldObj.isAirBlock(this.spawnPosition) || this.spawnPosition
@@ -250,20 +244,16 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	 * Called when the entity is attacked.
 	 */
 	public boolean attackEntityFrom(DamageSource source, float amount) {
-		if (this.isEntityInvulnerable(source)) {
-			return false;
-		} else {
-			return super.attackEntityFrom(source, amount);
-		}
+		return !this.isEntityInvulnerable(source) && super.attackEntityFrom(source, amount);
 	}
 
 	/**
 	 * (abstract) Protected helper method to read subclass entity data from NBT.
 	 */
-	public void readEntityFromNBT(NBTTagCompound tagCompund) {
-		super.readEntityFromNBT(tagCompund);
+	public void readEntityFromNBT(NBTTagCompound tagCompound) {
+		super.readEntityFromNBT(tagCompound);
 		this.dataWatcher.updateObject(16,
-				Byte.valueOf(tagCompund.getByte("BatFlags")));
+				tagCompound.getByte("BatFlags"));
 	}
 
 	/**
@@ -295,13 +285,13 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 				return false;
 			}
 
-			return i > this.rand.nextInt(j) ? false : super.getCanSpawnHere();
+			return i <= this.rand.nextInt(j) && super.getCanSpawnHere();
 		}
 	}
 
 	private boolean isDateAroundHalloween(Calendar p_175569_1_) {
-		return p_175569_1_.get(2) + 1 == 10 && p_175569_1_.get(5) >= 20
-				|| p_175569_1_.get(2) + 1 == 11 && p_175569_1_.get(5) <= 3;
+		return (p_175569_1_.get(Calendar.MONTH) == Calendar.OCTOBER) && (p_175569_1_.get(Calendar.DAY_OF_MONTH) >= 20)
+				|| (p_175569_1_.get(Calendar.MONTH) == Calendar.NOVEMBER) && (p_175569_1_.get(Calendar.DAY_OF_MONTH) <= 3);
 	}
 
 	public float getEyeHeight() {
