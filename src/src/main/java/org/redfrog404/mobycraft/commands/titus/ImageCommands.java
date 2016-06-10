@@ -1,6 +1,5 @@
-package org.redfrog404.mobycraft.commands.dockerjava;
+package org.redfrog404.mobycraft.commands.titus;
 
-import static org.redfrog404.mobycraft.commands.common.MainCommand.arg1;
 import static org.redfrog404.mobycraft.commands.common.MainCommand.args;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendBarMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
@@ -8,32 +7,27 @@ import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import com.github.dockerjava.api.DockerClient;
-import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Resources;
 import org.redfrog404.mobycraft.api.MobycraftImageCommands;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import net.minecraft.util.EnumChatFormatting;
 
 import org.redfrog404.mobycraft.model.Image;
-
-import javax.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ImageCommands implements MobycraftImageCommands {
-
-	private final MobycraftContainerListCommands listCommands;
-	private final MobycraftDockerClient mobycraftDockerClient;
-
-	@Inject
-	public ImageCommands(MobycraftContainerListCommands listCommands,
-	 	MobycraftDockerClient mobycraftDockerClient) {
-		this.listCommands = listCommands;
-		this.mobycraftDockerClient = mobycraftDockerClient;
-	}
-
+	Logger logger = LoggerFactory.getLogger(ImageCommands.class);
+	
 	public void images() {
 		List<Image> images = getImages();
 
@@ -75,10 +69,11 @@ public class ImageCommands implements MobycraftImageCommands {
 			sendFeedbackMessage("No images currently installed.");
 			return;
 		}
-		for (Image image : getImages()) {
-			mobycraftDockerClient.getDockerClient().removeImageCmd(image.getId()).withForce().exec();
-		}
-		sendConfirmMessage("Removed all images.");
+//		for (Image image : getImages()) {
+//			getDockerClient().removeImageCmd(image.getId()).withForce().exec();
+//		}
+//		sendConfirmMessage("Removed all images.");
+		sendConfirmMessage("Not yet implemented");
 	}
 
 	public void removeImage() {
@@ -87,32 +82,29 @@ public class ImageCommands implements MobycraftImageCommands {
 			return;
 		}
 
-		try {
-			mobycraftDockerClient.getDockerClient().removeImageCmd(getImageWithName(arg1).getId())
-					.withForce().exec();
-			sendConfirmMessage("Removed image with name \"" + arg1 + "\"");
-		} catch (NullPointerException exception) {
-			sendErrorMessage("No image exists with the name \"" + arg1 + "\"");
-		}
-	}
-
-	private List<Image> convertImageList(List<com.github.dockerjava.api.model.Image> imagesDC) {
-		List<Image> images = imagesDC.stream()
-				.map(image -> new Image(
-						image.getCreated(),
-						image.getId(),
-						image.getParentId(),
-						image.getRepoTags(),
-						image.getSize(),
-						image.getVirtualSize()
-				))
-				.collect(Collectors.toList());
-		return images;
+//		try {
+//			getDockerClient().removeImageCmd(getImageWithName(arg1).getId())
+//					.withForce().exec();
+//			sendConfirmMessage("Removed image with name \"" + arg1 + "\"");
+//		} catch (NullPointerException exception) {
+//			sendErrorMessage("No image exists with the name \"" + arg1 + "\"");
+//		}
+		sendConfirmMessage("Not yet implemented");
 	}
 
 	public List<Image> getImages() {
-		List<com.github.dockerjava.api.model.Image> imagesDC = mobycraftDockerClient.getDockerClient().listImagesCmd().exec();
-		return convertImageList(imagesDC);
+		ObjectMapper mapper = new ObjectMapper();
+		List<Image> images = new ArrayList();
+		try {
+			URL url1 = Resources.getResource("mockImages.json");
+			String jsonText1  = Resources.toString(url1, StandardCharsets.UTF_8);
+			images = mapper.readValue(jsonText1, new TypeReference<List<Image>>(){});
+		}
+		catch (IOException ioe) {
+			logger.warn("Could not load mockImages.json");
+		}
+
+		return images;
 	}
 
 	public Image getImageWithName(String name) {

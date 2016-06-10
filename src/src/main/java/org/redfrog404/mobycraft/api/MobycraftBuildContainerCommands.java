@@ -1,12 +1,10 @@
 package org.redfrog404.mobycraft.api;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.redfrog404.mobycraft.commands.dockerjava.ConfigProperties;
 import org.redfrog404.mobycraft.structure.BoxContainer;
 
-import com.github.dockerjava.api.model.Container;
+import org.redfrog404.mobycraft.model.Container;
 
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.PlayerNotFoundException;

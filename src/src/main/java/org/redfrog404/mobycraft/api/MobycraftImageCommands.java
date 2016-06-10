@@ -2,7 +2,7 @@ package org.redfrog404.mobycraft.api;
 
 import java.util.List;
 
-import com.github.dockerjava.api.model.Image;
+import org.redfrog404.mobycraft.model.Image;
 
 public interface MobycraftImageCommands {
 	public void images();

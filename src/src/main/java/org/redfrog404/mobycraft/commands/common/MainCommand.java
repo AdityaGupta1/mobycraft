@@ -1,13 +1,11 @@
-package org.redfrog404.mobycraft.commands.dockerjava;
+package org.redfrog404.mobycraft.commands.common;
 
-import static org.redfrog404.mobycraft.commands.dockerjava.BasicDockerCommands.specificHelpMessages;
+import static org.redfrog404.mobycraft.commands.common.BasicDockerCommands.specificHelpMessages;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,21 +13,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.http.conn.UnsupportedSchemeException;
-import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
-import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
-import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
+import org.redfrog404.mobycraft.api.*;
 import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.structure.BoxContainer;
 import org.redfrog404.mobycraft.structure.StructureBuilder;
 import org.redfrog404.mobycraft.utils.MobycraftException;
 import org.redfrog404.mobycraft.utils.Utils;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.model.Container;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
+import org.redfrog404.mobycraft.model.Container;
 
-import net.minecraft.block.Block;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
@@ -38,11 +30,14 @@ import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.common.config.Property;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
 
 public class MainCommand implements ICommand {
 	public static List commandAliases;
@@ -55,13 +50,13 @@ public class MainCommand implements ICommand {
 	// Current box containers
 	public static List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
 	// Containers container's IDs
-	static Map<String, BoxContainer> containerIDMap = new HashMap<String, BoxContainer>();
+	public static Map<String, BoxContainer> containerIDMap = new HashMap<String, BoxContainer>();
 	// List of commands after which to update containers
-	static List<Integer> updateContainersList = new ArrayList<Integer>();
+	public static List<Integer> updateContainersList = new ArrayList<Integer>();
 
 	public static ICommandSender sender;
 
-	static String[] args;
+	public static String[] args;
 	public static String arg1;
 
 	static StructureBuilder builder = new StructureBuilder();
@@ -69,7 +64,29 @@ public class MainCommand implements ICommand {
 	public int count = 0;
 	public static int maxCount;
 
-	public MainCommand() {
+	Logger logger = LoggerFactory.getLogger(MainCommand.class);
+
+	private final MobycraftContainerLifecycleCommands lifecycleCommands;
+	private final MobycraftContainerListCommands listCommands;
+	private final MobycraftImageCommands imageCommands;
+	private final MobycraftBasicCommands basicCommands;
+	private final MobycraftBuildContainerCommands buildCommands;
+	private final MobycraftConfigurationCommands configurationCommands;
+
+	@Inject
+	public MainCommand(MobycraftContainerLifecycleCommands lifecycleCommands,
+					   MobycraftContainerListCommands listCommands,
+					   MobycraftImageCommands imageCommands,
+					   MobycraftBasicCommands basicCommands,
+					   MobycraftBuildContainerCommands buildCommands,
+					   MobycraftConfigurationCommands configurationCommands) {
+
+		this.lifecycleCommands = lifecycleCommands;
+		this.listCommands = listCommands;
+		this.imageCommands = imageCommands;
+		this.basicCommands = basicCommands;
+		this.buildCommands = buildCommands;
+		this.configurationCommands = configurationCommands;
 
 		this.commandAliases = new ArrayList();
 		this.commandAliases.add("docker");
@@ -209,83 +226,81 @@ public class MainCommand implements ICommand {
 
 		BlockPos position = sender.getPosition();
 
-		MobycraftCommandsFactory factory = MobycraftCommandsFactory
-				.getInstance();
-
 		try {
 			switch (commandNumber) {
 			case 0:
-				factory.getBasicCommands().help();
+				basicCommands.help();
 				break;
 			case 1:
-				factory.getBasicCommands().ps();
+				basicCommands.ps();
 				break;
 			case 2:
-				factory.getConfigurationCommands().setPath();
+				configurationCommands.setPath();
 				break;
 			case 3:
-				factory.getLifecycleCommands().switchState(builder, arg1);
+				lifecycleCommands.switchState(builder, arg1);
 				break;
 			case 4:
-				factory.getLifecycleCommands().removeStopped();
+				lifecycleCommands.removeStopped();
 				break;
 			case 5:
-				factory.getLifecycleCommands().run();
+				lifecycleCommands.run();
 				break;
 			case 6:
-				factory.getLifecycleCommands().killAll();
+				lifecycleCommands.killAll();
 				break;
 			case 7:
-				factory.getLifecycleCommands().kill();
+				lifecycleCommands.kill();
 				break;
 			case 8:
-				factory.getLifecycleCommands().restart();
+				lifecycleCommands.restart();
 				break;
 			case 9:
-				factory.getLifecycleCommands().remove();
+				lifecycleCommands.remove();
 				break;
 			case 10:
-				factory.getLifecycleCommands().removeAll();
+				lifecycleCommands.removeAll();
 				break;
 			case 11:
-				factory.getLifecycleCommands().stop();
+				lifecycleCommands.stop();
 				break;
 			case 12:
-				factory.getLifecycleCommands().start();
+				lifecycleCommands.start();
 				break;
 			case 13:
-				factory.getImageCommands().images();
+				imageCommands.images();
 				break;
 			case 14:
-				factory.getImageCommands().removeImage();
+				imageCommands.removeImage();
 				break;
 			case 15:
-				factory.getImageCommands().removeAllImages();
+				imageCommands.removeAllImages();
 				break;
 			case 16:
-				factory.getConfigurationCommands().setStartPos();
+				configurationCommands.setStartPos();
 				break;
 			case 17:
-				factory.getBasicCommands().showDetailedInfo();
+				basicCommands.showDetailedInfo();
 				break;
 			case 18:
-				factory.getBuildCommands().teleport();
+				buildCommands.teleport();
 				break;
 			case 19:
-				factory.getListCommands().heatMap();
+				listCommands.heatMap();
 				break;
 			case 20:
-				factory.getConfigurationCommands().setHost();
+				configurationCommands.setHost();
 				break;
 			case 21:
-				factory.getConfigurationCommands().getHostAndPath();
+				configurationCommands.getHostAndPath();
 				break;
 			case 22:
-				factory.getConfigurationCommands().setPollRate();
+				configurationCommands.setPollRate();
 			case 23:
-				factory.getListCommands().numberOfContainers();
+				listCommands.numberOfContainers();
 			}
 		} catch (Exception exception) {
+			logger.error("error running command", exception);
 			if (exception instanceof UnsupportedSchemeException) {
 				sendErrorMessage("Invalid Docker host/path! Set the host by using /docker host <host> ; set the path by using /docker path <path>");
 			} else {
@@ -294,7 +309,7 @@ public class MainCommand implements ICommand {
 		}
 		
 		if (updateContainersList.contains(commandNumber)) {
-			factory.getBuildCommands().updateContainers(true);
+			buildCommands.updateContainers(true);
 		}
 	}
 
@@ -324,20 +339,6 @@ public class MainCommand implements ICommand {
 				+ " - " + EnumChatFormatting.GOLD + helpMessage);
 	}
 
-	public static DockerClient getDockerClient() {
-		ConfigProperties configProperties = MobycraftCommandsFactory
-				.getInstance().getConfigurationCommands().getConfigProperties();
-
-		DockerClientConfig dockerConfig = DockerClientConfig
-				.createDefaultConfigBuilder()
-				.withUri(configProperties.getDockerHostProperty().getString())
-				.withDockerCertPath(
-						configProperties.getCertPathProperty().getString())
-				.build();
-
-		return DockerClientBuilder.getInstance(dockerConfig).build();
-	}
-
 	/*
 	 * NOTE TO SELF: DO NOT ADD "STATIC" MODIFIER - otherwise exception is
 	 * thrown
@@ -348,9 +349,6 @@ public class MainCommand implements ICommand {
 	 */
 	@SubscribeEvent
 	public void onTick(PlayerTickEvent event) {
-		MobycraftBuildContainerCommands buildCommands = MobycraftCommandsFactory
-				.getInstance().getBuildCommands();
-
 		if (event.player.getEntityWorld().isRemote) {
 			return;
 		}
@@ -369,9 +367,6 @@ public class MainCommand implements ICommand {
 
 	@SubscribeEvent
 	public void containerWand(PlayerInteractEvent event) {
-		MobycraftCommandsFactory factory = MobycraftCommandsFactory
-				.getInstance();
-
 		EntityPlayer player = event.entityPlayer;
 
 		if (!event.action.equals(Action.RIGHT_CLICK_BLOCK)
@@ -403,16 +398,20 @@ public class MainCommand implements ICommand {
 				sign.signText[2].getUnformattedText().concat(
 						sign.signText[3].getUnformattedText()));
 
-		if (factory.getListCommands().getWithName(name) == null) {
+
+		Container container = listCommands.getWithName(name);
+
+		if (container == null) {
 			return;
 		}
 
-		Container container = factory.getListCommands().getWithName(name);
-		getDockerClient().removeContainerCmd(container.getId()).withForce()
-				.exec();
+		lifecycleCommands.removeContainer(container.getId());
 		sendConfirmMessage("Removed container with name \"" + name + "\"");
 
-		factory.getBuildCommands().updateContainers(false);
+		buildCommands.updateContainers(false);
 	}
 
+	public void loadConfig() {
+		configurationCommands.getConfigProperties();
+	}
 }

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.redfrog404.mobycraft.structure.BoxContainer;
 
-import com.github.dockerjava.api.model.Container;
+import org.redfrog404.mobycraft.model.Container;
 
 public interface MobycraftContainerListCommands {
 	public List<Container> getStarted();
@@ -22,6 +22,8 @@ public interface MobycraftContainerListCommands {
 	public BoxContainer getBoxContainerWithID(String id);
 
 	public void heatMap();
-	
+
+	public void execStatsCommand(String containerID, boolean sendMessages);
+
 	public void numberOfContainers();
 }

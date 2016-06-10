@@ -16,11 +16,14 @@ import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 
-import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
-import org.redfrog404.mobycraft.commands.dockerjava.MainCommand;
+import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
+import org.redfrog404.mobycraft.api.MobycraftContainerLifecycleCommands;
+import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
+import org.redfrog404.mobycraft.commands.common.MainCommand;
+import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.utils.Utils;
 
-import com.github.dockerjava.api.model.Container;
+import org.redfrog404.mobycraft.model.Container;
 
 public class EntityChaosMonkey extends EntityAmbientCreature {
 	/** Coordinates of where the monkey spawned. */
@@ -38,6 +41,10 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	 */
 	private int maxDistance = 25;
 
+	private MobycraftBuildContainerCommands buildCommands;
+	private MobycraftContainerListCommands listCommands;
+	private MobycraftContainerLifecycleCommands lifecycleCommands;
+
 	public EntityChaosMonkey(World worldIn) {
 		super(worldIn);
 		this.setSize(0.5F, 0.9F);
@@ -46,6 +53,10 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	protected void entityInit() {
 		super.entityInit();
 		this.dataWatcher.addObject(16, (byte) 0);
+		// as we don't directly control construction of this class
+		buildCommands = Mobycraft.getInjector().getInstance(MobycraftBuildContainerCommands.class);
+		listCommands = Mobycraft.getInjector().getInstance(MobycraftContainerListCommands.class);
+		lifecycleCommands = Mobycraft.getInjector().getInstance(MobycraftContainerLifecycleCommands.class);
 	}
 
 	/**
@@ -116,9 +127,8 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 		}
 
 		BlockPos pos = this.getPosition();
-		MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
-		BlockPos minPos = factory.getBuildCommands().getMinPos();
-		BlockPos maxPos = factory.getBuildCommands().getMaxPos();
+		BlockPos minPos = buildCommands.getMinPos();
+		BlockPos maxPos = buildCommands.getMaxPos();
 
 		int x = pos.getX();
 		int y = pos.getY();
@@ -156,13 +166,12 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 				sign.signText[2].getUnformattedText().concat(
 						sign.signText[3].getUnformattedText()));
 
-		if (factory.getListCommands().getWithName(name) == null) {
+		if (listCommands.getWithName(name) == null) {
 			return;
 		}
 
-		Container container = factory.getListCommands().getWithName(name);
-		MainCommand.getDockerClient()
-				.removeContainerCmd(container.getId()).withForce().exec();
+		Container container = listCommands.getWithName(name);
+		lifecycleCommands.removeContainer(container.getId());
 		if (!world.isRemote) {
 			sendErrorMessage("Oh no! The Chaos Monkey has destroyed the container \""
 					+ name + "\"!");
@@ -170,7 +179,7 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 
 		chaosCountdown = maxChaosCountdown;
 
-		factory.getBuildCommands().updateContainers(false);
+		buildCommands.updateContainers(false);
 	}
 
 	protected void updateAITasks() {

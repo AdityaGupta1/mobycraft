@@ -1,18 +1,18 @@
 package org.redfrog404.mobycraft.commands.dockerjava;
 
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.arg1;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.args;
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.arg1;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.args;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
-import java.io.File;
-
 import org.apache.commons.lang.math.NumberUtils;
-import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
+import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
 import org.redfrog404.mobycraft.api.MobycraftConfigurationCommands;
+import org.redfrog404.mobycraft.commands.common.ConfigProperties;
+import org.redfrog404.mobycraft.commands.common.MainCommand;
 import org.redfrog404.mobycraft.main.Mobycraft;
 import org.redfrog404.mobycraft.utils.Utils;
 
@@ -20,12 +20,17 @@ import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.config.Property;
 
+import javax.inject.Inject;
+
 public class ConfigurationCommands implements MobycraftConfigurationCommands {
 	
 	private ConfigProperties configProperties;
-	
-	public ConfigurationCommands() {
+	private final MobycraftBuildContainerCommands buildCommands;
+
+	@Inject
+	public ConfigurationCommands(MobycraftBuildContainerCommands buildCommands) {
 		configProperties = new ConfigProperties();
+		this.buildCommands = buildCommands;
 	}
 	
 	public void setPath() {
@@ -93,7 +98,7 @@ public class ConfigurationCommands implements MobycraftConfigurationCommands {
 		Mobycraft.config.save();
 		sendConfirmMessage("Set start position for building containers to ("
 				+ getConfigProperties().getStartPosProperty().getString() + ").");
-		MobycraftCommandsFactory.getInstance().getBuildCommands().updateContainers(false);
+		buildCommands.updateContainers(false);
 	}
 	
 	public BlockPos getStartPos() {
@@ -134,6 +139,7 @@ public class ConfigurationCommands implements MobycraftConfigurationCommands {
 						+ configProperties.getDockerHostProperty().getString() + "\"");
 			}
 		} else {
+			// expecting DOCKER_HOST to have "tcp://"
 			dockerHost = dockerHost.substring(6, dockerHost.length());
 			sendConfirmMessage("Using DOCKER_HOST value of \"" + dockerHost
 					+ "\"");

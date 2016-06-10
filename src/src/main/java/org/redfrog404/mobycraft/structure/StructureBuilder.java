@@ -1,11 +1,11 @@
 package org.redfrog404.mobycraft.structure;
 
-import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.main.Mobycraft;
 
 import net.minecraft.block.Block;
@@ -81,14 +81,14 @@ public class StructureBuilder {
 				end.add(airEndX, airEndY, airEndZ), Blocks.air);
 	}
 
-	public static void container(BoxContainer container) {
+	public static void container(BoxContainer container, MobycraftContainerListCommands listCommands) {
 		BlockPos start = container.getPosition();
 		World world = container.getWorld();
 		String containerName = container.getName();
 		String containerImage = container.getImage();
 		String containerID = container.getID();
-		double memoryUsage = container.getMemoryUsage();
-		double cpuUsage = container.getCpuUsage();
+		double memoryUsage = container.getMemoryUsage(listCommands);
+		double cpuUsage = container.getCpuUsage(listCommands);
 
 		// Iron room
 		start = start.add(-2, 0, 1);
