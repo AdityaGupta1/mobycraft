@@ -6,16 +6,26 @@ import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.command.ICommand;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.tileentity.TileEntitySign;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.world.World;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
+
 import org.apache.http.conn.UnsupportedSchemeException;
-import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
 import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.main.Mobycraft;
@@ -25,24 +35,10 @@ import org.redfrog404.mobycraft.utils.MobycraftException;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.RemoveContainerCmd;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-
-import net.minecraft.block.Block;
-import net.minecraft.command.ICommand;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.tileentity.TileEntitySign;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.world.World;
-import net.minecraftforge.common.config.Property;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent.PlayerTickEvent;
 
 public class MainCommand implements ICommand {
 	public static List commandAliases;
@@ -100,7 +96,7 @@ public class MainCommand implements ICommand {
 		commandNumbers.put("get_path_and_host", 21);
 		commandNumbers.put("poll_rate", 22);
 		commandNumbers.put("number_of_containers", 23);
-		
+
 		updateContainersList.add(4);
 		updateContainersList.add(5);
 		updateContainersList.add(6);
@@ -150,8 +146,9 @@ public class MainCommand implements ICommand {
 				"Returns the Docker host and cert path");
 		helpMessages.put("poll_rate <rate>",
 				"Sets the poll rate to <rate> seconds");
-		helpMessages.put("number_of_containers <all | running | stopped>",
-				"Shows the number of containers with an optional filter, default is <all>");
+		helpMessages
+				.put("number_of_containers <all | running | stopped>",
+						"Shows the number of containers with an optional filter, default is <all>");
 
 		specificHelpMessages
 				.put("ps",
@@ -292,7 +289,7 @@ public class MainCommand implements ICommand {
 				throw new MobycraftException(exception);
 			}
 		}
-		
+
 		if (updateContainersList.contains(commandNumber)) {
 			factory.getBuildCommands().updateContainers(true);
 		}
@@ -408,11 +405,10 @@ public class MainCommand implements ICommand {
 		}
 
 		Container container = factory.getListCommands().getWithName(name);
-		getDockerClient().removeContainerCmd(container.getId()).withForce()
-				.exec();
+		RemoveContainerCmd removeCmd = getDockerClient().removeContainerCmd(
+				container.getId()).withForce();
+		removeCmd.exec();
 		sendConfirmMessage("Removed container with name \"" + name + "\"");
-
-		factory.getBuildCommands().updateContainers(false);
 	}
 
 }

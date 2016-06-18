@@ -1,6 +1,7 @@
 package org.redfrog404.mobycraft.entity;
 
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
+import static org.redfrog404.mobycraft.commands.dockerjava.MainCommand.boxContainers;
 
 import java.util.Calendar;
 
@@ -18,6 +19,7 @@ import net.minecraft.world.World;
 
 import org.redfrog404.mobycraft.api.MobycraftCommandsFactory;
 import org.redfrog404.mobycraft.commands.dockerjava.MainCommand;
+import org.redfrog404.mobycraft.structure.BoxContainer;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.model.Container;
@@ -107,6 +109,11 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	 * Called to update the entity's position/logic.
 	 */
 	public void onUpdate() {
+		if (boxContainers.size() < 1) {
+			this.setDead();
+			return;
+		}
+
 		super.onUpdate();
 		this.motionY *= 0.6000000238418579D;
 
@@ -116,7 +123,8 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 		}
 
 		BlockPos pos = this.getPosition();
-		MobycraftCommandsFactory factory = MobycraftCommandsFactory.getInstance();
+		MobycraftCommandsFactory factory = MobycraftCommandsFactory
+				.getInstance();
 		BlockPos minPos = factory.getBuildCommands().getMinPos();
 		BlockPos maxPos = factory.getBuildCommands().getMaxPos();
 
@@ -161,8 +169,10 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 		}
 
 		Container container = factory.getListCommands().getWithName(name);
-		MainCommand.getDockerClient()
-				.removeContainerCmd(container.getId()).withForce().exec();
+		if (!container.equals(null)) {
+			MainCommand.getDockerClient().removeContainerCmd(container.getId())
+					.withForce().exec();
+		}
 		if (!world.isRemote) {
 			sendErrorMessage("Oh no! The Chaos Monkey has destroyed the container \""
 					+ name + "\"!");
@@ -235,7 +245,8 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	 * Called when the entity is attacked.
 	 */
 	public boolean attackEntityFrom(DamageSource source, float amount) {
-		return !this.isEntityInvulnerable(source) && super.attackEntityFrom(source, amount);
+		return !this.isEntityInvulnerable(source)
+				&& super.attackEntityFrom(source, amount);
 	}
 
 	/**
@@ -243,8 +254,7 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	 */
 	public void readEntityFromNBT(NBTTagCompound tagCompound) {
 		super.readEntityFromNBT(tagCompound);
-		this.dataWatcher.updateObject(16,
-				tagCompound.getByte("BatFlags"));
+		this.dataWatcher.updateObject(16, tagCompound.getByte("BatFlags"));
 	}
 
 	/**
@@ -281,8 +291,10 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	}
 
 	private boolean isDateAroundHalloween(Calendar p_175569_1_) {
-		return (p_175569_1_.get(Calendar.MONTH) == Calendar.OCTOBER) && (p_175569_1_.get(Calendar.DAY_OF_MONTH) >= 20)
-				|| (p_175569_1_.get(Calendar.MONTH) == Calendar.NOVEMBER) && (p_175569_1_.get(Calendar.DAY_OF_MONTH) <= 3);
+		return (p_175569_1_.get(Calendar.MONTH) == Calendar.OCTOBER)
+				&& (p_175569_1_.get(Calendar.DAY_OF_MONTH) >= 20)
+				|| (p_175569_1_.get(Calendar.MONTH) == Calendar.NOVEMBER)
+				&& (p_175569_1_.get(Calendar.DAY_OF_MONTH) <= 3);
 	}
 
 	public float getEyeHeight() {
