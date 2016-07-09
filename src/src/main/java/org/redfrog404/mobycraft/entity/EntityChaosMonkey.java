@@ -1,5 +1,6 @@
 package org.redfrog404.mobycraft.entity;
 
+import static org.redfrog404.mobycraft.commands.common.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 
 import java.util.Calendar;
@@ -8,6 +9,8 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.passive.EntityAmbientCreature;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntitySign;
@@ -19,11 +22,9 @@ import net.minecraft.world.World;
 import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
 import org.redfrog404.mobycraft.api.MobycraftContainerLifecycleCommands;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
-import org.redfrog404.mobycraft.commands.common.MainCommand;
 import org.redfrog404.mobycraft.main.Mobycraft;
-import org.redfrog404.mobycraft.utils.Utils;
-
 import org.redfrog404.mobycraft.model.Container;
+import org.redfrog404.mobycraft.utils.Utils;
 
 public class EntityChaosMonkey extends EntityAmbientCreature {
 	/** Coordinates of where the monkey spawned. */
@@ -54,9 +55,12 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 		super.entityInit();
 		this.dataWatcher.addObject(16, (byte) 0);
 		// as we don't directly control construction of this class
-		buildCommands = Mobycraft.getInjector().getInstance(MobycraftBuildContainerCommands.class);
-		listCommands = Mobycraft.getInjector().getInstance(MobycraftContainerListCommands.class);
-		lifecycleCommands = Mobycraft.getInjector().getInstance(MobycraftContainerLifecycleCommands.class);
+		buildCommands = Mobycraft.getInjector().getInstance(
+				MobycraftBuildContainerCommands.class);
+		listCommands = Mobycraft.getInjector().getInstance(
+				MobycraftContainerListCommands.class);
+		lifecycleCommands = Mobycraft.getInjector().getInstance(
+				MobycraftContainerLifecycleCommands.class);
 	}
 
 	/**
@@ -144,6 +148,12 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 				|| z > maxZ) {
 			this.setLocationAndAngles(Utils.negativeNextInt(minX, maxX),
 					Utils.negativeNextInt(minY, maxY), minZ + 8, 0, 0);
+			System.out.println(minX);
+			System.out.println(minY);
+			System.out.println(minZ);
+			System.out.println(maxX);
+			System.out.println(maxY);
+			System.out.println(maxZ);
 		}
 
 		World world = this.worldObj;
@@ -175,6 +185,12 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 		if (!world.isRemote) {
 			sendErrorMessage("Oh no! The Chaos Monkey has destroyed the container \""
 					+ name + "\"!");
+		}
+
+		if (sender instanceof EntityPlayer) {
+			((EntityPlayer) sender).inventory
+					.addItemStackToInventory(new ItemStack(
+							Mobycraft.container_essence));
 		}
 
 		chaosCountdown = maxChaosCountdown;
@@ -244,7 +260,8 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	 * Called when the entity is attacked.
 	 */
 	public boolean attackEntityFrom(DamageSource source, float amount) {
-		return !this.isEntityInvulnerable(source) && super.attackEntityFrom(source, amount);
+		return !this.isEntityInvulnerable(source)
+				&& super.attackEntityFrom(source, amount);
 	}
 
 	/**
@@ -252,8 +269,7 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	 */
 	public void readEntityFromNBT(NBTTagCompound tagCompound) {
 		super.readEntityFromNBT(tagCompound);
-		this.dataWatcher.updateObject(16,
-				tagCompound.getByte("BatFlags"));
+		this.dataWatcher.updateObject(16, tagCompound.getByte("BatFlags"));
 	}
 
 	/**
@@ -290,8 +306,10 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 	}
 
 	private boolean isDateAroundHalloween(Calendar p_175569_1_) {
-		return (p_175569_1_.get(Calendar.MONTH) == Calendar.OCTOBER) && (p_175569_1_.get(Calendar.DAY_OF_MONTH) >= 20)
-				|| (p_175569_1_.get(Calendar.MONTH) == Calendar.NOVEMBER) && (p_175569_1_.get(Calendar.DAY_OF_MONTH) <= 3);
+		return (p_175569_1_.get(Calendar.MONTH) == Calendar.OCTOBER)
+				&& (p_175569_1_.get(Calendar.DAY_OF_MONTH) >= 20)
+				|| (p_175569_1_.get(Calendar.MONTH) == Calendar.NOVEMBER)
+				&& (p_175569_1_.get(Calendar.DAY_OF_MONTH) <= 3);
 	}
 
 	public float getEyeHeight() {

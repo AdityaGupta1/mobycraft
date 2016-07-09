@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
+
 import net.minecraft.util.EnumChatFormatting;
 
 import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
@@ -29,9 +30,9 @@ import org.redfrog404.mobycraft.commands.common.ConfigProperties;
 import org.redfrog404.mobycraft.commands.common.StatisticsResultCallback;
 import org.redfrog404.mobycraft.structure.BoxContainer;
 import org.redfrog404.mobycraft.utils.Utils;
-
 import org.redfrog404.mobycraft.model.Container;
 import org.redfrog404.mobycraft.model.Container.ContainerStatus;
+
 import com.google.common.collect.Lists;
 
 import javax.inject.Inject;
@@ -45,8 +46,11 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 	private final MobycraftDockerClient mobycraftDockerClient;
 
 	@Inject
-	public ContainerListCommands(MobycraftBuildContainerCommands buildCommands, MobycraftConfigurationCommands configurationCommands,
-								 MobycraftContainerListCommands listCommands, MobycraftBasicCommands basicCommands, MobycraftDockerClient mobycraftDockerClient) {
+	public ContainerListCommands(MobycraftBuildContainerCommands buildCommands,
+			MobycraftConfigurationCommands configurationCommands,
+			MobycraftContainerListCommands listCommands,
+			MobycraftBasicCommands basicCommands,
+			MobycraftDockerClient mobycraftDockerClient) {
 		this.buildCommands = buildCommands;
 		this.configurationCommands = configurationCommands;
 		this.listCommands = listCommands;
@@ -57,8 +61,7 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 	public void refresh() {
 		List<Container> containers = getAll();
 		boxContainers = buildCommands.containerPanel(containers,
-				configurationCommands.getStartPos(),
-				sender.getEntityWorld());
+				configurationCommands.getStartPos(), sender.getEntityWorld());
 		List<String> stoppedContainerNames = new ArrayList<String>();
 		for (Container container : getStopped()) {
 			stoppedContainerNames.add(container.getNames()[0]);
@@ -69,13 +72,14 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 			}
 		}
 		refreshContainerIDMap();
+		// TODO
+		System.out.println("finish");
 	}
 
 	public void refreshRunning() {
 		List<Container> containers = getStarted();
 		boxContainers = buildCommands.containerPanel(containers,
-				configurationCommands.getStartPos(),
-				sender.getEntityWorld());
+				configurationCommands.getStartPos(), sender.getEntityWorld());
 		refreshContainerIDMap();
 	}
 
@@ -86,31 +90,31 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 		}
 	}
 
-	private List<Container> convertContainerList(List<com.github.dockerjava.api.model.Container> containersDC) {
-		List<Container> containers = containersDC.stream()
-				.map(container -> new Container(
-						container.getCommand(),
-						container.getCreated(),
-						container.getId(),
-						container.getImage(),
-						container.getNames(),
-						ContainerStatus.UNKNOWN,
-						container.getStatus()
-				))
+	private List<Container> convertContainerList(
+			List<com.github.dockerjava.api.model.Container> containersDC) {
+		List<Container> containers = containersDC
+				.stream()
+				.map(container -> new Container(container.getCommand(),
+						container.getCreated(), container.getId(), container
+								.getImage(), container.getNames(),
+						ContainerStatus.UNKNOWN, container.getStatus()))
 				.collect(Collectors.toList());
 		return containers;
 	}
 
 	public List<Container> getStarted() {
-		List<com.github.dockerjava.api.model.Container> containersDC = mobycraftDockerClient.getDockerClient().listContainersCmd().exec();
+		List<com.github.dockerjava.api.model.Container> containersDC = mobycraftDockerClient
+				.getDockerClient().listContainersCmd().exec();
 		return convertContainerList(containersDC);
 	}
 
 	public List<Container> getStopped() {
-		List<com.github.dockerjava.api.model.Container> containersDC = mobycraftDockerClient.getDockerClient().listContainersCmd().withShowAll(true).exec();
-		List<com.github.dockerjava.api.model.Container> exitedContainersDC = containersDC.stream()
-			.filter(container -> container.getStatus().toLowerCase().contains("exited"))
-			.collect(Collectors.toList());
+		List<com.github.dockerjava.api.model.Container> containersDC = mobycraftDockerClient
+				.getDockerClient().listContainersCmd().withShowAll(true).exec();
+		List<com.github.dockerjava.api.model.Container> exitedContainersDC = containersDC
+				.stream()
+				.filter(container -> container.getStatus().toLowerCase()
+						.contains("exited")).collect(Collectors.toList());
 		return convertContainerList(exitedContainersDC);
 	}
 
@@ -134,7 +138,8 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 	}
 
 	public List<Container> getAll() {
-		List<com.github.dockerjava.api.model.Container> containersDC = mobycraftDockerClient.getDockerClient().listContainersCmd().withShowAll(true).exec();
+		List<com.github.dockerjava.api.model.Container> containersDC = mobycraftDockerClient
+				.getDockerClient().listContainersCmd().withShowAll(true).exec();
 		return convertContainerList(containersDC);
 	}
 
@@ -278,11 +283,12 @@ public class ContainerListCommands implements MobycraftContainerListCommands {
 	public void execStatsCommand(String containerID, boolean sendMessages) {
 		StatisticsResultCallback callback = new StatisticsResultCallback(
 				containerID, sendMessages, listCommands, basicCommands);
-		callback = mobycraftDockerClient.getDockerClient().statsCmd().withContainerId(containerID)
-				.exec(callback);
+		callback = mobycraftDockerClient.getDockerClient().statsCmd()
+				.withContainerId(containerID).exec(callback);
 		try {
 			callback.awaitCompletion();
 		} catch (InterruptedException exception) {
+			exception.printStackTrace();
 			return;
 		}
 	}

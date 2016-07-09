@@ -26,8 +26,8 @@ public class StatisticsResultCallback extends
 	private final MobycraftContainerListCommands listCommands;
 
 	public StatisticsResultCallback(String containerID, boolean sendMessages,
-									MobycraftContainerListCommands listCommands,
-									MobycraftBasicCommands basicCommands) {
+			MobycraftContainerListCommands listCommands,
+			MobycraftBasicCommands basicCommands) {
 		this.sendMessages = sendMessages;
 		this.containerID = containerID;
 		this.basicCommands = basicCommands;
@@ -37,9 +37,11 @@ public class StatisticsResultCallback extends
 	@Override
 	public void onNext(Statistics stats) {
 		listCommands.refresh();
-		BoxContainer boxContainer = listCommands.getBoxContainerWithID(containerID);
-		Container container = listCommands.getFromAllWithName(boxContainer.getName());
-
+		BoxContainer boxContainer = listCommands
+				.getBoxContainerWithID(containerID);
+		Container container = listCommands.getFromAllWithName(boxContainer
+				.getName());
+		
 		NumberFormat formatter = new DecimalFormat("#0.00");
 
 		double memoryUsage = Double.parseDouble(formatter

@@ -43,6 +43,7 @@ public final class Mobycraft {
 
 	public static Block docker_block;
 	public static Item container_wand;
+	public static Item container_essence;
 	private static Injector injector;
 
 	ItemModelMesher mesher;
@@ -67,6 +68,10 @@ public final class Mobycraft {
 		container_wand = new GenericItem("container_wand",
 				CreativeTabs.tabTools).setMaxStackSize(1);
 		registerItem(container_wand, "container_wand");
+
+		container_essence = new GenericItem("container_essence",
+				CreativeTabs.tabMaterials);
+		registerItem(container_essence, "container_essence");
 
 		RenderManager render = Minecraft.getMinecraft().getRenderManager();
 

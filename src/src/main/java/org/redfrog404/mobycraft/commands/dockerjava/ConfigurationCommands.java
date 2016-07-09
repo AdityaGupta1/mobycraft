@@ -102,10 +102,14 @@ public class ConfigurationCommands implements MobycraftConfigurationCommands {
 	}
 	
 	public BlockPos getStartPos() {
-		String[] posStrings = configProperties.getStartPosProperty().getString().split(", ");
-		return new BlockPos(Integer.parseInt(posStrings[0]),
-				Integer.parseInt(posStrings[1]),
-				Integer.parseInt(posStrings[2]));
+		try {
+			String[] posStrings = configProperties.getStartPosProperty().getString().split(", ");
+			return new BlockPos(Integer.parseInt(posStrings[0]),
+					Integer.parseInt(posStrings[1]),
+					Integer.parseInt(posStrings[2]));
+		} catch (NullPointerException exception) {
+			return new BlockPos(0, 0, 0);
+		}
 	}
 
 	public void getHostAndPath() {

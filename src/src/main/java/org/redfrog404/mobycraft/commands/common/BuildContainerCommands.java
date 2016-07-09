@@ -38,7 +38,7 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 
 	@Inject
 	public BuildContainerCommands(MobycraftContainerListCommands listCommands,
-								  MobycraftConfigurationCommands configurationCommands) {
+			MobycraftConfigurationCommands configurationCommands) {
 		this.listCommands = listCommands;
 		this.configurationCommands = configurationCommands;
 	}
@@ -118,7 +118,8 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 					+ "\"");
 		}
 
-		BoxContainer boxContainer = listCommands.getBoxContainerWithID(container.getId());
+		BoxContainer boxContainer = listCommands
+				.getBoxContainerWithID(container.getId());
 
 		BlockPos pos = boxContainer.getPosition();
 
@@ -143,8 +144,8 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 	public void updateContainers(boolean checkForEqual) {
 		listCommands.refreshContainerIDMap();
 
-		Property startPosProperty = configurationCommands
-				.getConfigProperties().getStartPosProperty();
+		Property startPosProperty = configurationCommands.getConfigProperties()
+				.getStartPosProperty();
 
 		if (startPosProperty.isDefault()) {
 			startPosProperty.setValue(sender.getPosition().getX() + ", "
@@ -154,8 +155,8 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 		}
 
 		List<Container> containers = listCommands.getAll();
-		List<BoxContainer> newContainers = containerPanel(containers, configurationCommands.getStartPos(),
-				sender.getEntityWorld());
+		List<BoxContainer> newContainers = containerPanel(containers,
+				configurationCommands.getStartPos(), sender.getEntityWorld());
 
 		if (boxContainers.equals(newContainers) && checkForEqual) {
 			return;
@@ -191,9 +192,8 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 		}
 
 		List<BoxContainer> newContainersToBuild = new ArrayList<BoxContainer>();
-		newContainersToBuild = containerPanel(listCommands
-				.getAll(), configurationCommands.getStartPos(),
-				sender.getEntityWorld());
+		newContainersToBuild = containerPanel(listCommands.getAll(),
+				configurationCommands.getStartPos(), sender.getEntityWorld());
 		newContainersToBuild = newContainersToBuild.subList(start,
 				newContainersToBuild.size());
 		buildContainersFromList(newContainersToBuild);
@@ -206,6 +206,10 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 			}
 		}
 
+		Mobycraft.getMainCommand().count = 0;
+	}
+
+	public void refreshMinMaxPositions() {
 		BlockPos startPos = configurationCommands.getStartPos();
 
 		int minX = startPos.getX() - 2;
@@ -231,8 +235,9 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 
 		minPos = new BlockPos(minX, minY, minZ);
 		maxPos = new BlockPos(maxX, maxY, maxZ);
-		
-		Mobycraft.getMainCommand().count = 0;
+
+		System.out.println(minPos);
+		System.out.println(maxPos);
 	}
 
 	private List<BoxContainer> containerColumn(List<Container> containers,
@@ -257,7 +262,7 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 	}
 
 	// this builds the entire set of columns (last one less than 10 high)
-	// you can see it just adds 6 to the x between bcolumns
+	// you can see it just adds 6 to the x between columns
 	public List<BoxContainer> containerPanel(List<Container> containers,
 			BlockPos pos, World world) {
 		List<BoxContainer> boxContainers = new ArrayList<BoxContainer>();
@@ -301,10 +306,12 @@ public class BuildContainerCommands implements MobycraftBuildContainerCommands {
 	}
 
 	public BlockPos getMinPos() {
+		refreshMinMaxPositions();
 		return minPos;
 	}
 
 	public BlockPos getMaxPos() {
+		refreshMinMaxPositions();
 		return maxPos;
 	}
 }

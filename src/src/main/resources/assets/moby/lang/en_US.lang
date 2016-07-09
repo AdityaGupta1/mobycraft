@@ -2,3 +2,4 @@ item.container_wand.name=Container Wand
 tile.docker_block.name=Docker Logo Block
 entity.moby.name=Moby
 entity.chaos_monkey.name=Chaos Monkey
+item.container_essence.name=Container Essence
