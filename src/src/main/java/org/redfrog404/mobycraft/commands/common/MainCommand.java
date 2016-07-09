@@ -296,8 +296,10 @@ public class MainCommand implements ICommand {
 				break;
 			case 22:
 				configurationCommands.setPollRate();
+				break;
 			case 23:
 				listCommands.numberOfContainers();
+				break;
 			}
 		} catch (Exception exception) {
 			logger.error("error running command", exception);

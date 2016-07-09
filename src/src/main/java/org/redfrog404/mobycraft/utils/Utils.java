@@ -61,6 +61,13 @@ public class Utils {
 	}
 
 	public static int negativeNextInt(int min, int max) {
-		return Math.round(min + (new Random().nextFloat() * (max - min)));
+		// return Math.round(min + (new Random().nextFloat() * (max - min)));
+		if (min < max) {
+			return Math.round(min + (new Random().nextFloat() * (max - min)));
+		} else if (min == max) {
+			return min;
+		} else {
+			return Math.round(max + (new Random().nextFloat() * (min - max)));
+		}
 	}
 }

@@ -5,7 +5,7 @@ import org.redfrog404.mobycraft.api.*;
 import org.redfrog404.mobycraft.commands.dockerjava.MobycraftDockerClient;
 import org.redfrog404.mobycraft.commands.dockerjava.MobycraftDockerClientImpl;
 
-public class MobyCraftModule extends AbstractModule {
+public class MobycraftModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(MobycraftBasicCommands.class).to(org.redfrog404.mobycraft.commands.common.BasicDockerCommands.class);

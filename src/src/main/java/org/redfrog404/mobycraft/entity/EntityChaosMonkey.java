@@ -4,6 +4,7 @@ import static org.redfrog404.mobycraft.commands.common.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 
 import java.util.Calendar;
+import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -148,12 +149,6 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 				|| z > maxZ) {
 			this.setLocationAndAngles(Utils.negativeNextInt(minX, maxX),
 					Utils.negativeNextInt(minY, maxY), minZ + 8, 0, 0);
-			System.out.println(minX);
-			System.out.println(minY);
-			System.out.println(minZ);
-			System.out.println(maxX);
-			System.out.println(maxY);
-			System.out.println(maxZ);
 		}
 
 		World world = this.worldObj;
@@ -190,7 +185,7 @@ public class EntityChaosMonkey extends EntityAmbientCreature {
 		if (sender instanceof EntityPlayer) {
 			((EntityPlayer) sender).inventory
 					.addItemStackToInventory(new ItemStack(
-							Mobycraft.container_essence));
+							Mobycraft.container_essence, new Random().nextInt(3)));
 		}
 
 		chaosCountdown = maxChaosCountdown;

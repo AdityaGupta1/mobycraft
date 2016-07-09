@@ -57,7 +57,7 @@ public final class Mobycraft {
 
 	@EventHandler
 	public void init(FMLInitializationEvent event) {
-		injector = Guice.createInjector(new MobyCraftModule());
+		injector = Guice.createInjector(new MobycraftModule());
 
 		mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
 
