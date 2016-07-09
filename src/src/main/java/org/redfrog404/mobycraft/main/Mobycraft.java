@@ -2,8 +2,6 @@ package org.redfrog404.mobycraft.main;
 
 import java.io.File;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
@@ -12,7 +10,9 @@ import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
@@ -33,6 +33,9 @@ import org.redfrog404.mobycraft.entity.RenderChaosMonkey;
 import org.redfrog404.mobycraft.entity.RenderMoby;
 import org.redfrog404.mobycraft.structure.GenericBlock;
 import org.redfrog404.mobycraft.structure.GenericItem;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 @Mod(modid = Mobycraft.MODID, version = Mobycraft.VERSION)
 public final class Mobycraft {
@@ -88,6 +91,10 @@ public final class Mobycraft {
 
 		MinecraftForge.EVENT_BUS.register(commands);
 		FMLCommonHandler.instance().bus().register(commands);
+
+		GameRegistry.addRecipe(new ItemStack(container_wand), " ei", "ese",
+				"se ", 'e', container_essence, 'i', Items.iron_ingot, 's',
+				Items.stick);
 	}
 
 	@EventHandler
