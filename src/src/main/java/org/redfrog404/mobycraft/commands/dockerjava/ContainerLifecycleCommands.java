@@ -2,41 +2,46 @@ package org.redfrog404.mobycraft.commands.dockerjava;
 
 import static org.redfrog404.mobycraft.commands.common.MainCommand.arg1;
 import static org.redfrog404.mobycraft.commands.common.MainCommand.args;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
 
 import java.util.ArrayList;
 
-import com.github.dockerjava.api.DockerClient;
+import javax.inject.Inject;
+
+import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
+import net.minecraft.init.Blocks;
+import net.minecraft.world.World;
+
 import org.apache.commons.lang.math.NumberUtils;
 import org.redfrog404.mobycraft.api.MobycraftContainerLifecycleCommands;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.api.MobycraftImageCommands;
+import org.redfrog404.mobycraft.entity.EntityChaosMonkey;
+import org.redfrog404.mobycraft.model.Container;
 import org.redfrog404.mobycraft.structure.BoxContainer;
 import org.redfrog404.mobycraft.structure.StructureBuilder;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import com.github.dockerjava.api.DockerClientException;
 import com.github.dockerjava.api.command.CreateContainerResponse;
-import org.redfrog404.mobycraft.model.Container;
 import com.github.dockerjava.core.command.PullImageResultCallback;
 
-import net.minecraft.block.Block;
-import net.minecraft.init.Blocks;
-
-import javax.inject.Inject;
-
-public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCommands {
+public class ContainerLifecycleCommands implements
+		MobycraftContainerLifecycleCommands {
 
 	private final MobycraftContainerListCommands listCommands;
 	private final MobycraftImageCommands imageCommands;
 	private final MobycraftDockerClient mobycraftDockerClient;
 
 	@Inject
-	public ContainerLifecycleCommands(MobycraftContainerListCommands listCommands,
-									  MobycraftImageCommands imageCommands,
-									  MobycraftDockerClient mobycraftDockerClient) {
+	public ContainerLifecycleCommands(
+			MobycraftContainerListCommands listCommands,
+			MobycraftImageCommands imageCommands,
+			MobycraftDockerClient mobycraftDockerClient) {
 		this.listCommands = listCommands;
 		this.imageCommands = imageCommands;
 		this.mobycraftDockerClient = mobycraftDockerClient;
@@ -51,8 +56,10 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 		}
 
 		try {
-			mobycraftDockerClient.getDockerClient().startContainerCmd(
-					listCommands.getFromAllWithName("/" + arg1).getId())
+			mobycraftDockerClient
+					.getDockerClient()
+					.startContainerCmd(
+							listCommands.getFromAllWithName("/" + arg1).getId())
 					.exec();
 			sendConfirmMessage("Started container with name \"" + arg1 + "\"");
 		} catch (NullPointerException exception) {
@@ -70,8 +77,11 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 		}
 
 		try {
-			mobycraftDockerClient.getDockerClient().stopContainerCmd(
-					listCommands.getWithName("/" + arg1).getId()).exec();
+			mobycraftDockerClient
+					.getDockerClient()
+					.stopContainerCmd(
+							listCommands.getWithName("/" + arg1).getId())
+					.exec();
 			sendConfirmMessage("Stopped container with name \"" + arg1 + "\"");
 		} catch (NullPointerException exception) {
 			sendErrorMessage("No container exists with the name \"" + arg1
@@ -81,9 +91,11 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 
 	public void removeContainer(String containerId) {
 		try {
-			mobycraftDockerClient.getDockerClient().removeContainerCmd(containerId).withForce().exec();
+			mobycraftDockerClient.getDockerClient()
+					.removeContainerCmd(containerId).withForce().exec();
 		} catch (NullPointerException exception) {
-			sendErrorMessage("No container exists with the name \"" + arg1 + "\"");
+			sendErrorMessage("No container exists with the name \"" + arg1
+					+ "\"");
 		}
 	}
 
@@ -96,9 +108,11 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 		}
 
 		try {
-			mobycraftDockerClient.getDockerClient().removeContainerCmd(
-							listCommands.getFromAllWithName("/" + arg1)
-									.getId()).withForce().exec();
+			mobycraftDockerClient
+					.getDockerClient()
+					.removeContainerCmd(
+							listCommands.getFromAllWithName("/" + arg1).getId())
+					.withForce().exec();
 			sendConfirmMessage("Removed container with name \"" + arg1 + "\"");
 		} catch (NullPointerException exception) {
 			sendErrorMessage("No container exists with the name \"" + arg1
@@ -114,8 +128,8 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 			return;
 		}
 		for (Container container : listCommands.getAll()) {
-			mobycraftDockerClient.getDockerClient().removeContainerCmd(container.getId()).withForce()
-					.exec();
+			mobycraftDockerClient.getDockerClient()
+					.removeContainerCmd(container.getId()).withForce().exec();
 		}
 		sendConfirmMessage("Removed all containers.");
 	}
@@ -129,8 +143,11 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 		}
 
 		try {
-			mobycraftDockerClient.getDockerClient().restartContainerCmd(
-					listCommands.getWithName("/" + arg1).getId()).exec();
+			mobycraftDockerClient
+					.getDockerClient()
+					.restartContainerCmd(
+							listCommands.getWithName("/" + arg1).getId())
+					.exec();
 			sendConfirmMessage("Restarted container with name \"" + arg1 + "\"");
 		} catch (NullPointerException exception) {
 			sendErrorMessage("No container exists with the name \"" + arg1
@@ -147,8 +164,11 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 		}
 
 		try {
-			mobycraftDockerClient.getDockerClient().killContainerCmd(
-					listCommands.getWithName("/" + arg1).getId()).exec();
+			mobycraftDockerClient
+					.getDockerClient()
+					.killContainerCmd(
+							listCommands.getWithName("/" + arg1).getId())
+					.exec();
 			sendConfirmMessage("Killed container with name \"" + arg1 + "\"");
 		} catch (NullPointerException exception) {
 			sendErrorMessage("No container exists with the name \"" + arg1
@@ -164,7 +184,8 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 			return;
 		}
 		for (Container container : listCommands.getStarted()) {
-			mobycraftDockerClient.getDockerClient().killContainerCmd(container.getId()).exec();
+			mobycraftDockerClient.getDockerClient()
+					.killContainerCmd(container.getId()).exec();
 		}
 		sendConfirmMessage("Killed all containers.");
 	}
@@ -179,7 +200,8 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 
 		if (imageCommands.getImageWithName(arg1) == null) {
 			PullImageResultCallback callback = new PullImageResultCallback();
-			mobycraftDockerClient.getDockerClient().pullImageCmd(arg1).withTag("latest").exec(callback);
+			mobycraftDockerClient.getDockerClient().pullImageCmd(arg1)
+					.withTag("latest").exec(callback);
 			try {
 				callback.awaitCompletion();
 			} catch (DockerClientException exception) {
@@ -190,9 +212,10 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 
 		if (args.length < 2) {
 			// No name, no number
-			CreateContainerResponse response = mobycraftDockerClient.getDockerClient()
-					.createContainerCmd(arg1).exec();
-			mobycraftDockerClient.getDockerClient().startContainerCmd(response.getId()).exec();
+			CreateContainerResponse response = mobycraftDockerClient
+					.getDockerClient().createContainerCmd(arg1).exec();
+			mobycraftDockerClient.getDockerClient()
+					.startContainerCmd(response.getId()).exec();
 			String name = "";
 			for (Container container : listCommands.getStarted()) {
 				if (container.getId().equals(response.getId())) {
@@ -211,18 +234,21 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 					return;
 				}
 			}
-			CreateContainerResponse response = mobycraftDockerClient.getDockerClient()
-					.createContainerCmd(arg1).withName(args[1]).exec();
-			mobycraftDockerClient.getDockerClient().startContainerCmd(response.getId()).exec();
+			CreateContainerResponse response = mobycraftDockerClient
+					.getDockerClient().createContainerCmd(arg1)
+					.withName(args[1]).exec();
+			mobycraftDockerClient.getDockerClient()
+					.startContainerCmd(response.getId()).exec();
 			sendConfirmMessage("Created container with image \"" + arg1
 					+ "\" and name \"" + args[1] + "\"");
 		} else {
 			// Number
 			ArrayList<String> names = new ArrayList<String>();
 			for (int i = 0; i < Integer.parseInt(args[1]); i++) {
-				CreateContainerResponse response = mobycraftDockerClient.getDockerClient()
-						.createContainerCmd(arg1).exec();
-				mobycraftDockerClient.getDockerClient().startContainerCmd(response.getId()).exec();
+				CreateContainerResponse response = mobycraftDockerClient
+						.getDockerClient().createContainerCmd(arg1).exec();
+				mobycraftDockerClient.getDockerClient()
+						.startContainerCmd(response.getId()).exec();
 				String name = "";
 				for (Container container : listCommands.getStarted()) {
 					if (container.getId().equals(response.getId())) {
@@ -254,8 +280,8 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 			return;
 		}
 		for (Container container : listCommands.getStopped()) {
-			mobycraftDockerClient.getDockerClient().removeContainerCmd(container.getId()).withForce()
-					.exec();
+			mobycraftDockerClient.getDockerClient()
+					.removeContainerCmd(container.getId()).withForce().exec();
 		}
 		sendConfirmMessage("Removed all stopped containers.");
 	}
@@ -269,7 +295,8 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 		}
 
 		// New BoxContainer variable called boxContainer to store the container
-		BoxContainer boxContainer = listCommands.getBoxContainerWithID(containerID);
+		BoxContainer boxContainer = listCommands
+				.getBoxContainerWithID(containerID);
 
 		boxContainer.setState(!boxContainer.getState());
 
@@ -280,13 +307,15 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 		if (boxContainer.getState()) {
 			containerBlock = Blocks.iron_block;
 			prevContainerBlock = Blocks.redstone_block;
-			mobycraftDockerClient.getDockerClient().startContainerCmd(boxContainer.getID()).exec();
+			mobycraftDockerClient.getDockerClient()
+					.startContainerCmd(boxContainer.getID()).exec();
 		}
 		// Otherwise, if the container is now off (previously on):
 		else {
 			containerBlock = Blocks.redstone_block;
 			prevContainerBlock = Blocks.iron_block;
-			mobycraftDockerClient.getDockerClient().stopContainerCmd(boxContainer.getID()).exec();
+			mobycraftDockerClient.getDockerClient()
+					.stopContainerCmd(boxContainer.getID()).exec();
 		}
 
 		builder.replace(boxContainer.getWorld(), boxContainer.getPosition()
@@ -296,5 +325,24 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 		builder.replace(boxContainer.getWorld(), boxContainer.getPosition()
 				.add(2, 4, 1), boxContainer.getPosition().add(-2, 4, 7),
 				prevContainerBlock, containerBlock);
+	}
+
+	public void killChaosMonkeys() {
+		World world = sender.getEntityWorld();
+		int numberOfMonkeys = 0;
+		for (Entity entity : world.getLoadedEntityList()) {
+			if (entity instanceof EntityChaosMonkey) {
+				entity.setDead();
+				numberOfMonkeys++;
+			}
+		}
+
+		if (numberOfMonkeys == 0) {
+			sendErrorMessage("There are no Chaos Monkeys in this world!");
+		} else if (numberOfMonkeys == 1) {
+			sendConfirmMessage("Killed 1 Chaos Monkey.");
+		} else {
+			sendConfirmMessage("Killed " + numberOfMonkeys + " Chaos Monkeys.");
+		}
 	}
 }

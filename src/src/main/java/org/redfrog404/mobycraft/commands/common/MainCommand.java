@@ -117,6 +117,7 @@ public class MainCommand implements ICommand {
 		commandNumbers.put("get_path_and_host", 21);
 		commandNumbers.put("poll_rate", 22);
 		commandNumbers.put("number_of_containers", 23);
+		commandNumbers.put("kill_chaos_monkeys", 24);
 		
 		updateContainersList.add(4);
 		updateContainersList.add(5);
@@ -299,6 +300,9 @@ public class MainCommand implements ICommand {
 				break;
 			case 23:
 				listCommands.numberOfContainers();
+				break;
+			case 24:
+				lifecycleCommands.killChaosMonkeys();
 				break;
 			}
 		} catch (Exception exception) {

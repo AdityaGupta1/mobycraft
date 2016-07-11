@@ -1,6 +1,7 @@
 package org.redfrog404.mobycraft.commands.titus;
 
 import static org.redfrog404.mobycraft.commands.common.MainCommand.args;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
@@ -10,12 +11,15 @@ import org.redfrog404.mobycraft.api.MobycraftContainerLifecycleCommands;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.api.MobycraftImageCommands;
 import org.redfrog404.mobycraft.commands.titus.model.Job;
+import org.redfrog404.mobycraft.entity.EntityChaosMonkey;
 import org.redfrog404.mobycraft.structure.BoxContainer;
 import org.redfrog404.mobycraft.structure.StructureBuilder;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
+import net.minecraft.world.World;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +30,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
+
 import java.util.List;
 
 public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCommands {
@@ -300,5 +305,20 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 				.path("/v2/tasks/terminate/" + taskId);
 		Response response = target.request().post(Entity.text(""));
 		logger.info("response = " + response);
+	}
+	
+	public void killChaosMonkeys() {
+		World world = sender.getEntityWorld();
+		int numberOfMonkeys = 0;
+		for (EntityChaosMonkey entity : world.getEntities(EntityChaosMonkey.class, null)) {
+			entity.setDead();
+			numberOfMonkeys++;
+		}
+		
+		if (numberOfMonkeys == 0) {
+			sendErrorMessage("There are no Chaos Monkeys in this world!");
+		} else {
+			sendConfirmMessage("Killed " + numberOfMonkeys + " Chaos Monkeys.");
+		}
 	}
 }

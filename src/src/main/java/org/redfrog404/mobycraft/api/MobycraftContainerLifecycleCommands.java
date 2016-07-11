@@ -14,4 +14,5 @@ public interface MobycraftContainerLifecycleCommands {
 	public void removeStopped();
 	public void removeAll();
 	public void switchState(StructureBuilder builder, String containerID);
+	public void killChaosMonkeys();
 }

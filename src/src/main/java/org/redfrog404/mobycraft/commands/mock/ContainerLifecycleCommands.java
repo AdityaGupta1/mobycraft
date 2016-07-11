@@ -1,6 +1,7 @@
 package org.redfrog404.mobycraft.commands.mock;
 
 import static org.redfrog404.mobycraft.commands.common.MainCommand.args;
+import static org.redfrog404.mobycraft.commands.common.MainCommand.sender;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendConfirmMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendErrorMessage;
 import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
@@ -8,12 +9,14 @@ import static org.redfrog404.mobycraft.utils.MessageSender.sendFeedbackMessage;
 import org.redfrog404.mobycraft.api.MobycraftContainerLifecycleCommands;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 import org.redfrog404.mobycraft.api.MobycraftImageCommands;
+import org.redfrog404.mobycraft.entity.EntityChaosMonkey;
 import org.redfrog404.mobycraft.structure.BoxContainer;
 import org.redfrog404.mobycraft.structure.StructureBuilder;
 import org.redfrog404.mobycraft.utils.Utils;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
+import net.minecraft.world.World;
 
 import javax.inject.Inject;
 
@@ -275,5 +278,20 @@ public class ContainerLifecycleCommands implements MobycraftContainerLifecycleCo
 		builder.replace(boxContainer.getWorld(), boxContainer.getPosition()
 				.add(2, 4, 1), boxContainer.getPosition().add(-2, 4, 7),
 				prevContainerBlock, containerBlock);
+	}
+	
+	public void killChaosMonkeys() {
+		World world = sender.getEntityWorld();
+		int numberOfMonkeys = 0;
+		for (EntityChaosMonkey entity : world.getEntities(EntityChaosMonkey.class, null)) {
+			entity.setDead();
+			numberOfMonkeys++;
+		}
+		
+		if (numberOfMonkeys == 0) {
+			sendErrorMessage("There are no Chaos Monkeys in this world!");
+		} else {
+			sendConfirmMessage("Killed " + numberOfMonkeys + " Chaos Monkeys.");
+		}
 	}
 }
