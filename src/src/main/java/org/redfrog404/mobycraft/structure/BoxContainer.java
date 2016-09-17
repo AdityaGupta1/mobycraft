@@ -1,9 +1,10 @@
 package org.redfrog404.mobycraft.structure;
 
+import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
+import static org.redfrog404.mobycraft.utils.MessageSender.sendMessage;
 
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
-import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
 
 public class BoxContainer {
 
@@ -13,11 +14,10 @@ public class BoxContainer {
 	private String image;
 	private boolean state = true;
 	private World world;
-	private double memoryUsage;
-	private double cpuUsage;
+	public double memoryUsage;
+	public double cpuUsage;
 
-	public BoxContainer(BlockPos position, String ID, String name,
-			String image, World world) {
+	public BoxContainer(BlockPos position, String ID, String name, String image, World world) {
 		this.position = position;
 		this.ID = ID;
 		this.name = name;
@@ -63,8 +63,7 @@ public class BoxContainer {
 
 	@Override
 	public String toString() {
-		return "[\"" + this.getName() + "\", \"" + this.getID() + "\""
-				+ "\", \"" + this.getState() + "\"]";
+		return "[\"" + this.getName() + "\", \"" + this.getID() + "\"" + "\", \"" + this.getState() + "\"]";
 	}
 
 	@Override
@@ -77,11 +76,12 @@ public class BoxContainer {
 	}
 
 	public void setCpuUsage(double newCpuUsage) {
-		cpuUsage = newCpuUsage;
+		this.cpuUsage = newCpuUsage;
 	}
 
 	public void setMemoryUsage(double newMemoryUsage) {
-		memoryUsage = newMemoryUsage;
+		this.memoryUsage = newMemoryUsage;
+		sendMessage("setMemoryUsage(): " + getName() + ": " + memoryUsage);
 	}
 
 	public double getCpuUsage(MobycraftContainerListCommands listCommands) {
@@ -91,6 +91,7 @@ public class BoxContainer {
 
 	public double getMemoryUsage(MobycraftContainerListCommands listCommands) {
 		listCommands.execStatsCommand(ID, false);
+		sendMessage("getMemoryUsage(): " + getName() + ": " + memoryUsage);
 		return memoryUsage;
 	}
 

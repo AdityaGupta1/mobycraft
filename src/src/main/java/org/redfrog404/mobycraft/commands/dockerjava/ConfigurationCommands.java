@@ -119,9 +119,9 @@ public class ConfigurationCommands implements MobycraftConfigurationCommands {
 //		}
 
 		sendMessage(EnumChatFormatting.BLUE + "" + EnumChatFormatting.BOLD
-				+ "Docker host: " + EnumChatFormatting.RESET + getConfigProperties().getDockerHostProperty());
+				+ "Docker host: " + EnumChatFormatting.RESET + getConfigProperties().getDockerHostProperty().getString());
 		sendMessage(EnumChatFormatting.GOLD + "" + EnumChatFormatting.BOLD
-				+ "Docker cert path: " + EnumChatFormatting.RESET + getConfigProperties().getCertPathProperty());
+				+ "Docker cert path: " + EnumChatFormatting.RESET + getConfigProperties().getCertPathProperty().getString());
 	}
 	
 	/**

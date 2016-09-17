@@ -16,26 +16,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
-
-import net.minecraft.util.EnumChatFormatting;
+import javax.inject.Inject;
 
 import org.redfrog404.mobycraft.api.MobycraftBasicCommands;
 import org.redfrog404.mobycraft.api.MobycraftBuildContainerCommands;
 import org.redfrog404.mobycraft.api.MobycraftConfigurationCommands;
 import org.redfrog404.mobycraft.api.MobycraftContainerListCommands;
-import org.redfrog404.mobycraft.commands.common.ConfigProperties;
 import org.redfrog404.mobycraft.commands.common.StatisticsResultCallback;
-import org.redfrog404.mobycraft.structure.BoxContainer;
-import org.redfrog404.mobycraft.utils.Utils;
 import org.redfrog404.mobycraft.model.Container;
 import org.redfrog404.mobycraft.model.Container.ContainerStatus;
+import org.redfrog404.mobycraft.structure.BoxContainer;
+import org.redfrog404.mobycraft.utils.Utils;
 
 import com.google.common.collect.Lists;
 
-import javax.inject.Inject;
+import net.minecraft.util.EnumChatFormatting;
 
 public class ContainerListCommands implements MobycraftContainerListCommands {
 

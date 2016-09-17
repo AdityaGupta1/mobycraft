@@ -170,6 +170,8 @@ public class MainCommand implements ICommand {
 				"Sets the poll rate to <rate> seconds");
 		helpMessages.put("number_of_containers <all | running | stopped>",
 				"Shows the number of containers with an optional filter, default is <all>");
+		helpMessages.put("kill_chaos_monkeys",
+				"Kills all the chaos monkeys in the world");
 
 		specificHelpMessages
 				.put("ps",
