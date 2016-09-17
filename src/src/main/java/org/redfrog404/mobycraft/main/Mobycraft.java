@@ -62,6 +62,7 @@ public final class Mobycraft {
 	public void init(FMLInitializationEvent event) {
 		injector = Guice.createInjector(new MobycraftModule());
 
+		// Helps render item textures
 		mesher = Minecraft.getMinecraft().getRenderItem().getItemModelMesher();
 
 		docker_block = new GenericBlock("docker_block", Material.iron, 5.0F,
